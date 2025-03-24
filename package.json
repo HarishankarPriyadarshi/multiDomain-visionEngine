@@ -1,14 +1,18 @@
 {
+  "homepage": "https://Pragya23Daksh.github.io/image-processing",
   "name": "image-processing-vlab-iitr",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
