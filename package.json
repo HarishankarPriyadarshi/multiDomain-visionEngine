@@ -1,5 +1,5 @@
 {
-  "homepage": "https://Pragya23Daksh.github.io/image-processing",
+  "homepage": "https://Pragya23Daksh.github.io/Image-Processing",
   "name": "image-processing-vlab-iitr",
   "private": true,
   "version": "0.0.0",
@@ -12,7 +12,6 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
-
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
