@@ -12,7 +12,7 @@ import { OpenCvConsumer, OpenCvProvider } from 'opencv-react';
 import Edge from './components/Edge';
 // import { createBrowserRouter,RouterProvider } from 'react-router-dom';
 import Sampling from './components/Sampling';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 
 function App() {
@@ -29,11 +29,12 @@ function App() {
   //     </OpenCvProvider>
   //   </RouterProvider>
   // );
+
   return (
-    <Router>
+    <Router basename="/IP">
       <Routes>
-        <Route path="/edge" element={<div>Edge</div>} />
-        <Route path="/sampling" element={<div>Sampling</div>} />
+        <Route path="/edge" element={<Edge />} />
+        <Route path="/sampling" element={<Sampling />} />
       </Routes>
     </Router>
   );
