@@ -1,5 +1,5 @@
 {
-  "homepage": "https://Pragya23Daksh.github.io/imageP/",
+  "homepage": "https://Pragya23Daksh.github.io/IP/",
   "name": "image-processing-vlab-iitr",
   "private": true,
   "version": "0.0.0",
@@ -23,7 +23,7 @@
     "opencv-react": "^0.0.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.3.0",
+    "react-router-dom": "^7.4.0",
     "react-scripts": "^3.0.1",
     "react-toastify": "^11.0.5"
   },

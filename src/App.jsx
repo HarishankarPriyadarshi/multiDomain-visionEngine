@@ -10,24 +10,34 @@ import sample3 from './assets/images/sample3.jpg';
 import sample4 from './assets/images/sample4.jpg';
 import { OpenCvConsumer, OpenCvProvider } from 'opencv-react';
 import Edge from './components/Edge';
-import { createBrowserRouter,RouterProvider } from 'react-router-dom';
+// import { createBrowserRouter,RouterProvider } from 'react-router-dom';
 import Sampling from './components/Sampling';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 
 
 function App() {
 
-  const router=createBrowserRouter([
-    {path: '/edge',element: <Edge/>},
-    {path: '/sampling',element: <Sampling/>},
-  ])
+  // const router=createBrowserRouter([
+  //   {path: '/edge',element: <Edge/>},
+  //   {path: '/sampling',element: <Sampling/>},
+  // ])
 
-  return(
-    <RouterProvider router={router}>
-      <OpenCvProvider>
-        Hi there
-      </OpenCvProvider>
-    </RouterProvider>
+  // return(
+  //   <RouterProvider router={router}>
+  //     <OpenCvProvider>
+  //       Hi there
+  //     </OpenCvProvider>
+  //   </RouterProvider>
+  // );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/edge" element={<div>Edge</div>} />
+        <Route path="/sampling" element={<div>Sampling</div>} />
+      </Routes>
+    </Router>
   );
+
 }
 
 export default App;
