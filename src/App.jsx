@@ -31,7 +31,7 @@ function App() {
   // );
 
   return (
-    <Router basename="/IP">
+    <Router basename="/IP1">
       <Routes>
         <Route path="/edge" element={<Edge />} />
         <Route path="/sampling" element={<Sampling />} />
