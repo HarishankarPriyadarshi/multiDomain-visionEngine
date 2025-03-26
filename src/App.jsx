@@ -14,7 +14,7 @@ import Edge from './components/Edge';
 // import { createBrowserRouter,RouterProvider } from 'react-router-dom';
 import Sampling from './components/Sampling';
 import Region from './components/Region';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 
 
 function App() {
@@ -32,13 +32,24 @@ function App() {
   //   </RouterProvider>
   // );
 
+ 
   return (
-    <Router >
-      <Routes>
+    <Router>
+      <div>
+        <h1>Image Processing</h1>
+        <nav>
+          <ul>
+            <li><Link href="/edge">Edge</Link></li>
+            <li><Link href="/sampling">Sampling</Link></li>
+            <li><Link href="/region">Region</Link></li>
+          </ul>
+        </nav>
+        <Routes>
         <Route path="/edge" element={<Edge />} />
         <Route path="/sampling" element={<Sampling />} />
         <Route path="/region" element={<Region />} />
-      </Routes>
+        </Routes>
+      </div>
     </Router>
   );
 
