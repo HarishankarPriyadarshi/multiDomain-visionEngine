@@ -195,12 +195,6 @@ export default function Edge() {
     setDrawerOpen(!drawerOpen); // Toggle drawer state (open or close)
   };
 
-  // const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
-  
-
-
-  // const images = [sample1, sample2, sample3, sample4];
 
   const initialImages = [sample1, sample2, sample3, sample4];
   
@@ -350,7 +344,6 @@ export default function Edge() {
           <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Derivative Based" />
           <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Canny Based" />
           <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Morphological Operation" />
-          {/* <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} label="Instructions" /> */}
         </Tabs>
       </Box>
 
@@ -385,6 +378,7 @@ export default function Edge() {
               <Box sx={{ p: 0,alignItems: 'center', borderBottom: 1,borderTopLeftRadius:8,borderTopRightRadius:8, borderColor: 'divider', backgroundColor: '#1D2A6D', color: '#fff5ee', height: '50px', display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
                 <h3 style={{margin:'5px 0px'}}>Edge Detection Tools</h3>
               </Box>
+
               <Box sx={{ p: 2 ,display: 'flex', flexDirection: 'column', gap: 1.5, alignContent: 'center', justifyContent: 'center', textAlign: 'center',overflowY:'scroll','&::-webkit-scrollbar': { width: '5px' }, '&::-webkit-scrollbar-thumb': { backgroundColor: '#555', borderRadius: 2 }}}>
              
               <div class="contentog">
@@ -410,6 +404,7 @@ export default function Edge() {
                     />
                     </div>
                 </div>
+
                 <h4 style={{margin:'5px 0px',textAlign: 'left',color:'#444444'}}>Choose Order of Derivative:</h4>
                 <Select
                   value={derivativeMethod}
@@ -462,6 +457,7 @@ export default function Edge() {
                     <MenuItem value="5">5</MenuItem>
                     <MenuItem value="7">7</MenuItem>
                 </Select></>:<></>}
+               
                 <div style={{display:'flex',flexDirection:'row',justifyContent:'space-evenly'}}>
                 <Button class="btn" onClick={processImage} variant='outlined' sx={{borderColor: '#1D2A6D',color: '#1D2A6D'}}>
                   Process
@@ -740,6 +736,7 @@ export default function Edge() {
                   <MenuItem value="ellipse">Ellipse</MenuItem>
                   <MenuItem value="cross">Cross</MenuItem>
                 </Select>
+                
                 <div style={{display:'flex',flexDirection:'row',justifyContent:'space-evenly'}}>
                <Button class="btn" onClick={processImage} variant='outlined' sx={{borderColor: '#1D2A6D',color: '#1D2A6D'}}>
                                  Process
@@ -774,16 +771,16 @@ export default function Edge() {
             <div id="sampling_area">
               <Box sx={{ width: '50%', height: '100%', display: 'flex', flexDirection: 'column', border: 1, borderRadius: 2, marginRight: '5%' }}>
                 <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', backgroundColor: '#1D2A6D', color: '#fff5ee', display: 'flex', height: '10px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 8, borderTopRightRadius:8 }}>
-                  <h4>Input Image</h4>
+                  <h4 style={{margin:'5px 0px'}}>Input Image</h4>
                 </Box>
                 <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <img id="inputImage" src={images[selectedImage]} alt="Input Image" style={{maxWidth:'190px', minHeight:'190px'}}/>
-                  <p>Input Image</p>
+                  <p >Input Image</p>
                 </Box>
               </Box>
               <Box sx={{ width: 'auto', height: '100%', display: 'flex', flexDirection: 'column', border: 1, borderRadius: 2 }}>
                 <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider', backgroundColor: '#1D2A6D', color: '#fff5ee', display: 'flex', height: '10px', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', borderTopLeftRadius: 8, borderTopRightRadius:8 }}>
-                  <h4 >Output Image</h4>
+                  <h4 style={{margin:'5px 0px'}}>Output Image</h4>
                 </Box>
                 <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <canvas style={{minHeight:'190px'}} id="finalImage" alt="Output Image"/>

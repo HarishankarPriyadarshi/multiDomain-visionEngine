@@ -1,4 +1,5 @@
 import './App.css'
+import React from 'react';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import { Button, Slider, Select, MenuItem} from '@mui/material';
@@ -12,6 +13,7 @@ import { OpenCvConsumer, OpenCvProvider } from 'opencv-react';
 import Edge from './components/Edge';
 // import { createBrowserRouter,RouterProvider } from 'react-router-dom';
 import Sampling from './components/Sampling';
+import Region from './components/Region';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 
@@ -31,10 +33,11 @@ function App() {
   // );
 
   return (
-    <Router basename="/IP1">
+    <Router >
       <Routes>
         <Route path="/edge" element={<Edge />} />
         <Route path="/sampling" element={<Sampling />} />
+        <Route path="/region" element={<Region />} />
       </Routes>
     </Router>
   );
