@@ -1,5 +1,4 @@
 
-
 #bottom-footer {
   position: absolute;
   background-color: #1D2A6D;
@@ -14,6 +13,25 @@
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
+h1,h2,h3,h4,h5,h6{
+  font-weight: bold;
+}
+
+h1{
+  font-size: 24px;
+}
+h2{
+  font-size: 22px;
+}
+h3
+{
+  font-size: 20px;
+}
+
+h4
+{
+  font-size: 18px;
+}
 
 
 .MuiOutlinedInput-root {
@@ -92,7 +110,11 @@
 
   #top-header {
     flex-direction: row;
-    align-items: flex-start;
+  }
+  
+  #outputCanvas
+  {
+    width: -webkit-fill-available;
   }
 }
 
@@ -122,6 +144,8 @@
   width: 1200px;
 }
 
+
+
 /* Media query for larger screens (desktop and above) */
 @media (min-width: 1200px) {
   #main-box {
@@ -130,7 +154,7 @@
   }
   .MuiDialog-container
 {
-  height:800px;
+  height:75%;
   width: 1200px;
 }
 
@@ -231,13 +255,9 @@
 
 #left_bar{
   margin: auto;
-  /* padding-left: 10px; */
   width:90%;
-  /* width: min(20vw, 300px); */
   height: auto;
   min-height: 500px;
-  /* margin-top: 20px;  */
-  
 }
 
 /* General content container */
@@ -332,6 +352,23 @@
 }
 
 @media (max-width: 480px) {
+ 
+    h1{
+        font-size: 22px;
+    }
+    h2{
+        font-size: 20px;
+    }
+    h3{
+        font-size: 18px;
+    }
+    h4{
+        font-size: 16px;
+    }
+    h5{
+      font-size: 14px;
+    }
+
   #sampling_area > div > .input-output-box > .header h4 {
     font-size: 14px;
   }
@@ -345,12 +382,7 @@
 }
 
 
-
-
-
-
-
-.btn {
+.tool_btn {
   position: relative;
   transition: all 0.3s ease-in-out;
   box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
@@ -367,7 +399,7 @@
   border: 3px solid #ffffff4d;
   outline: none;
   overflow: hidden;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   width: 120px;
   min-height: 35px;
@@ -380,20 +412,20 @@
   transition: all 0.3s ease-in-out;
 }
 
-.btn:hover {
+.tool_btn:hover {
   transform: scale(1.05);
   border-color: #fff9;
 }
 
-.btn:hover .icon {
+.tool_btn:hover .icon {
   transform: translate(4px);
 }
 
-.btn:hover::before {
+.tool_btn:hover::before {
   animation: shine 1.5s ease-out infinite;
 }
 
-.btn::before {
+.tool_btn::before {
   content: "";
   position: absolute;
   width: 100px;
@@ -408,6 +440,8 @@
   left: -100px;
   opacity: 0.6;
 }
+
+
 
 @keyframes shine {
   0% {
@@ -424,8 +458,6 @@
 }
 
 
-
-
 #instructions-dialog-title
 {
   background-color: #84c1fc;
@@ -435,3 +467,49 @@
 [role="tabpanel"]>div{
   padding: 0px;
 }
+
+
+ol {
+  list-style: decimal !important;
+  padding-left: 1.5rem !important;
+  text-align: justify;
+}
+
+.custom-progress-bar {
+  width: 300px; /* or 100%, or any custom size */
+  margin: 0 auto; /* optional: centers the bar */
+}
+
+#explanation-dialog
+{
+  position: fixed;
+  top:0;
+    padding:0px;
+    width:1160px;
+    max-width: 1200px;
+    height:100%;
+    max-height:750px;
+}
+
+/* @media (max-width:1200px){
+  #explanation-dialog
+  {
+    width:90%;
+  }
+}
+
+@media (max-width:768px){
+  #explanation-dialog
+  {
+    width:90%;
+    max-height: -webkit-fill-available;
+  }
+}
+
+@media (max-width:480px){
+  #explanation-dialog
+  {
+  
+  }
+} */
+
