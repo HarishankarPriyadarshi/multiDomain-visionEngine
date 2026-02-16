@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet"  href="semantic.css">
+    <link rel="stylesheet"  href="alert.css">
+   
+</head>
+
+<body>
+
+    <div class="container" id="box">
+        <!-- Instructions -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <span class="close">×</span>
+                    <h2>Instruction</h2>
+                </div>
+                <div class="modal-body">
+
+                    <p>
+                    <ol type="1" style="font-size: 18px;color:black;text-align: justify;">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ol>
+                    </p>
+
+                </div>
+                <div class="modal-footer">
+                    <br>
+                </div>
+            </div>
+        </div>
+
+        <!-- header -->
+        <header class="header">
+            <!--div class="tabs">
+
+              
+                <div id="tab-1" style="display: flex; border-right: 2px solid #F5F5F5;" onclick="window.location.href='corpus1.html'" >
+                    <div class="tab-create" id="tab-create">
+                        <a href="corpus1.html" class="tab-text" id="todecide">DATASET</a>
+                    </div>
+                  
+                        <img id='createimg' src="images/data.png"
+                            style="margin-top: 3px; margin-right: 10px; height: 85%;"  onclick="window.location.href='corpus1.html'"></button>
+
+                </div>
+                <div id="tab-2" style="display: flex; border-right: 2px solid #F5F5F5; cursor:not-allowed;">
+                    <div class="tab-create tab-text" style="cursor:not-allowed;">   
+                       TRAINING
+                    </div>
+                    <img src="images/training.png"
+                        style="margin-top: 3px; margin-right: 10px; height: 85%;cursor:not-allowed;" >
+                </div>
+                <div id="tab-3"
+                    style="display: flex; border-right: 2px solid #F5F5F5;  cursor:not-allowed;">
+                    <div class="tab-create tab-text" style="cursor:not-allowed;">
+                        PREDICTION
+                    </div>
+                    <img src="images/analyse.png" style="margin-top: 3px; margin-right: 10px; height: 85%">
+
+                </div>
+            </div-->
+            <a class="header-text" id="myBtn" style="padding-top: 8px" href="#">INSTRUCTIONS</a>
+        </header>
+        
+        <body>
+            <div class="sec-con-container">
+
+            <div class="sec-con-column">
+                <div class="sec-con-left">
+                    <div style="width:95%;margin-left: 10px;">
+                    
+                        <div class="sub-div-control">
+                            <header  class="header-box">INPUT FIELDS</header>
+                            <button class="button-19" role="button" style="    margin-left: 145px;margin-top: 25px;" onclick="submit()">
+                                <span class="text">SUBMIT</span>
+                            </button>
+                          
+                        </div>
+        
+                    </div>
+            
+                    <div style="width:95%;margin-left: 10px;">
+                        
+                        <div class="sub-div-control">
+                            <header  class="header-box">COMMENTS</header>
+            
+                        </div>
+                   </div>
+                </div>
+            </div>
+
+            <div class="sec-con-right">
+              
+                    <div class="sub-div-sim">
+                        <header  class="header-box">SIMULATION</header>
+        
+                    </div>
+              
+            </div>
+
+            </div>
+
+        
+        
+        
+        </body>
+
+
+
+
+        <!-- footer -->
+        <footer class="footer">
+            <span class="footer-text">© 2024 Virtual Labs, IIT Roorkee</span>
+        </footer>
+
+    </div>
+    <script src="script.js"></script>
+    <script src="quantumalert.js" charset="utf-8"></script>
+ 
+    <script>
+        function submit(){
+            
+
+        const myContainer = document.getElementById('box');
+     
+                d=document.getElementById(id).value;
+                console.log(d)
+              
+                if(d==''){
+                    console.log('null')
+                    Qual.warning("write the title","write the instruction");
+                }
+                
+
+        }
+        
+        
+        function navigateToPage(pageUrl) {
+    // Redirect the user to the specified page
+    window.location.href = pageUrl;
+  }
+
+        
+        const pageAccessedByReload = (
+  (window.performance.navigation && window.performance.navigation.type === 1) ||
+    window.performance
+      .getEntriesByType('navigation')
+      .map((nav) => nav.type)
+      .includes('reload')
+);
+if(pageAccessedByReload==true){
+    window.location.href="index.html"
+}</script>
+
+</body>
+
+</html>
