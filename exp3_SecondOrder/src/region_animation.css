@@ -1,0 +1,226 @@
+#main-box-region{
+    background-color: #F2F9FF;
+    position: relative;
+    left: 0;
+    top: 0;
+    height:100%;
+    width: 100%;
+    overflow: hidden;
+    color: #333333;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+/* for instructions */
+#inst_div_region
+{
+    width: 80%; margin:10px; text-align: center; padding: 10px;
+}
+
+#inst_content_region
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+/* choose image & method */
+#Choose_box_region
+{
+  display: flex;
+  flex-direction: row;
+  width: 30%;
+  height: 10%;
+  margin: 10px;
+}
+
+#image
+{
+  width: 70%; 
+  height: auto;
+  cursor:pointer;
+}
+
+
+.coolinput_region {
+    width: 80%;
+    position: static;
+    z-index: 1000;
+    margin: auto;
+  }
+  
+.coolinput_region label.text {
+    font-size: 16px;
+    color: #1D2A6D;
+    font-weight: 700;
+    position: relative;
+    top: 0.5rem;
+    margin: 0 0 0 7px;
+    padding: 0 3px;
+    background: #F2F9FF;
+    width: fit-content;
+}
+
+#image-box-region{
+    gap: 20px; 
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    margin:10px;
+}
+
+
+
+#content-box-region{
+    display: flex;
+    flex-direction: row;
+    margin-left: 10px;
+    width: 100%;
+    align-items: center;
+    right: 0px;
+    justify-content: space-evenly;
+}
+
+#original-image-temp{
+    display: flex;
+    flex-direction: column;
+}
+
+#left-content-box-region{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* width: 50%; */
+    left: 0px;
+}
+
+#seed{
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+
+#original_matrix_region
+{
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ccc;
+}
+
+#split_arrow
+{
+    font-size: 40px;
+}
+#region_arrow
+{
+    font-size: 40px;
+}
+#water_arrow
+{
+    font-size: 40px;
+}
+#water_shed
+{
+    width:400px;
+    height:400px;
+}
+
+@media(max-width:1200px)
+{
+
+    #main-box-region
+    {
+        width:100%;
+        height:107%;
+    }
+
+    #original_matrix_region
+    {
+        width: 30px;
+        height: 30px;
+    }
+    #Choose_box_region
+    {
+        width:70%;
+    }
+}
+@media (max-width:768px) {
+  
+
+    #original_matrix_region
+    {
+        width: 20px;
+        height: 20px;
+    }
+    #content-box-region
+    {
+        flex-direction: column;
+    }
+    #water_arrow
+    {
+        font-size: 30px;
+        transform: rotate(90deg);
+    }
+    #water_shed
+    {
+        width:300px;
+        height:300px;
+    }
+    
+}
+
+@media (max-width:480px) {
+
+    #main-box-region
+    {
+        width:100%;
+        height:107%;
+    }
+
+    #Choose_box_region {
+        width: 90%;
+    }
+
+    #original_matrix_region
+    {
+        width: 20px;
+        height: 20px;
+    }
+    #content-box-region
+    {
+        flex-direction: column;
+    }
+    #region_arrow
+    {
+        font-size: 20px;
+        transform: rotate(90deg);
+    }
+
+    #split_arrow
+    {
+        font-size: 20px;
+        transform: rotate(90deg);
+    }
+    #water_arrow
+    {
+        font-size: 20px;
+        transform: rotate(90deg);
+    }
+
+    #water_shed
+    {
+        width:200px;
+        height:200px;
+    }
+
+}
