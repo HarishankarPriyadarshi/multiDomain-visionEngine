@@ -11,15 +11,6 @@
   "scripts": {
 
 
-    "start": "react-scripts start",
-
-
-    "test": "react-scripts test",
-
-
-    "eject": "react-scripts eject",
-
-
     "dev": "vite",
 
 
@@ -92,8 +83,6 @@
 
     "react-router-dom": "^7.4.1",
 
-
-    "react-scripts": "^3.0.1",
 
 
     "react-toastify": "^11.0.5",
