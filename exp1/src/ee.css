@@ -1,0 +1,562 @@
+@import "tailwindcss";
+
+#main-box-edge{
+    height:100%;
+    width:100%;
+    background-color: #F2F9FF;
+    display: flex;
+    flex-direction: row;
+}
+
+#box-2
+{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+}
+
+/* for instructions */
+#inst_div_edge
+{
+    width: 80%; margin: auto; text-align: center; padding: 10px;
+}
+
+#inst_content_edge
+{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+#Choose_box_edge
+{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 15%;
+  margin: 10px;
+}
+
+/* From Uiverse.io by kamehame-ha */
+.coolinput {
+  /* display: flex;
+  flex-direction: column; */
+  width: 25%;
+  position: static;
+  z-index: 1000;
+}
+
+.coolinput label.text {
+  font-size: 16px;
+  color: #1D2A6D;
+  font-weight: 700;
+  position: relative;
+  top: 0.5rem;
+  margin: 0 0 0 7px;
+  padding: 0 3px;
+  background: #F2F9FF;
+  width: fit-content;
+}
+
+
+h1,h2,h3,h4,h5,h6{
+    font-weight: bold;
+  }
+
+#bottom-box{
+    position: absolute;
+    height: 20%;
+    width: 100%;
+    min-height: 200px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    bottom: 0%;
+}
+
+#top-box{
+    position: relative;
+    top: -10%;
+    height: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+#selection-box{
+    position: relative;
+    /* width: 390px; */
+    min-height: 70px;
+    max-height: 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+#image-box{
+    position: relative;
+    /* width: 390px; */
+    gap: 5px; 
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#image
+{
+  width: 70%; 
+  height: auto;
+  cursor:pointer;
+}
+
+
+#tool-box{
+    position: relative;
+    /* width: 390px; */
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+}
+
+
+#original{
+    height: 100%;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#originalGrid, #kernelGrid
+{
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+
+#kernels{
+    height: 100%;
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#results{
+    height: 100%;
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#kernelx{
+    position: relative;
+    height: 50%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#kernely{
+    position: relative;
+    height: 50%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#final_result{
+    height: 100%;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#result_grid
+{
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+}
+
+#arrow_size,#arrow2
+{
+  font-size: 40px;
+}
+
+#kernel_arrow_1
+{
+    display: grid;
+    align-items: center;
+    height:95%;
+    /* height: 80%; */
+    /* margin-left: 30px; */
+}
+
+#kernel_arrow_2
+{
+    display: none;
+    align-items: center;
+}
+
+#operation {
+  display: grid;
+  align-items: center;
+  height: 100%;
+}
+
+#equals-to
+{
+  font-weight: bold;
+  width: 50%;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-weight: bold;
+}
+
+
+.custom-divider-edge {
+    margin: 5px 0;
+    margin-left: -20px;
+    border:1px solid #1D2A6D;
+    height:80%;
+  }
+
+  #footer_buttons
+  {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 100%;
+    margin-top: auto;
+    position: relative;
+    top:-5%;
+  }
+  
+button:disabled{
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* #explanation-dialog
+{
+  position: fixed;
+  top:0;
+    padding:0px;
+    width:1200px;
+    max-width: 1200px;
+    height:100%;
+    max-height:750px;
+} */
+
+#instructions-dialog-title
+{
+  padding:8px 16px;
+  display:flex;
+  background-color:#1D2A6D;
+  color:white;
+}
+ 
+
+[data-testid="react-katex"]
+{
+  font-size: 14px;
+}
+
+@media (max-width:1200px){
+  #explanation-dialog
+  {
+      padding:0px;
+      width:1200px;
+      max-width: 1200px;
+      height:100%;
+      max-height: 681px;
+      margin-top: 25px;
+  }
+#instructions-dialog-title
+{
+  padding:8px 16px;
+}
+  
+}
+@media (max-width:768px) {
+
+    #main-box-edge {
+        width: 100%; /* Make the width 100% of the screen on mobile */
+        height:100%; /* Allow height to adjust based on content */
+      }
+
+      #top-box {
+        top:4%;
+    }
+
+    #explanation-dialog
+      {
+          padding:0px;
+          width:1200px;
+          max-width: 1200px;
+          height:100%;
+          max-height:780px;
+      }
+
+    .coolinput {
+        width: 100%;
+        position: static;
+        z-index: 1000;
+      }
+      #inst_div_edge {
+        width: 97%;
+        margin: 10px;
+      }
+      
+      #Choose_box_edge
+      {
+        width: 98%;
+        margin:3px;
+        height:8%;
+      }
+
+      #image-box
+      {
+        flex-direction: row;
+      }
+  
+    .matrix_label{
+        font-size: 12px;
+      }
+
+      #originalGrid, #kernelGrid
+      {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+      }
+
+      #result_grid
+      {
+          width: 20px;
+          height: 20px;
+          border: 1px solid #ccc;
+          font-size: 12px;
+      }
+
+      [data-testid="react-katex"]
+      {
+        font-size: 12px;
+      }
+    
+      #kernel_arrow_1 {
+        display: grid;
+        align-items: center;
+        height: 100%;
+        margin-left: 15px;
+      }
+
+      #operation {
+        display: grid;
+        align-items: center;
+        height: 100%;
+      }
+
+      #arrow_size,#arrow2
+      {
+      font-size: 20px;
+      }
+
+      #footer_buttons
+      {
+        z-index: 1000;
+      }
+
+      h3{
+        font-size: 18px;
+      }
+      h4{
+        font-size: 16px;
+      }
+}
+
+
+@media (max-width: 480px) {
+
+    #main-box-edge {
+        width: 100%; /* Make the width 100% of the screen on mobile */
+        height:100%; /* Allow height to adjust based on content */
+      }
+    #top-box {
+        flex-direction: column;
+        margin-top: 10px; 
+        height:auto;
+        top:1%;
+    }
+
+    #explanation-dialog
+    {
+        padding:0px;
+        width:90%;
+        max-width: 1200px;
+        height:100%;
+        max-height:-webkit-fill-available;
+    }
+
+      [data-testid="react-katex"]
+      {
+        font-size: 10px;
+      }
+      h4{
+        font-size: 12px;
+      }
+
+    .coolinput {
+        width: 100%;
+        position: static;
+        z-index: 1000;
+      }
+
+      #inst_div_edge {
+        width: 95%;
+        margin: 10px;
+      }
+      
+      #Choose_box_edge
+      {
+        width: 98%;
+        margin:3px;
+        height:8%;
+      }
+
+      #image-box
+      {
+        flex-direction: row;
+      }
+
+      #image
+      {
+        width: 40%; 
+      }
+
+      #select-filter
+      {
+        font-size:0.8rem
+      }
+  
+  
+      #original
+      {
+        width:100%;
+        height: auto;
+      }
+
+      .matrix_label{
+        font-size: 12px;
+        margin:0;
+      }
+
+      #originalGrid, #kernelGrid
+      {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        font-size: 12px;
+      }
+
+      #result_grid
+      {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #ccc;
+        font-size: 12px;
+      }
+
+      #kernel_arrow_1
+      {
+       display: none;
+      }
+      
+      #kernel_arrow_2
+      {
+        width:100%;
+        display:flex;
+        flex-direction: row;
+        text-align: center;
+        justify-content: space-evenly;
+      }
+      #arrow2
+          {
+            width:5%;
+            transform:rotate(-90deg);
+          }
+   
+
+      #kernels
+      {
+        flex-direction:row;
+        width:100%;
+        height: auto;
+      }
+
+      #final_result
+      {
+        flex-direction:row;
+        width:100%
+      }
+
+      #results
+      {
+        flex-direction:row;
+        width:100%;
+        height: auto;
+      }
+      #operation
+      {
+        display: flex;
+        flex-direction:row;
+        width:100%;
+        justify-content: space-evenly;
+        height:10%;
+      }
+
+      #equals-to
+      {
+        font-weight: bold;
+        width: 50%;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        font-weight: bold;
+      }
+
+      #footer_buttons
+      {
+        top:10px;
+        z-index: 1000;
+      }
+
+  }
+
+
+
