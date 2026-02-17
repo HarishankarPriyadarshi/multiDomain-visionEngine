@@ -45,7 +45,7 @@ function TabPanel(props) {
 }
 
 
-export default function Compression() {
+export default function Compression(props) {
 
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
@@ -618,7 +618,7 @@ export default function Compression() {
   
 
     //sets variable which defines which tab is active
-    const [tabValue, setTabValue] = useState(0);
+    const [tabValue, setTabValue] = useState(props?.initialTab ?? 0);
 
     const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
     const [openRunLengthModal, setOpenRunLengthModal] = useState(false);

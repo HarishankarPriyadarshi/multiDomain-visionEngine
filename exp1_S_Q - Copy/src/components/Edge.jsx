@@ -44,7 +44,7 @@ function TabPanel(props) {
 
 
 
-export default function Edge() {
+export default function Edge(props) {
 
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
@@ -188,8 +188,8 @@ export default function Edge() {
       window.print(); // Triggers the print dialog
     };
 
-  const [derivativeMethod,setDerivativeMethod]=useState("First Order");
-  const [tabValue, setTabValue] = useState(0);
+  const [derivativeMethod,setDerivativeMethod] = useState(props?.initialDerivativeMethod ?? "First Order");
+  const [tabValue, setTabValue] = useState(props?.initialTab ?? 0);
   const [filter1Type,setFilter1Type]=useState('Sobel 3x3');
   const [o2Kernel,setO2Kernel]=useState('3');
   const [gaussOn,setGaussOn]=useState('Gauss Off');

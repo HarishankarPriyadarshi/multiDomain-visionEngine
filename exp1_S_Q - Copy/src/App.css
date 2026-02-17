@@ -55,7 +55,7 @@ h4
 }
 
 #top-header {
-  position: absolute; /* Fixed to the top */
+  position: fixed; /* Fixed to the top */
   background-color: #1D2A6D;
   width: inherit;
   top: 0;
@@ -128,9 +128,7 @@ h4
   width: 1200px;
   overflow: hidden;
   color: #333333;
-  box-sizing: border-box;
-  margin-left: auto;
-  margin-right: auto;
+  box-sizing: border-box; /* Ensure padding doesn't affect width and height calculations */
 }
 
 /* for alerts */
@@ -248,7 +246,6 @@ h4
 {
   padding: 10px;
   flex: 30%;
-  
 }
 
 .flex-item-right {
@@ -261,7 +258,6 @@ h4
   width:90%;
   height: auto;
   min-height: 500px;
- 
 }
 
 /* General content container */
