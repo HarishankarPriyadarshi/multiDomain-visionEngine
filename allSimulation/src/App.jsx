@@ -8,12 +8,12 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import Edge from "./components/Edge";
+// import Edge from "./components/Edge";
 import MorphologyPage from "./components/morphology/MorphologyPage";
 import DerivativePage from "./components/derivative/DerivativePage";
 import CannyPage from "./components/canny/CannyPage";
 import Sampling from "./components/Sampling";
-import Region from "./components/Region";
+// import Region from "./components/Region";
 import Compression from "./components/Compression";
 import ErrorPage from "./components/ErrorPage";
 import GrowingPage from "./components/growing/GrowingPage";
@@ -25,6 +25,7 @@ function App() {
     {
       path: "/",
       element: <Sampling />,
+        errorElement: <ErrorPage />,  
     },
     {
       path: "/sampling",
@@ -33,6 +34,7 @@ function App() {
     {
       path: "/edge/derivative",
       element: <DerivativePage />,
+      
     },
     {
       path: "/edge/canny",
@@ -70,10 +72,7 @@ function App() {
       path: "/compression/jpeg",
       element: <Compression />,
     },
-    {
-      path: "*",
-      element: <ErrorPage />,
-    },
+    
     
   ]);
 
