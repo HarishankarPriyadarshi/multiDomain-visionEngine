@@ -24,6 +24,7 @@ import EdgeExplanation from '../EdgeExplanation';
 import CannyExplanation from '../CannyExplanation';
 import Morphological from '../Morphological';
 
+
 //returns a tab panel
 function TabPanel(props) {
   const { children, tabValue, index, ...other } = props;
@@ -43,7 +44,7 @@ function TabPanel(props) {
 
 
 
-export default function CannyPage() {
+export default function MorphologyPage() {
 
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
@@ -188,7 +189,7 @@ export default function CannyPage() {
     };
 
   const [derivativeMethod,setDerivativeMethod]=useState("First Order");
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(1);
   const [filter1Type,setFilter1Type]=useState('Sobel 3x3');
   const [o2Kernel,setO2Kernel]=useState('3');
   const [gaussOn,setGaussOn]=useState('Gauss Off');
@@ -424,72 +425,15 @@ export default function CannyPage() {
       <div id="top-header">
              
       {/* Hamburger Icon for Mobile */}
-      <IconButton
-        edge="start"
-        color="inherit"
-        aria-label="menu"
-        sx={{ display: { xs: 'block', md: 'none' },color:'#D1D3D8' }} // Only show on small screens
-        onClick={toggleDrawer} // Toggle drawer open/close
-      >
-        <MenuIcon />
-      </IconButton>
+
 
       {/* Drawer for Mobile View */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={toggleDrawer}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width: 200, // Width of the drawer
-            backgroundColor: '#282528',
-            color: 'white',
-          },
-        }}
-      >
-        {/* Drawer Content (Mobile Navigation) */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', padding: '10px' }}>
-          <Tab
-            label="Derivative Based"
-            onClick={() => {
-              handleImageClick(0)
-              setTabValue(0);
-              toggleDrawer(); // Close drawer when an option is clicked
-            }}
-          />
-          <Tab
-            label="Canny Based"
-            onClick={() => {
-              handleImageClick(0)
-              setTabValue(1);
-              toggleDrawer();
-            }}
-          />
-          <Tab
-            label="Morphological Operation"
-            onClick={() => {
-              handleImageClick(0)
-              setTabValue(2);
-              toggleDrawer();
-            }}
-          />
-          
-        </Box>
-      </Drawer>
+
 
       {/* Tabs for Desktop */}
-      <Box id="tab-box">
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          aria-label="Tabs"
-          sx={{ display: { xs: 'none', md: 'flex' } }} // Hide on small screens
-        >
-          <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Derivative Based" />
-          <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Canny Based" />
-          <Tab sx={{color:'#D1D3D8','&.Mui-selected': {color: ' white'},}} onClick={() => handleImageClick(0)} label="Morphological Operation" />
-        </Tabs>
-      </Box>
+      {/* header heading */}
+      <h2 className='header-heading'>Canny Based Segmentation</h2>
+      
 
       <div id="header_button">
       <Button title='Play' ref={voicePlay}>
@@ -510,7 +454,7 @@ export default function CannyPage() {
       
 
       {/* Instructions Modal */}
-      <Dialog
+      {/* <Dialog
         open={openInstructionsModal}
         onClose={handleCloseModal}
         aria-labelledby="instructions-dialog-title"
@@ -519,7 +463,8 @@ export default function CannyPage() {
       >
         <DialogTitle id="instructions-dialog-title">Instructions</DialogTitle>
         <DialogContent style={{paddingTop:'10px'}}>
-          <p style={{color:'#1D2A6D', fontWeight:'bold'}}>{tabValue === 0 ? 'Derivative Based' : tabValue === 1 ? 'Canny Based' : 'Morphological Operation'}:</p>
+          <p style={{color:'#1D2A6D', fontWeight:'bold'}}>
+            {tabValue === 0 ? 'Derivative Based' : tabValue === 1 ? 'Canny Based' : 'Morphological Operation'}:</p>
             {getInstructions()}
         </DialogContent>
         <DialogActions>
@@ -527,7 +472,71 @@ export default function CannyPage() {
             Close
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
+      <Dialog
+  open={openInstructionsModal}
+  onClose={handleCloseModal}
+  aria-labelledby="instructions-dialog-title"
+  aria-describedby="instructions-dialog-description"
+  style={{ height: "80%" }}
+>
+  <DialogTitle id="instructions-dialog-title">
+    Instructions – Canny Based Segmentation
+  </DialogTitle>
+
+<DialogContent style={{ paddingTop: "10px" }}>
+  <p style={{ color: "#1D2A6D", fontWeight: "bold" }}>
+    Canny Edge Detection:
+  </p>
+
+  <ol style={{ lineHeight: "1.8" }}>
+    <li>
+      Select an image from the available options or upload one using the 
+      <b> Upload File </b> button.
+    </li>
+
+    <li>
+      Choose whether to turn <b>Gaussian Blur</b> On or Off.
+    </li>
+
+    <li>
+      If <b>Gaussian Blur</b> is turned On, select the kernel size 
+      (e.g., 3×3, 5×5, 7×7).
+    </li>
+
+    <li>
+      Set the <b>Low Threshold</b> value for edge detection.
+    </li>
+
+    <li>
+      Set the <b>High Threshold</b> value for edge detection.
+    </li>
+
+    <li>
+      Click the <b>Process</b> button to apply the Canny edge detection algorithm.
+    </li>
+
+    <li>
+      Observe the output image and analyze the detected edges.
+    </li>
+
+    <li>
+      Click the <b>Print</b> button to print the result.
+    </li>
+
+    <li>
+      <b>Note:</b> Click the <b>Concept</b> button to get a detailed explanation 
+      of the Canny Edge Detection algorithm.
+    </li>
+  </ol>
+</DialogContent>
+
+  <DialogActions>
+    <Button onClick={handleCloseModal} color="primary">
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
       </div>
 
       <div id="mainbox" style={{top:'50px'}}>
