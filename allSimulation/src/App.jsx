@@ -16,6 +16,9 @@ import Sampling from "./components/Sampling";
 import Region from "./components/Region";
 import Compression from "./components/Compression";
 import ErrorPage from "./components/ErrorPage";
+import GrowingPage from "./components/growing/GrowingPage";
+import SplittingAndMergingPage from "./components/splittingAndMerging/splittingAndMergingPage";
+import WatershedPage from "./components/watershed/WatershedPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -41,15 +44,15 @@ function App() {
     },
     {
       path: "/region/growing",
-      element: <Region />,
+      element: <GrowingPage />,
     },
     {
       path: "/region/splittingAndMerging",
-      element: <Region />,
+      element: <SplittingAndMergingPage />,
     },
     {
       path: "/region/watershed",
-      element: <Region />,
+      element: <WatershedPage />,
     },
     {
       path: "/compression/runlength",
