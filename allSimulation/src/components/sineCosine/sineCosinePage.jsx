@@ -52,7 +52,7 @@ function TabPanel(props) {
   );
 }
 
-export default function HuffmanPage() {
+export default function SineCosinePage() {
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
   const myProcess3Button = useRef(null);
@@ -665,7 +665,7 @@ export default function HuffmanPage() {
   };
 
   //sets variable which defines which tab is active
-  const [tabValue, setTabValue] = useState(1);
+  const [tabValue, setTabValue] = useState(2);
 
   const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
   const [openRunLengthModal, setOpenRunLengthModal] = useState(false);
@@ -891,7 +891,7 @@ export default function HuffmanPage() {
 
           {/* Tabs for Desktop */}
 
-          <h2 className="header-heading">Huffman Encoding</h2>
+          <h2 className="header-heading"> Sine and Cosine Encoding</h2>
           <div id="header_button">
             <Button title="Play" ref={voicePlay}>
               <img

@@ -21,6 +21,7 @@ import SplittingAndMergingPage from "./components/splittingAndMerging/splittingA
 import WatershedPage from "./components/watershed/WatershedPage";
 import RunLengthPage from "./components/runlength/RunLengthPage";
 import HuffmanPage from "./components/huffman/HuffmanPage";
+import SineCosinePage from "./components/sineCosine/sineCosinePage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -67,7 +68,7 @@ function App() {
     },
     {
       path: "/compression/sinecosine",
-      element: <Compression />,
+      element: <SineCosinePage />,
     },
     {
       path: "/compression/jpeg",
