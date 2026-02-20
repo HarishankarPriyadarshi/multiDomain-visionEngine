@@ -20,6 +20,7 @@ import GrowingPage from "./components/growing/GrowingPage";
 import SplittingAndMergingPage from "./components/splittingAndMerging/splittingAndMergingPage";
 import WatershedPage from "./components/watershed/WatershedPage";
 import RunLengthPage from "./components/runlength/RunLengthPage";
+import HuffmanPage from "./components/huffman/HuffmanPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -62,7 +63,7 @@ function App() {
     },
     {
       path: "/compression/huffman",
-      element: <Compression />,
+      element: <HuffmanPage />,
     },
     {
       path: "/compression/sinecosine",
