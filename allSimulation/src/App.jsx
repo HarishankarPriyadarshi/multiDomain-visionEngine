@@ -22,6 +22,7 @@ import WatershedPage from "./components/watershed/WatershedPage";
 import RunLengthPage from "./components/runlength/RunLengthPage";
 import HuffmanPage from "./components/huffman/HuffmanPage";
 import SineCosinePage from "./components/sineCosine/sineCosinePage";
+import JpegPage from "./components/jpeg/JpegPage";
 function App() {
   const router = createBrowserRouter([
     {
@@ -72,7 +73,7 @@ function App() {
     },
     {
       path: "/compression/jpeg",
-      element: <Compression />,
+      element: <JpegPage />,
     },
     
     
