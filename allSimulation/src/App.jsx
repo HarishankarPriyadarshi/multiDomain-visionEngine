@@ -1,0 +1,84 @@
+import "bootstrap/dist/css/bootstrap.min.css";
+
+import React from "react";
+import { OpenCvProvider } from "opencv-react";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
+
+import Edge from "./components/Edge";
+import MorphologyPage from "./components/morphology/MorphologyPage";
+import DerivativePage from "./components/derivative/DerivativePage";
+import CannyPage from "./components/canny/CannyPage";
+import Sampling from "./components/Sampling";
+import Region from "./components/Region";
+import Compression from "./components/Compression";
+import ErrorPage from "./components/ErrorPage";
+
+function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Sampling />,
+    },
+    {
+      path: "/sampling",
+      element: <Sampling />,
+    },
+    {
+      path: "/edge/derivative",
+      element: <DerivativePage />,
+    },
+    {
+      path: "/edge/canny",
+      element: <CannyPage />,
+    },
+    {
+      path: "/edge/morphological",
+      element: <MorphologyPage />,
+    },
+    {
+      path: "/region/growing",
+      element: <Region />,
+    },
+    {
+      path: "/region/splittingAndMerging",
+      element: <Region />,
+    },
+    {
+      path: "/region/watershed",
+      element: <Region />,
+    },
+    {
+      path: "/compression/runlength",
+      element: <Compression />,
+    },
+    {
+      path: "/compression/huffman",
+      element: <Compression />,
+    },
+    {
+      path: "/compression/sinecosine",
+      element: <Compression />,
+    },
+    {
+      path: "/compression/jpeg",
+      element: <Compression />,
+    },
+    {
+      path: "*",
+      element: <ErrorPage />,
+    },
+    
+  ]);
+
+  return (
+    <OpenCvProvider>
+      <RouterProvider router={router} />
+    </OpenCvProvider>
+  );
+}
+
+export default App;
