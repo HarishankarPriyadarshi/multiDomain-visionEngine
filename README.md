@@ -1,23 +1,21 @@
-1. Sample and Quantization
+1. Sampling and Quantization
 
-2. First-Order Derivative Edge Detection
+2. Derivative-Based Edge Detection
 
-3. Second-Order Derivative Edge Detection
+3. Canny Edge Detection
 
-4. Canny Edge Detection Algorithm
+4. Morphology-Based Edge Detection
 
-5. Morphological Edge Detection
+5. Region Growing Segmentation
 
-6. Region Growing Image Segmentation
+6. Region Splitting and Merging Segmentation
 
-7. Region Splitting and Merging Segmentation
+7. Watershed-Based Image Segmentation
 
-8. Watershed-Based Image Segmentation
+8. Run-Length Encoding for Image Compression
 
-9. Run-Length Encoding Image Compression
+9. Huffman Coding for Lossless Image Compression
 
-10. Huffman Coding for Lossless Image Compression
+10. Transform-Based Image Compression
 
-11. Transform-Domain Image Compression (DCT/DST Based)  
-
-12. JPEG Image Compression Technique
+11. JPEG Image Compression Technique
