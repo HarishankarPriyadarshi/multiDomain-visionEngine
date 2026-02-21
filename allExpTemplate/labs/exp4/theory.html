@@ -1,0 +1,1191 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title> Virtual Labs </title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <!-- Bootstrap 3.3.6 -->
+        <link rel="stylesheet" href="../../bootstrap/css/bootstrap.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../../dist/css/AdminLTE.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../../dist/css/skins/_all-skins.min.css">
+        <script>
+            window.onload = function () {
+                document.getElementById("theory").className = "active treeview";
+            }
+        </script>
+        <style>
+          #toggle_nav:hover{
+            background-color: #1261A0;
+          }
+          #theory{
+            background-color: #009dff;
+          }
+          #aim:hover,#theory:hover,#pretest:hover,#procedure:hover,#simulation:hover,#result:hover,#posttest:hover,#references:hover,#contributors:hover{
+            background-color: #009dff;
+          }
+        </style>
+    </head>
+
+    <body class="hold-transition skin-blue sidebar-mini">
+        <!--Navigation Bar-->
+<div class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-ex-collapse" >
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="http://iitr.ac.in"><span><img src="../images/iitrLogo.png" style="margin-top:-15px;height:50px;width: 400px;"></span></a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar-ex-collapse">
+      
+    </div>
+  </div>
+</div>
+        
+        <div class="wrapper">
+        	<header class="main-header">
+        <!-- Logo -->
+        <a href="../index.html" class="logo" style="background-color:#009dff; border-right:solid;border-right-color: #1261A0;">
+        <p align="center" style="font-size:0.8em; color: white;"><b>Image Processing Lab</b></p>
+    </a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top" style="background-color:#009dff;">
+          <!-- Sidebar toggle button-->
+          <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button" id="toggle_nav">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+          <section class="content-header">
+            <ol class="breadcrumb">
+              <li>
+                <a href="../index.html"><i class="fa fa-dashboard"></i>Image Processing Lab</a>
+              </li>
+              <li>
+                <a href="#">Edge Based Segmentation</a>
+              </li>
+              <li class="active">Theory</li>
+            </ol>
+          </section>
+        </nav>
+      </header>
+            
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar" style="background-color:#1261A0;">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <section class="sidebar">
+          <!-- search form -->
+          <form action="#" method="get" class="sidebar-form">
+            <div class="input-group"></div>
+          </form>
+          <!-- /.sear ch form -->
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+            <ul class="sidebar-menu" style="background-color:#1261A0;">
+                <li class="treeview" id="aim">
+                    <a href="index.html" id="aim">
+                        <i class="fa fa-files-o" style="color:white;"></i> <span style="color:white;">Aim</span>
+
+                    </a>
+                </li>
+                <li class="treeview" id="theory">
+                    <a href="theory.html" id="theory" onclick="theory()">
+                        <i class="fa fa-files-o" style="color:white;"></i>
+                        <span style="color:white;">Theory</span>
+                    </a>
+                </li>
+        
+                <li class="treeview" id="pretest">
+                    <a href="pretest.html" id="pretest">
+                        <i class="fa fa-files-o" style="color:white;"></i> <span style="color:white;">Pre Test</span>
+
+                    </a>
+                </li>
+                
+                <li class="treeview" id="procedure">
+                    <a href="procedure.html" id="procedure">
+                        <i class="fa fa-files-o" style="color:white;"></i> <span style="color:white;">Procedure</span>
+                    </a>
+                </li>
+                <li class="treeview" id="simulation">
+                    <a href="simulation.html" id="simulation">
+                        <i class="fa fa-laptop" style="color:white;"></i>
+                        <span style="color:white;">Simulation</span>
+                        <span class="pull-right-container">
+                        </span>
+                    </a>
+                </li>
+
+             
+                
+                <li class="treeview" id="posttest">
+                    <a href=" posttest.html" id="posttest">
+                        <i class=" fa fa-files-o" style="color:white;">
+                    </i>
+                    <span style="color:white;">Post Test</span>
+                    <span class="pull-right-container">
+                    </span>
+                    </a>
+                </li>
+                
+                <li class="treeview" id="cont">
+                  <a href="contributors.html" id="contributors">
+                      <i class="fa fa-files-o" style="color:white;"></i>
+                      <span style="color:white;">Contributors</span>
+                      <span class="pull-right-container">
+                      </span>
+                  </a>
+              </li>
+
+                <li class="treeview" id="ref">
+                    <a href="references.html" id="references">
+                        <i class="fa fa-files-o" style="color:white;"></i>
+                        <span style="color:white;">References</span>
+                        <span class="pull-right-container">
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+        <!-- /.sidebar -->
+      </aside>
+
+   
+            <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+                <section class="content-header">
+                <h1 align="center">
+                  Edge Based Segmentation: (a) First-Order Derivative (b)Second-Order Derivative (c) Canny (d) Morphological Operation
+                </h1>
+                </section>
+                    <!-- Main content -->
+                    <section class="content">
+                        <style>
+                          
+                          p{
+                              text-align: justify; font-size: 1.8rem;
+                          }
+
+                          table, th, td {
+                              border: 1px solid black;
+                            }
+
+                            figcaption
+                          {
+                            font-size: 16px;
+                          }
+
+                        </style>
+                    
+                    <p style="margin-top:3%;">
+                        <h2>Introduction</h2>
+                        <p>
+                          Image segmentation is the division of an image into regions or categories, which correspond to different objects or parts of objects. 
+                          Every pixel in an image is allocated to one of a number of these categories.  
+
+                          A good segmentation is typically one in which:  <br>
+                          <ul style="font-size: 1.8rem;text-align: justify">
+                            <li>pixels in the same category have similar grey scale of multivariate values and form a connected region,  </li>
+                            <li>neighboring pixels which are in different categories have dissimilar values. </li>
+                         </ul>
+
+                         <h3>Edge Based Image Segmentation </h3>
+                         <p>Edge-based segmentation is one of the most popular implementations of segmentation in image processing. 
+                          It focuses on identifying the edges of different objects in an image. 
+                          This is a crucial step as it helps you find the features of the various objects present in the image as edges contain a lot of information you can use.  
+                          <br>
+
+                          Edge   detection   is   widely   popular because   it   helps   you   in   removing unwanted and unnecessary information from the image. 
+                          It reduces the image’s size considerably, making it easier to analyse the same.  
+                          Algorithms used in edge-based segmentation identify edges in an image according   to   the   differences   in   texture, contrast, grey level, colour, saturation, and other properties. 
+                          You can improve the quality of your results by connecting all the edges into edge chains that match the image borders more accurately. </p>
+                         
+                         <h3>Gradient</h3>
+                         <p>
+                          In image processing, a gradient refers to the rate of change of intensity in an image. 
+                          Mathematically, the gradient is a vector field that points in the direction of the greatest rate of increase of intensity and whose magnitude represents the rate of change in that direction. 
+                          For edge detection, we are primarily interested in regions of an image where there is a large change in pixel intensity—typically indicating the presence of an edge.
+                          <br>
+                          In image processing, a gradient refers to the directional change in the intensity or color 
+                          in an image. Mathematically, the gradient of an image function f(x, y) is a vector that 
+                          points in the direction of the greatest rate of increase off, and whose magnitude is the 
+                          rate of change in that direction:</p>
+                         <br>
+
+                         <center>
+                          <math display="block" style="font-size: 1.8rem;text-align: justify">
+                            <mi>&#8711;</mi><mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo>
+                            <mo>=</mo>
+                            <mrow>
+                              <mo>[</mo>
+                               <mfrac><mi>&#8706;f</mi><mi>&#8706;x</mi></mfrac>
+                               
+                                <mo>,</mo>
+                                <mfrac><mi>&#8706;f</mi><mi>&#8706;y</mi></mfrac>
+                               
+                            <mo>]</mo>
+                            </mrow>
+                            
+                          </math> 
+                         </center>
+
+                         <br>  
+                         <p>Where:</p>
+
+                          <ul style="font-size: 1.8rem;text-align: justify">
+                              <li>∂f/∂x: the partial derivative in the horizontal direction (gradient in x-direction)</li>
+                              <li>∂f/∂y: the partial derivative in the vertical direction (gradient in y-direction)</li>
+                          </ul>
+                         
+
+                         <p>The magnitude of the gradient is given by:</p>
+
+                         <center>
+                          <math display="block" style="font-size: 1.8rem;text-align: justify">
+                            <mo stretchy="false">|</mo>
+                            <mi>&#8711;</mi><mi>f</mi>
+                            <mo stretchy="false">(</mo>
+                            <mi>x</mi>
+                            <mo>,</mo>
+                            <mi>y</mi>
+                            <mo stretchy="false">)</mo>
+                            <mo stretchy="false">|</mo>
+                            <mo>=</mo>
+                            <msqrt>
+                              <msup>
+                                <mfrac><mi>&#8706;f</mi><mi>&#8706;x</mi></mfrac>
+                                <mn>2</mn>
+                              </msup>
+                              <mo>+</mo>
+                              <msup>
+                                <mfrac><mi>&#8706;f</mi><mi>&#8706;y</mi></mfrac>
+                                <mn>2</mn>
+                              </msup>
+                            </msqrt>
+                          </math>
+                         </center>
+                         
+                         <p>And the direction (angle) of the gradient is:</p>
+                         <center>
+                          <math display="block" style="font-size: 1.8rem;text-align: justify">
+                            <mi>&#952;</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo>
+                            <mo>=</mo>
+                            <msup><mo>tan</mo><mn>-1</mn></msup>
+                            <mo>(</mo>
+                            <mfrac>
+                              <mrow><mfrac><mi>&#8706;f</mi><mi>&#8706;y</mi></mfrac></mrow>
+                              <mrow><mfrac><mi>&#8706;f</mi><mi>&#8706;x</mi></mfrac></mrow>
+                            </mfrac>
+                            <mo>)</mo>
+                          </math>
+                          
+                         </center>
+
+                         <h3>Steps in Edge Detection</h3>
+                         <p>Algorithms for edge detection contain three steps:</p>
+                         <ol style="font-size: 1.8rem;text-align: justify">
+                          <li><b>Filtering:</b> Since gradient computation based on intensity values of only two
+                            points are susceptible to noise and other vagaries in discrete computations,
+                            filtering is commonly used to improve the performance of an
+                            edge detector with respect to noise. However, there is a trade-off between
+                            edge strength and noise reduction. More filtering to reduce noise
+                            results in a loss of edge strength.</li>
+                          <li><b>Enhancement:</b> In order to facilitate the detection of edges, it is essential
+                            to determine changes in intensity in the neighborhood of a point. Enhancement
+                            emphasizes pixels where there is a significant change in local
+                            intensity values and is usually performed by computing the gradient
+                            magnitude.</li>
+                          <li><b>Detection:</b> We only want points with strong edge content. However, many
+                            points in an image have a nonzero value for the gradient, and not all
+                            of these points are edges for a particular application. Therefore, some
+                            method should be used to determine which points are edge points.
+                            Frequently, thresholding provides the criterion used for detection.
+                            Examples at the end of this section will clearly illustrate each of these steps
+                            using various edge detectors. <br>
+                            Many edge detection algorithms include a
+                            fourth step:</li>
+                          <li><b>Localization:</b> The location of the edge can be estimated with subpixel resolution
+                            if required for the application. The edge orientation can also
+                            be estimated.</li>
+                       
+                       </ol>
+
+
+                       <h3>Edge Detectors</h3>
+                          <ol style="font-size: 1.8rem;text-align: justify">
+                            <li>First-order derivative
+                              <ul>
+                                <li>Robert </li>
+                                <li>Sobel</li>
+                                <li>Perwitt</li>
+                              </ul>
+                            </li>
+                            <li>Second-order derivative
+                              <ul>
+                                <li>Laplacian</li>
+                              
+                             </ul>
+                              </li>
+                             <li>Canny</li>
+                            <li>Morphological operations</li>
+                         </ol>
+
+                         <center>
+                          <img src="images/img1.png" />
+                          <figcaption style="font-weight: bold;">Fig. 1 Edge detection result for medical</figcaption>
+                       </center>
+
+                       <ol style="font-size: 1.8rem;text-align: justify">
+                        
+                        <li><h3>First Order Derivative Operators</h3>
+                            <p>
+                              First order derivative operators are used in image processing to detect edges by measuring the rate of change in intensity. 
+                              These operators highlight regions with strong intensity contrast, which typically correspond to object boundaries. 
+                              The most commonly used first-order derivative operators include:</p>
+
+                            <ol type="a" style="font-size: 1.8rem;text-align: justify">
+                            <li><b>Robert Operator</b>
+                              <p>The Roberts cross operator provides a simple approximation to the gradient
+                                magnitude:<br>
+                                  
+                                  <center>
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify" >
+                                      <mi>G</mi>
+                                      <mo stretchy="false">[</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">[</mo>
+                                          <mi>i</mi>
+                                          <mo>,</mo>
+                                          <mi>j</mi>
+                                        <mo stretchy="false">]</mo>
+                                      <mo stretchy="false">]</mo>
+                                      <mo>=</mo>
+                                      <mo stretchy="false">|</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">[</mo>
+                                          <mi>i</mi>
+                                          <mo>,</mo>
+                                          <mi>j</mi>
+                                        <mo stretchy="false">]</mo>
+                                        <mo>&#8722;</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">[</mo>
+                                          <mi>i</mi>
+                                          <mo>+</mo>
+                                          <mi>1</mi>
+                                          <mo>,</mo>
+                                          <mi>j</mi>
+                                          <mo>+</mo>
+                                          <mn>1</mn>
+                                        <mo stretchy="false">]</mo>
+                                      <mo stretchy="false">|</mo>
+                                      <mo>+</mo>
+                                      <mo stretchy="false">|</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">[</mo>
+                                          <mi>i</mi>
+                                          <mo>+</mo>
+                                          <mi>1</mi>
+                                          <mo>,</mo>
+                                          <mi>j</mi>
+                                        <mo stretchy="false">]</mo>
+                                        <mo>&#8722;</mo>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">[</mo>
+                                          <mi>i</mi>
+                                          <mo>,</mo>
+                                          <mi>j</mi>
+                                          <mo>+</mo>
+                                          <mn>1</mn>
+                                        <mo stretchy="false">]</mo>
+                                      <mo stretchy="false">|</mo>
+                                    </math>
+                                    
+                                  </center>
+                                  <br>
+                                  
+                                  <p> Using convolution masks, this becomes</p>
+                                  <br>
+                                  <center>
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify">
+                                      <mi>G</mi>
+                                      <mo stretchy="false">[</mo>
+                                      <mi>f</mi>
+                                      <mo stretchy="false">[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">]</mo>
+                                      <mo stretchy="false">]</mo>
+                                      <mo>=</mo>
+                                      <mo>|</mo><msub><mi>G</mi><mi>x</mi></msub><mo stretchy="false">|</mo>
+                                      <mo>+</mo>
+                                      <mo>|</mo><msub><mi>G</mi><mi>y</mi></msub><mo stretchy="false">|</mo>
+                                    </math>
+                                  </center>
+                                  <br>
+                                  <p>where G<sub>x</sub> and G<sub>y</sub> are calculated using the following masks:</p> 
+                                  
+                                  <center>
+                                    <div style="display: flex; gap: 20px;width:40%;justify-content: center;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                      <div style="font-size: 1.8rem;">
+                                        <math display="inline">
+                                          <msub><mi>G</mi><mi>x</mi></msub>
+                                          <mo>=</mo>
+                                        </math>
+                                      </div>
+                                      <div>
+                                        <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          </tr>
+                                        </table> 
+                                      </div>
+                                    </div>
+  
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                      <div style="font-size: 1.8rem;">
+                                        <math display="inline">
+                                          <msub><mi>G</mi><mi>y</mi></msub>
+                                          <mo>=</mo>
+                                        </math>
+                                      </div>
+                                      <div>
+                                        <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                          </tr>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  </center>
+    
+                                  <br>
+                                  <p>
+                                  As with the previous 2 x 2 gradient operator, the differences are computed
+                                  at the interpolated point [i + 1/2, j + 1/2]. The Roberts operator is an
+                                  approximation to the continuous gradient at that point and not at the point
+                                  [i,j] as might be expected. The results of Roberts edge detector are shown
+                                  in the figures at the end of this section.
+                                  </p>
+                                </p>
+                              </li>
+                              <br>
+
+                              <li>
+                                <b>Sobel Operator</b>
+                                  <p>As mentioned previously, a way to avoid having the gradient calculated about
+                                    an interpolated point between pixels is to use a 3 x 3 neighborhood for the
+                                    gradient calculations. Consider the arrangement of pixels about the pixel [i,j]
+                                    shown in Figure 1. The Sobel operator is the magnitude of the gradient
+                                    computed by</p>
+  
+                                  <center>
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify">
+                                      <mo>M</mo>
+                                      <mo>=</mo>
+                                      <msqrt stretchy="false">
+                                        <msup>
+                                          <msub><mi>S</mi><mi>x</mi></msub>
+                                          <mn>2</mn>
+                                        </msup>
+                                        <mo>+</mo>
+                                        <msup>
+                                          <msub><mi>S</mi><mi>y</mi></msub>
+                                          <mn>2</mn>
+                                        </msup>
+                                      </msqrt>
+                                    </math>
+                                    
+                                    </center><br>
+        
+                                    <p>where the partial derivatives are computed by</p>
+        
+                                    <center>
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify">
+                                      <msub>
+                                        <mi>S</mi>
+                                        <mn>x</mn>
+                                      </msub>
+                                      
+                                      <mo>=</mo>
+                                      <mo>(</mo>
+                                      <msub><mi>a</mi><mn>2</mn></msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>ca</mi><mn>3</mn>
+                                        </msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>a</mi><mn>4</mn>
+                                        </msub>
+                                        
+                                      <mo>)</mo>
+        
+                                      <mo>&#8722;</mo>
+                                      <mo>(</mo>
+                                      <msub>
+                                        <mi>a</mi><mn>0</mn>
+                                      </msub>
+                                        
+                                        <mo>+</mo>
+                                        <mi>c</mi>
+                                        <msub>
+                                          <mi>a</mi><mn>7</mn>
+                                        </msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>a</mi><mn>6</mn>
+                                        </msub>
+                                        
+                                      <mo>)</mo>
+                                    </math>
+        
+                                    <br>
+                                    
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify">
+                                      <msub>
+                                        <mi>S</mi>
+                                        <mn>y</mn>
+                                      </msub>
+                                      
+                                      <mo>=</mo>
+                                      <mo>(</mo>
+                                      <msub><mi>a</mi><mn>0</mn></msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>ca</mi><mn>1</mn>
+                                        </msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>a</mi><mn>2</mn>
+                                        </msub>
+                                        
+                                      <mo>)</mo>
+        
+                                      <mo>&#8722;</mo>
+                                      <mo>(</mo>
+                                      <msub>
+                                        <mi>a</mi><mn>6</mn>
+                                      </msub>
+                                        
+                                        <mo>+</mo>
+                                        <mi>c</mi>
+                                        <msub>
+                                          <mi>a</mi><mn>5</mn>
+                                        </msub>
+                                        
+                                        <mo>+</mo>
+                                        <msub>
+                                          <mi>a</mi><mn>4</mn>
+                                        </msub>
+                                        
+                                      <mo>)</mo>
+                                    </math>
+                                    
+                                    </center>
+        
+                                    <p>with the constant c = 2.<br>
+                                      Like the other gradient operators, s<sub>x</sub> and s<sub>y</sub> can be implemented using
+                                      convolution masks:</p>
+  
+                                <center>
+                                  <div style="display: flex; gap: 20px;width:40%;justify-content: center;">
+                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 1.8rem;">
+                                      <math display="inline">
+                                        <msub><mi>S</mi><mi>x</mi></msub>
+                                        <mo>=</mo>
+                                      </math>
+                                    </div>
+                                    <div>
+                                      <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                        <tr>
+                                          <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                          <td style="width:30px;height:30px;text-align:center">1</td>
+                                        </tr>
+                                        <tr>
+                                          <td style="width:30px;height:30px;text-align:center">-2</td>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                          <td style="width:30px;height:30px;text-align:center">2</td>
+                                        </tr>
+                                        <tr>
+                                          <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                          <td style="width:30px;height:30px;text-align:center">1</td>
+                                        </tr>
+                                      </table>
+                                    </div>
+                                  </div>
+
+                                  <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="font-size: 1.8rem;">
+                                      <math display="inline">
+                                        <msub><mi>S</mi><mi>y</mi></msub>
+                                        <mo>=</mo>
+                                      </math>
+                                    </div>
+                                    <div>
+                                      <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                        <tr >
+                                          <td style="width:30px;height:30px;text-align:center">1</td>
+                                          <td style="width:30px;height:30px;text-align:center">2</td>
+                                          <td style="width:30px;height:30px;text-align:center">1</td>
+                                        </tr>
+                                        <tr>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                          <td style="width:30px;height:30px;text-align:center">0</td>
+                                        </tr>
+                                        <tr>
+                                          <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          <td style="width:30px;height:30px;text-align:center">-2</td>
+                                          <td style="width:30px;height:30px;text-align:center">-1</td>
+                                        </tr>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                                </center>
+                                <br>
+                                <p>
+                                  Note that this operator places an emphasis on pixels that are closer to the
+                                  center of the mask. The figures at the end of this section show the performance
+                                  of this operator. The Sobel operator is one of the most commonly
+                                  used edge detectors.</p>
+  
+                                  <center>
+                                    <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                      <tr>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>0</sub></td>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>1</sub></td>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>2</sub></td>
+                                      </tr>
+                                      <tr>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>7</sub></td>
+                                        <td style="width:30px;height:30px;text-align:center">[i, j]</td>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>3</sub></td>
+                                      </tr>
+                                      <tr>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>6</sub></td>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>5</sub></td>
+                                        <td style="width:30px;height:30px;text-align:center">a<sub>4</sub></td>
+                                      </tr>
+                                    </table>
+                                    <figcaption style="font-weight: bold;">Fig. 2 The labeling of neighborhood pixels used to explain the Sobel
+                                      and Prewitt operators</figcaption>
+                                  </center>
+
+                              </li>
+                              <br>
+
+                              <li>
+                                <b>Prewitt Operator</b>
+                                <p>The Prewitt operator uses the same equations as the Sobel operator, except
+                                  that the constant c = 1. Therefore:</p>
+
+                                  <center>
+                                    <div style="display: flex; gap: 20px;width:40%;justify-content: center;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                      <div style="font-size: 1.8rem;">
+                                        <math display="inline">
+                                          <msub><mi>S</mi><mi>x</mi></msub>
+                                          <mo>=</mo>
+                                        </math>
+                                      </div>
+                                      <div>
+                                        <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                          <tr >
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                          </tr>
+                                        </table>
+                                      </div>
+                                    </div>
+  
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                      <div style="font-size: 1.8rem;">
+                                        <math display="inline">
+                                          <msub><mi>S</mi><mi>y</mi></msub>
+                                          <mo>=</mo>
+                                        </math>
+                                      </div>
+                                      <div>
+                                        <table border="1" cellspacing="0" cellpadding="10" style="text-align:center;">
+                                          <tr >
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                            <td style="width:30px;height:30px;text-align:center">1</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                            <td style="width:30px;height:30px;text-align:center">0</td>
+                                          </tr>
+                                          <tr>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                            <td style="width:30px;height:30px;text-align:center">-1</td>
+                                          </tr>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  </center>
+                                  <br>
+                                  <p>Note that, unlike the Sobel operator, this operator does not place any emphasis
+                                    on pixels that are closer to the center of the masks. The performance
+                                    of this edge detector is also shown in the figures at the end of this section.</p>
+                              </li>
+                            </ol>
+                        </li>
+                       
+
+                        <li><h3>Second Order Derivative Operators</h3>
+                          <p>The edge detectors discussed earlier computed the first derivative and, if it
+                            was above a threshold, the presence of an edge point was assumed. This
+                            results in detection of too many edge points. A better approach would be to find only
+                            the points that have local maxima in gradient values and consider them edge
+                            points. This means that at edge points, there will be
+                            a peak in the first derivative and, equivalently, there will be a zero crossing
+                            in the second derivative. Thus, edge points may be detected by finding the
+                            zero crossings of the second derivative of the image intensity.
+                            There are two operators in two dimensions that correspond to the second
+                            derivative: the Laplacian and second directional derivative.</p>
+
+                            <ol type="a" style="font-size: 1.8rem;text-align: justify">
+                              <li>
+                                <b>Laplacian Operator</b>
+                                <p>The second derivative of a smoothed step edge is a function that crosses
+                                  zero at the location of the edge (see Figure 5.8). The Laplacian is the
+                                  two-dimensional equivalent of the second derivative. The formula for the
+                                  Laplacian of a function f (x, y) is</p>
+      
+                                  <center>
+                                    <math display="block" style="font-size: 1.8rem;text-align: justify">
+                                      <msup><mo>&#8711;</mo><mn>2</mn></msup>
+                                      <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo>,</mo><mi>y</mi><mo stretchy="false">)</mo>
+                                      <mo>=</mo>
+                                      <mfrac>
+                                        <mrow><msup><mo>&#8706;</mo><mn>2</mn></msup>
+                                          <mi>f</mi>
+                                        </mrow>
+                                        
+                                        <msup><mi>&#8706;x</mi><mn>2</mn></msup>
+                                      </mfrac>
+                                      
+                                      <mo>+</mo>
+                                      <mfrac>
+                                        <mrow><msup><mo>&#8706;</mo><mn>2</mn></msup>
+                                          <mi>f</mi>
+                                        </mrow>
+                                        
+                                        <msup><mi>&#8706;y</mi><mn>2</mn></msup>
+                                      </mfrac>
+                                      
+                                    </math>
+                                    
+                                  </center>
+                                  <br>
+                                  
+                                  <center>
+                                    <img src="images/img2.png" />
+                                    <figcaption style="font-weight: bold;">Fig. 3 A comparison of various edge detectors.(a) Original image. (b)
+                                      Filtered image. (c) Simple gradient using 1 x 2 and 2 x 1 masks, T = 32.
+                                      (d) Gradient using 2 x 2 masks, T = 64. (e) Roberts cross operator, T = 64.
+                                      (f) Sobel operator, T = 225. (g) Prewitt operator,T = 225.</figcaption>
+                                 </center></li>
+                            </ol>
+                          
+
+                          
+                          
+                        </li>
+                        
+                        <li><h3>Canny Edge Detector</h3>
+                          <p>
+                           The Canny edge detector is the first derivative of a Gaussian and closely
+                           approximates the operator that optimizes the product of signal-to-noise ratio
+                           and localization. The Canny edge detection algorithm is summarized by the
+                           following notation. Let I[i, j] denote the image. The result from convolving
+                           the image with a Gaussian smoothing filter using separable filtering is an
+                           array of smoothed data,
+                          </p>
+
+                          <center>
+                           <math display="block" style="font-size: 1.8rem;text-align: justify">
+                             <mi>S</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                             <mo>=</mo>
+                             <mi>G</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>;</mo><mi>σ</mi><mo>]</mo>
+                             <mo>&#x2217;</mo>
+                             <mi>I</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                           </math>
+                          </center>
+                          <br>
+
+                          <p>
+                           where σ is the spread of the Gaussian and controls the degree of smoothing.
+                           The gradient of the smoothed array S[i, j] can be computed using the 2 x 2
+                           first-difference approximations to produce two arrays P[i,j] and
+                           Q[i, j] for the x and y partial derivatives:
+
+                           <center>
+                             <math display="block" style="font-size: 1.8rem;text-align: justify">
+                               <mi>P</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>&#8776;</mo>
+                               <mo>(</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>+</mo><mi>1</mi><mo>]</mo>
+                               <mo>-</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>+</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>+</mo><mi>1</mi><mo>,</mo><mi>j</mi><mo>+</mo><mi>1</mi><mo>]</mo>
+                               <mo>-</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>+</mo><mi>1</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>)</mo>
+                               <mo>/</mo>
+                               <mn>2</mn>
+                             </math>
+                           </center>
+                            
+                           <br>
+
+                            <center>
+                             <math display="block" style="font-size: 1.8rem;text-align: justify">
+                               <mi>Q</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>&#8776;</mo>
+                               <mo>(</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>-</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>+</mo><mi>1</mi><mo>,</mo><mi>j</mi><mo>]</mo>
+                               <mo>+</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>+</mo><mi>1</mi><mo>]</mo>
+                               <mo>-</mo>
+                               <mi>S</mi><mo>[</mo><mi>i</mi><mo>+</mo><mi>1</mi><mo>,</mo><mi>j</mi><mo>+</mo><mi>1</mi><mo>]</mo>
+                               <mo>)</mo>
+                               <mo>/</mo>
+                               <mn>2</mn>
+                             </math>
+                            </center>
+
+                          </p>
+
+                          <p>The finite differences are averaged over the 2 x 2 square so that the x and y
+                           partial derivatives are computed at the same point in the image. The magnitude
+                           and orientation of the gradient can be computed from the standard
+                           formulas for rectangular-to-polar conversion:</p>
+
+                           
+                       <center>
+                         <math display="block" style="font-size: 1.8rem;text-align: justify">
+                           <mo>M</mo>
+                           <mo stretchy="false">[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">]</mo>
+                           <mo>=</mo>
+                           <msqrt stretchy="false">
+                             <msup>
+                               <mrow><mi>P</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mrow>
+                               <mn>2</mn>
+                             </msup>
+                             <mo>+</mo>
+                             <msup>
+                               <mrow><mi>Q</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mrow>
+                               <mn>2</mn>
+                             </msup>
+                           </msqrt>
+                         </math>
+                         
+                        </center><br>
+
+                        <center>
+                         <math display="block" style="font-size: 1.8rem;text-align: justify">
+                           <mo>θ</mo>
+                           <mo stretchy="false">[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo stretchy="false">]</mo>
+                           <mo>=</mo>
+                           <mn>arctan</mn>
+                           <mo>(</mo>
+                               <mrow><mi>Q</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mrow>
+                               <mo>,</mo>
+                               <mrow><mi>P</mi><mo>[</mo><mi>i</mi><mo>,</mo><mi>j</mi><mo>]</mrow>
+                           <mo>)</mo>
+                           
+                         </math>
+                         
+                        </center><br>
+
+
+                        <p>where the arctan function takes two arguments and generates an angle over
+                         the entire circle of possible directions. These functions must be computed efficiently,
+                         preferably without using floating-point arithmetic. It is possible to
+                         compute the gradient magnitude and orientation from the partial derivatives
+                         by table lookup. The arctangent can be computed using mostly fixed-point
+                         arithmetic2 with a few essential floating-point calculations performed in software
+                         using integer and fixed-point arithmetic.</p>
+                        </li>
+
+                        <li>
+                          <h3>Morphological Operations</h3>
+                            <p>
+                              Morphological transformations are some simple operations based on the image shape. 
+                              It is normally performed on binary images. It needs two inputs, one is our original image, 
+                              second one is called structuring element or kernel which decides the nature of operation. 
+                              Two basic morphological operators are Erosion and Dilation. Then its variant forms like Opening, 
+                              Closing, Gradient etc also comes into play.
+                            </p>
+
+                            <ol type="a" style="font-size: 1.8rem;text-align: justify">
+                              
+                              <li> 
+                                <b>Erosion</b>
+                                <p>
+                                  Erosion is a fundamental morphological operation that functions similarly to the natural process 
+                                  of soil erosion — it gradually erodes the boundaries of the foreground object. Typically, 
+                                  the foreground is represented in white (pixel value = 1), and the background in black (pixel value = 0).
+                                </p>
+                                <p>
+                                  During erosion, a structuring element (or kernel) is slid over the image, much like in 2D convolution. 
+                                  For a pixel in the output image to be set to 1, all pixels under the kernel in the original image 
+                                  must also be 1. If even one pixel under the kernel is 0, the output pixel is set to 0.
+                                </p>
+                                <p>
+                                  As a result, pixels at the boundaries of white regions are removed, causing the white 
+                                  (foreground) areas to shrink. The extent of erosion depends on the size and shape of 
+                                  the structuring element.
+                                </p>
+    
+                                <center>
+                                  <img src="images/erosion.png" />
+                                  <figcaption style="font-weight: bold;">Fig. 4 Example of Erosion</figcaption>
+                               </center>
+    
+    
+                                <b>Effects of Erosion:</b>
+                                <ul style="font-size: 1.8rem;text-align: justify">
+                                  <li>Removes small white noise</li>
+                                  <li>Separates objects that are connected</li>
+                                  <li>Reduces thickness of foreground objects</li>
+                                </ul>
+                              </li>
+
+                              <br>
+
+                              <li>
+                                <b>Dilation</b>
+                                <p>
+                                  Dilation is the morphological operation that performs the inverse of erosion. While erosion reduces 
+                                  the boundaries of foreground objects, dilation expands them.
+                                </p>
+                                <p>
+                                  In dilation, a structuring element (kernel) slides over the binary image. For each position of the kernel, 
+                                  the corresponding pixel in the output image is set to 1 (white) if at least one pixel under the kernel 
+                                  in the input image is 1. In other words, if any part of the kernel overlaps with a white pixel 
+                                  in the original image, the output pixel is set to white.
+                                </p>
+                                <p>
+                                  This process increases the size of the foreground objects (white regions), causing them to grow outward 
+                                  by a margin defined by the structuring element.
+                                </p>
+    
+                                <center>
+                                  <img src="images/dilation.png" />
+                                  <figcaption style="font-weight: bold;">Fig. 5 Example of Dilation</figcaption>
+                               </center>
+    
+                                <b>Effects of Dilation:</b>
+                                <ul style="font-size: 1.8rem;text-align: justify">
+                                  <li>Expands object boundaries, filling small holes and gaps</li>
+                                  <li>Useful after erosion to restore object size (a sequence called opening)</li>
+                                  <li>Bridges small breaks or connects disjoint parts of objects</li>
+                                  <li>Fills in gaps in object contours or outlines</li>
+                                </ul>
+                              </li>
+                              <br>
+
+                              <li>
+                                <b>Opening</b>
+                                <p>
+                                  Opening is a fundamental morphological operation in image processing, defined as an erosion followed by dilation, 
+                                  using the same structuring element for both steps. It is primarily used to remove small objects or noise from an 
+                                  image while preserving the shape and size of larger foreground objects.
+                                </p>
+      
+                                  <b>Effects of Opening:</b>
+                                  <ul style="font-size: 1.8rem;text-align: justify">
+                                    <li>Removing salt-and-pepper noise from binary images.</li>
+                                    <li>Eliminating small unwanted objects (e.g., speckles, dots).</li>
+                                    <li>Separating weakly connected components.</li>
+                                    <li>Cleaning up scanned documents, microscopy images, etc.</li>
+                                    <li>Preprocessing step for shape analysis and feature extraction.</li>
+                                  </ul>
+                              </li>
+
+                              <br>
+
+                              <li>
+                                <b>Closing</b>
+                                <p>
+                                  Closing is a fundamental morphological operation that is essentially the reverse of Opening. It is performed by applying 
+                                  Dilation followed by Erosion on a binary image. While Opening focuses on removing small objects and shrinking the foreground, 
+                                  Closing works to fill small holes or gaps in the foreground objects, and it is particularly useful for removing small black 
+                                  points within or around the objects.
+                                </p>
+    
+                                <b>Effects of Closing:</b>
+                                <ul style="font-size: 1.8rem;text-align: justify">
+                                  <li>Closing small holes or gaps inside the foreground objects, making them more solid and continuous.</li>
+                                  <li>Eliminating small black noise points (often referred to as salt noise) that are scattered on or near the objects.</li>
+                                  <li>Smoothening object contours by closing small imperfections while preserving the general shape of the objects.</li>
+                                  <li>Joining broken parts of an object, making them appear as a single connected structure.</li>
+                                </ul>
+                              </li>
+
+                            </ol>
+                        </li>
+                       </ol>
+
+                      <h3>Comparison of Edge Detectors</h3>
+
+                      <center>
+                      <table border="1" cellpadding="8" cellspacing="0" style="width:60%">
+                        <thead>
+                          <tr>
+                            <th style="padding:5px">Edge Detector</th>
+                            <th style="padding:5px">Method</th>
+                            <th style="padding:5px">Advantages</th>
+                            <th style="padding:5px">Limitations</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td style="padding:5px">Roberts</td>
+                            <td style="padding:5px">Gradient Based</td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>Easy and simple computation.</li>
+                                <li>Edges are detected along with their orientation.</li>
+                              </ol>
+                            </td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>These are more sensitive to noise.</li>
+                                <li>Detection of edges is inaccurate.</li>
+                                <li>Less reliable.</li>
+                              </ol>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:5px">Sobel</td>
+                            <td style="padding:5px">Gradient Based</td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>Easy and simple computation.</li>
+                                <li>Edges are detected along with their orientation.</li>
+                              </ol>
+                            </td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>These are more sensitive to noise.</li>
+                                <li>Detection of edges is inaccurate.</li>
+                                <li>Less reliable.</li>
+                              </ol>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:5px">Prewitt</td>
+                            <td style="padding:5px">Gradient Based</td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>Easy and simple computation.</li>
+                                <li>Edges are detected along with their orientation.</li>
+                              </ol>
+                            </td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>These are more sensitive to noise.</li>
+                                <li>Detection of edges is inaccurate.</li>
+                                <li>Less reliable.</li>
+                              </ol>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:5px">Canny</td>
+                            <td style="padding:5px">Gaussian Based</td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>Improved signal to noise ratio.</li>
+                                <li>Suitable for noisy images i.e., more sensitive to noisy pixels.</li>
+                                <li>Accurate.</li>
+                              </ol>
+                            </td>
+                            <td style="padding:5px">
+                              <ol>
+                                <li>Slow and complex.</li>
+                                <li>False zero crossing.</li>
+                              </ol>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      
+                      </center>
+                    </p>
+
+                </section>
+            <!-- /.content -->
+            </div>
+            <footer class="main-footer">
+                <h4 align="center">Lab contributed by IIT Roorkee <!-- Institute Name --> </h4>
+            </footer>
+        </div>
+        
+    </body>
+</html>
+<script>
+ function theory(){
+   document.getElementById("theory").style.backgroundColor = "#009dff";
+ 
+ }
+
+
+</script>
+<!-- ./wrapper -->
+<!-- jQuery 2.2.3 -->
+<script src="../../plugins/jQuery/jquery-2.2.3.min.js"></script>
+<!-- jQuery UI 1.11.4 -->
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="../../bootstrap/js/bootstrap.min.js"></script>
+<!-- Slimscroll -->
+<script src="../../plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="../../plugins/fastclick/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="../../dist/js/app.min.js"></script>
