@@ -160,7 +160,7 @@
             <!-- Content Header (Page header) -->
                 <section class="content-header">
                 <h1 align="center">
-                  Region Based Segmentation: (a) Region Growing (b) Region Splitting and Merging (c) Watershed Segmentation
+                  Region Growing Image Segmentation
                 </h1>
                 </section>
                     <!-- Main content -->
@@ -197,8 +197,8 @@
                        
                         </p>
 
-                        <ol style="font-size: 1.8rem;text-align: justify">
-                          <li><h3>Region Growing Segmentation </h3>
+                        <p style="font-size: 1.8rem;text-align: justify; ">
+                         <h3>Region Growing Segmentation </h3>
                             <p>
                               Region-growing methods rely mainly on the assumption that the neighboring pixels within 
                               one region have similar values. The common procedure is to compare one pixel with its 
@@ -248,156 +248,9 @@
                                 </li>
                              </ol>
 
-                          </li>
+                         
 
-                          <li>
-                            <h3>Region Splitting Segmentation</h3>
-                            <p>
-                             Region splitting is an important approach to image segmentation that systematically divides an image into smaller regions to identify homogeneous areas based on certain criteria, such as intensity, color, or texture. 
-                             This technique is commonly used in image analysis tasks where identifying uniform regions is essential for further processing or object recognition. 
-                             <br>
-                             The main idea behind region splitting is to start with the entire image as a single region and progressively split it into smaller subregions. 
-                             This division continues recursively until all resulting regions satisfy a predefined homogeneity condition. 
-                             The process is often implemented using a quadtree data structure, where each non-homogeneous region is split into four equal quadrants. 
-                             This method is particularly effective for images that contain large uniform areas and works well in scenarios where boundary detection is difficult using edge-based methods. 
-                            </p>
-   
-                            <h3>Algorithm Steps</h3>
-                           <ol style="font-size: 1.8rem;text-align: justify">
-                             <li><b>Initialization: </b>Begin by considering the whole image as a single region.</li>
-   
-                             <li><b>Homogeneity Test: </b>
-                               Evaluate whether the current region satisfies a given homogeneity criterion. 
-                               Common criteria include intensity variance, range of pixel values, or texture similarity.      
-                             </li>
-   
-                             <li><b>Splitting: </b>
-                               If the region is found to be non-homogeneous, it is divided into four smaller rectangular subregions (typically equal in size).
-                              </li>
-   
-                             <li><b>Recursion: </b>
-                               Apply the same homogeneity test to each of the newly created subregions. 
-                               Continue this process recursively for every non-homogeneous region.
-                             </li>
-   
-                             <li><b>Termination: </b>
-                               The splitting process stops when all regions are homogeneous, or a minimum region size is reached. 
-                             </li>
-   
-                             <li><b>Optional Merging: </b>Sometimes, a post-processing step is applied to merge adjacent regions that are similar, to reduce over-segmentation. </li>
-                            </ol>
-   
-                            <center>
-                             <img src="images/img3.png" />
-                             <figcaption style="font-weight: bold;">Fig. 3 (a) Original Image  (b) Region splitting segmented Image</figcaption>
-                          </center>
-                          </li>
-
-                          <li>
-                            <h3>Region Merging</h3>
-                            <p>Region merging is an image segmentation technique that follows a bottom-up approach to segment an 
-                             image into regions based on pixel similarity. Unlike region growing, which starts from individual seed points, 
-                             region merging begins by over-segmenting the image into small, homogeneous regions and then merges adjacent regions 
-                             that meet certain similarity criteria. This technique is effective for obtaining large and meaningful regions while 
-                             minimizing the impact of noise and irrelevant details. 
-                             <br>
-     
-                             In region merging, the image is first divided into several small regions (often based on pixel intensity or color). 
-                             These initial regions, known as super pixels, serve as the basic units for merging. 
-                             The algorithm then evaluates the similarity between neighbouring super pixels and merges them into 
-                             larger regions if they meet predefined similarity criteria, such as intensity, color, or texture. 
-                             The process continues iteratively, merging the regions that are most like each other, until the entire image 
-                             is segmented into a set of final regions. 
-                             The success of region merging depends on the selection of initial super pixels, the similarity threshold, and 
-                             the merging strategy. 
-                            </p>
-     
-                            <h3>Algorithm Steps</h3>
-                             <ol style="font-size: 1.8rem;text-align: justify">
-                               <li><b>Initialization: </b>Begin by considering the whole image as a single region.</li>
-     
-                               <li><b>Initial Super pixel Generation</b><br>
-                                 The first step in region merging is to divide the image into small regions or super pixels. 
-                                Various methods, such as SLIC (Simple Linear Iterative Clustering) or k-means clustering, are commonly 
-                                used to generate these initial super pixels. 
-                                 Each super pixel represents a relatively homogeneous region of the image.      
-                               </li>
-     
-                               <li><b>Similarity Measurement</b><br>
-                                 A similarity measure is defined to assess how closely two neighboring regions (superpixels) match. 
-                                 The similarity criteria may be based on: 
-                                 <ul style="font-size: 1.8rem;text-align: justify">
-                                   <li>Intensity difference: Differences in pixel intensities between adjacent regions. </li>
-                                   <li>Color similarity: Using color spaces like RGB or HSV to measure the distance between regions. </li>
-                                   <li>Texture similarity: Measures based on texture features, such as entropy or contrast. </li>
-                                </ul>
-                                </li>
-     
-                               <li><b>Region Merging Process </b>
-                                 Starting with the initial set of superpixels, the algorithm compares adjacent regions and merges them if their similarity exceeds a predefined threshold. 
-                                 The merging process continues iteratively, considering neighboring regions until no more regions can be merged. 
-                               </li>
-     
-                               <li><b>Stopping Condition</b>
-                                 The algorithm stops when: 
-                               </li>
-                               <ul style="font-size: 1.8rem;text-align: justify">
-                                 <li>No neighboring regions meet the similarity threshold. </li>
-                                 <li>A maximum number of regions is reached.</li>
-                                 <li>The desired segmentation granularity is achieved.</li>
-                              </ul>
-     
-     
-                              </ol>
-     
-                             <h3>Applications</h3>
-                             <ul style="font-size: 1.8rem;text-align: justify">
-                                <li>Medical imaging, for identifying homogeneous tissues or pathological regions. </li>
-                                <li>Remote sensing, where different land cover types need to be segmented based on spectral similarity. </li>
-                                <li>Industrial inspection, for detecting defects or irregularities on surfaces.</li>
-                             
-                             </ul>
-                          </li>
-
-                          <li>
-                            <h3>Watershed Image Segmentation</h3>
-                            <p>
-                              Watershed image segmentation is a powerful technique used in image processing to partition an image into 
-                              distinct regions based on the landscape analogy of a watershed. 
-                              The watershed algorithm treats an image as a topographic surface where light pixels represent peaks and dark pixels represent valleys. 
-                              By simulating a flooding process, the image is divided into regions based on the catchment basins formed by the water flow. 
-                              It is widely used for separating overlapping objects and detecting boundaries in images. <br>
-                              The watershed algorithm is inspired by the concept of water flowing in a landscape. In this context: </p>
-      
-                              <ul style="font-size: 1.8rem;text-align: justify">
-                                <li>Peaks in the image are considered the highest points (bright regions).</li>
-                                <li>Valleys or basins are the darkest regions where water would accumulate.</li>
-                                <li>The algorithm simulates the flooding of the image from the lowest point, 
-                                  progressively filling basins while merging neighboring basins until no more merging is possible. </li>
-                            </ul>
-                            <p>
-                            The watershed line is the boundary between adjacent basins, and these lines are used to define the segmented regions. <br>
-                            Below we will see an example on how to use the Distance Transform along with watershed to segment mutually touching objects. <br>
-                            Consider the coins image below, the coins are touching each other. Even if you threshold it, it will be touching each other. 
-                            </p>
-      
-                            <h3>Applying the Watershed Algorithm</h3> 
-                            <p>Once markers are assigned: </p>
-                              <ul style="font-size: 1.8rem;text-align: justify">
-                                <li>The watershed algorithm is applied to the original image using the marker labels. </li>
-                                <li>The flooding begins from the marker positions. </li>
-                                <li>As the water levels rise, regions expand until they meet at object boundaries.</li>
-                                <li>These boundaries are marked with -1 in the marker image. </li>
-                            </ul>
-      
-                            <p>The final output clearly segments individual objects, even when they are touching or overlapping. </p>
-      
-                            <center>
-                              <img src="images/img4.png" />
-                              <figcaption style="font-weight: bold;">Fig. 4 (a) Original Image  (b) Marker Image  (c) Watershed Output Image</figcaption>
-                           </center>
-                          </li>
-                        </ol>
+                        </p>
 
                         
 
