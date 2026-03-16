@@ -160,7 +160,7 @@
             <!-- Content Header (Page header) -->
                 <section class="content-header">
                 <h1 align="center">
-                  Image Compression: (a) Run-Length Encoding (b) Lossless-Huffman Coding (c) Sine and Cosine Transform-Based (d) JPEG<!-- Write your experiment name in Title case --> 
+                  Transform-Based Image Compression<!-- Write your experiment name in Title case --> 
                 </h1>
                 </section>
                     <!-- Main content -->
@@ -218,84 +218,8 @@
 
                          <h3>Compression Methods</h3>
                          <ol type="A" style="font-size: 1.8rem;text-align: justify">
-                          <li><h3>Huffman coding</h3>
-                            Provides a data representation with the smallest possible number of code symbols per source symbol (when coding the symbols of an information source individually) Huffman code construction is done in two steps:
-                            <ol>
-                              <li>Source reductions: Create a series of source reductions by ordering the probabilities of the symbols and then combine the symbols of lowest probability to form new symbols recursively. 
-                                This step is sometimes referred to as “building a Huffman tree” and can be done statistically.
-                                <center>
-                                  <img src="images/img2.png" />
-                                  <figcaption style="font-weight: bold;">Fig. 2 Huffman source reduction</figcaption>
-                               </center>
-                              </li>
-                              <li>Code assignment: When only two symbols remain, retrace the steps in 1 and assign a code bit to the symbols in each step. Encoding and decoding is done using these codes in a lookup table manner.
-                                <center>
-                                  <img src="images/img3.png" />
-                                  <figcaption style="font-weight: bold;">Fig. 3 Huffman code assignment procedure</figcaption>
-                               </center>
-                               The average length of this code is: L<sub>avg</sub> = (0.4)(1) + (0.3)(3) + (0.1)(4) + (0.06)(5) + (0.04)(5) = 2.2 bits/pixels 
-                              </li>
-                            </ol>
 
-                          </li>
-
-                          <li><h3>Run-length coding</h3>
-                            Provides a data representation where sequences of symbol values of the same value are coded as “run-lengths”.
-                            <ul>
-                              <li>1D – the image is treated as a row-by-row array of pixels </li>
-                              <li>2D – blocks of pixels are viewed as source symbols </li>
-                            </ul>
-                            Input data 	222222222226666666666666699999999999999999 <br>
-                            Code 2,11 6,14 9,17 <br>
-                            Here compression is achieved by eliminating a simple form of spatial redundancy – groups of identical intensities. When there are few runs of identical pixels, run length encoding results in data expansion. The BMP file format uses a form of rum-length encoding in which image data is represented in two different modes: 
-
-                            <ol>
-                              <li>Encoded mode – A two-byte RLE representation is used. The first byte specifies the number of consecutive pixels that have the color index contained in the second byte. The 8-bit color index selects the run’s intensity from a table of 256 possible intensities.</li>
-                              <li>Absolute mode – The first byte here is 0 and the second byte signals one of four possible conditions, as shown in below table.</li>
-                            </ol>
-                          
-                            <center>
-                              <img src="images/img4.png" />
-                              <figcaption style="font-weight: bold;">Fig. 4 BMP absolute coding mode options. In this mode, the first byte of the BMP pair is 0</figcaption>
-                           </center>
-                          </li>
-
-                          <li><h3>JPEG</h3>
-                            JPEG stands for Joint Photographic Experts Group and is a lossy compression algorithm that results in significantly smaller file sizes with little to no perceptible impact on picture quality and resolution. A JPEG-compressed image can be ten times smaller than the original one. JPEG works by removing information that is not easily visible to the human eye while keeping the information that the human eye is good at perceiving.
-                            <center>
-                              <img src="images/img5.png" />
-                              <figcaption style="font-weight: bold;">Fig. 5 Block diagram of JPEG based compression</figcaption>
-                           </center>
-                           <br>
-
-                           <ul>
-                            <li><b>Color Space Conversion: </b>
-                              The image is converted from RGB to YC<sub>b</sub>C<sub>r</sub>, separating brightness (Y) from color (C<sub>b</sub>, C<sub>r</sub>). This allows more compression on color data, which the human eye is less sensitive to.
-                              </li>
-
-                              <li><b>Down sampling: </b>
-                                Chrominance channels (C<sub>b</sub> and C<sub>r</sub>) are down-sampled (typically 4:2:0), reducing their resolution and file size with minimal visual impact.
-                              </li>
-
-                              <li><b>Block Division: </b>
-                                The image is divided into 8×8 pixel blocks, and each block is processed independently.
-                              </li>
-
-                              <li><b>Forward DCT (Discrete Cosine Transform): </b>
-                                  Each 8×8 block is transformed into frequency components, represented as weight values for base patterns. No data is lost at this step.
-                              </li>
-
-                              <li><b>Quantization: </b>
-                                Frequency data is divided by a quantization table and rounded, removing high-frequency details (mostly imperceptible), which reduces file size.
-                              </li>
-
-                              <li><b>Entropy Encoding: </b>
-                                The quantized values are serialized in a zig-zag order, then compressed using Run-Length Encoding (RLE) followed by Huffman Coding — both lossless methods.
-                              </li>
-                           </ul>
-                          </li>
-
-                          <li><h3>Sine and Cosine Transform-Based</h3>
+                          <p><h3>Sine and Cosine Transform-Based</h3>
                             Transform-based image compression techniques use mathematical transformations to convert image data from the spatial domain to the frequency domain. 
                             This transformation allows for efficient data representation, energy compaction, and easier elimination of redundancy. 
                             The most common transforms used are the Discrete Cosine Transform (DCT) and Discrete Sine Transform (DST).
@@ -566,7 +490,7 @@
                               </li>
 
                             </ol>
-                          </li>
+                          </p>
                          </ol>
 
                     </p>
