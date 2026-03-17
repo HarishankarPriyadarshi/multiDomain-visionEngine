@@ -172,7 +172,7 @@ export default function MorphologyPage() {
       if(morphologicalOperation=="opening"||morphologicalOperation=="closing"){
         let kernel = cv.getStructuringElement(shape[kernelShape], new cv.Size(kernelSize, kernelSize));
         cv.morphologyEx(gray, edgeDetected, morphologicalOperation=="opening"?cv.MORPH_OPEN:cv.MORPH_CLOSE, kernel, new cv.Point(-1, -1), 1, cv.BORDER_CONSTANT, cv.morphologyDefaultBorderValue());
-      }
+      } 
 
       // myProcess3Button.current.disabled=true
     }
