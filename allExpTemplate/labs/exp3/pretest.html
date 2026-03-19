@@ -196,140 +196,135 @@
     text-align: justify;
 }
                         </style>
-                  
+
                       <div style="padding: 20px;font-size: 1.8rem;">
-                       
-                        <div id="quiz">
-                          <div class="question">
-                            <p><b>1. Gradient computation equation is</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q1" value="a"> a) |G<sub>x</sub>|+|G<sub>y</sub>|</div>
-                              <div><input type="radio" name="q1" value="b"> b) |G<sub>x</sub>|-|G<sub>y</sub>|</div>
-                              <div><input type="radio" name="q1" value="c"> c) |G<sub>x</sub>|*|G<sub>y</sub>|</div>
-                              <div><input type="radio" name="q1" value="d"> d) |G<sub>x</sub>|/|G<sub>y</sub>|</input></div>
-                            </div>
-                            <div id="result-1" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>2. Gradient magnitude images are more useful in?</b></p>
-                            <div class="options">
-                            <div><input type="radio" name="q2" value="a"> a) point detection</div>
-                            <div><input type="radio" name="q2" value="b"> b) line detection</div>
-                          <div><input type="radio" name="q2" value="c"> c) area detection</div>
-                        <div><input type="radio" name="q2" value="d"> d) edge detection</div>
-                            </div>
-                            <div id="result-2" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>3. Sobel gradient is not that good for detection of?</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q3" value="a"> a) Horizontal lines</div>
-                              <div><input type="radio" name="q3" value="b"> b) Vertical lines</div>
-                              <div><input type="radio" name="q3" value="c"> c) Diagonal lines</div>
-                              <div><input type="radio" name="q3" value="d"> d) Edges</div>
-                            </div>
-                            <div id="result-3" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>4. Smoothness reduced the bricks of</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q4" value="a"> a) pixels</div>
-                              <div><input type="radio" name="q4" value="b"> b) constant intensities</div>
-                              <div><input type="radio" name="q4" value="c"> c) point pixels</div>
-                              <div><input type="radio" name="q4" value="d"> d) edges</div>
-                            </div>
-                            <div id="result-4" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>5. Second derivative approximation says that it is nonzero only at</b></p>
-                            <div class="options">
-                              <div><input type="radio" name="q5" value="a"> a) ramp</div>
-                              <div><input type="radio" name="q5" value="b"> b) step</div>
-                              <div><input type="radio" name="q5" value="c"> c) onset</div>
-                              <div><input type="radio" name="q5" value="d"> d) edges</div>
-                            </div>
-                            <div id="result-5" class="result"></div>
-                          </div>
-                          <div class="submit-btn">
-                            <button type="button" onclick="checkAnswers()" style="color: #fff;
-                            background-color: #007bff;
-                            border-color: #007bff;">SUBMIT</button>
-                          </div>
-                          <div id="final-result" class="result"></div>
-                        </div>
-                      
-                        <script>
-                           function checkAnswers() {
-                                var answers = ['a', 'd', 'c', 'd', 'c']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            
-                           </script>
-                      </div>
-                     
-                      
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. Canny edge detector is based on</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) First derivative of Gaussian</div>
+        <div><input type="radio" name="q1" value="b"> b) Second derivative</div>
+        <div><input type="radio" name="q1" value="c"> c) Thresholding only</div>
+        <div><input type="radio" name="q1" value="d"> d) Morphology</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. First step in Canny edge detection is</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) Thresholding</div>
+        <div><input type="radio" name="q2" value="b"> b) Smoothing (Gaussian filtering)</div>
+        <div><input type="radio" name="q2" value="c"> c) Edge linking</div>
+        <div><input type="radio" name="q2" value="d"> d) Non-maximum suppression</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. Gradient magnitude in Canny is used for</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Blurring</div>
+        <div><input type="radio" name="q3" value="b"> b) Edge detection</div>
+        <div><input type="radio" name="q3" value="c"> c) Compression</div>
+        <div><input type="radio" name="q3" value="d"> d) Coloring</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. Non-maximum suppression is used to</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) Remove noise</div>
+        <div><input type="radio" name="q4" value="b"> b) Thin edges</div>
+        <div><input type="radio" name="q4" value="c"> c) Detect color</div>
+        <div><input type="radio" name="q4" value="d"> d) Resize image</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. Canny improves detection by</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Ignoring noise</div>
+        <div><input type="radio" name="q5" value="b"> b) Using double threshold</div>
+        <div><input type="radio" name="q5" value="c"> c) Reducing pixels</div>
+        <div><input type="radio" name="q5" value="d"> d) Using large kernel only</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['a', 'b', 'b', 'b', 'b']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                     <!--Theory of experiment -->
                     </p>
                 </section>
