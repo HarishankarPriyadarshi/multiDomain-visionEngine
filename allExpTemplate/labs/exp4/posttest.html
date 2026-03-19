@@ -193,133 +193,134 @@
                               }
                             </style>
                       
-                          <div style="padding: 20px;font-size: 1.8rem;">
-                           
-                            <div id="quiz">
-                              <div class="question">
-                                <p><b>1. The horizontal gradient pixels are denoted by</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q1" value="a"> a) G<sub>x</sub></input></div>
-                                  <div><input type="radio" name="q1" value="b"> b) G<sub>y</sub></div>
-                                  <div><input type="radio" name="q1" value="c"> c) G<sub>t</sub></div>
-                                  <div><input type="radio" name="q1" value="d"> d) G<sub>s</sub></div>
-                                </div>
-                                <div id="result-1" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>2. Image having gradient pixels is called</b></p>
-                                <div class="options">
-                                <div><input type="radio" name="q2" value="a"> a) sharp image</div>
-                                <div><input type="radio" name="q2" value="b"> b) blur image</div>
-                                <div><input type="radio" name="q2" value="c"> c) gradient image</div>
-                                <div><input type="radio" name="q2" value="d"> d) binary image</div>
-                                </div>
-                                <div id="result-2" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>3. Sobel is better than prewitt in image</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q3" value="a"> a) sharpening</div>
-                                  <div><input type="radio" name="q3" value="b"> b) blurring</div>
-                                  <div><input type="radio" name="q3" value="c"> c) smoothing</div>
-                                  <div><input type="radio" name="q3" value="d"> d) contrast</div>
-                                </div>
-                                <div id="result-3" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>4. Mask's response to zero means</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q4" value="a"> a) sum to zero</div>
-                                  <div><input type="radio" name="q4" value="b"> b) subtraction to zero</div>
-                                  <div><input type="radio" name="q4" value="c"> c) division to zero</div>
-                                  <div><input type="radio" name="q4" value="d"> d) multiplication to zero</div>
-                                </div>
-                                <div id="result-4" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>5. The smallest element of an image is called</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q5" value="a"> a) pixel</div>
-                                  <div><input type="radio" name="q5" value="b"> b) dot</div>
-                                  <div><input type="radio" name="q5" value="c"> c) coordinate</div>
-                                  <div><input type="radio" name="q5" value="d"> d) digits</div>
-                                </div>
-                                <div id="result-5" class="result"></div>
-                              </div>
-                              <div class="submit-btn">
-                                <button type="button" onclick="checkAnswers()" style="color: #fff;
-                                background-color: #007bff;
-                                border-color: #007bff;">SUBMIT</button>
-                              </div>
-                              <div id="final-result" class="result"></div>
-                            </div>
-                          
-                            <script>
-                              function checkAnswers() {
-                                var answers = ['a', 'c', 'c', 'a', 'a']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            </script>
-                          </div>
+<div style="padding: 20px;font-size: 1.8rem;">
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. Closing operation is</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) Only dilation</div>
+        <div><input type="radio" name="q1" value="b"> b) Only erosion</div>
+        <div><input type="radio" name="q1" value="c"> c) Dilation + Erosion</div>
+        <div><input type="radio" name="q1" value="d"> d) Erosion + Dilation</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. Erosion removes</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) Colors</div>
+        <div><input type="radio" name="q2" value="b"> b) Intensities</div>
+        <div><input type="radio" name="q2" value="c"> c) Boundary white pixels</div>
+        <div><input type="radio" name="q2" value="d"> d) Black pixels</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. Dilation helps in</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Filling gaps</div>
+        <div><input type="radio" name="q3" value="b"> b) Removing objects</div>
+        <div><input type="radio" name="q3" value="c"> c) Blurring edges</div>
+        <div><input type="radio" name="q3" value="d"> d) Reducing brightness</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. Morphological gradient is used for</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) Compression</div>
+        <div><input type="radio" name="q4" value="b"> b) Smoothing</div>
+        <div><input type="radio" name="q4" value="c"> c) Coloring</div>
+        <div><input type="radio" name="q4" value="d"> d) Edge detection</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. Opening is mainly used for</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Increasing contrast</div>
+        <div><input type="radio" name="q5" value="b"> b) Edge sharpening</div>
+        <div><input type="radio" name="q5" value="c"> c) Removing noise</div>
+        <div><input type="radio" name="q5" value="d"> d) Filling holes</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['c', 'c', 'a', 'd', 'c']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                          
                           
                     <!--Post Test of experiment -->
