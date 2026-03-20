@@ -197,138 +197,134 @@
 }
                         </style>
                   
-                      <div style="padding: 20px;font-size: 1.8rem;">
-                       
-                        <div id="quiz">
-                          <div class="question">
-                            <p><b>1. Region growing segmentation relies on which of the following assumptions?</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q1" value="a"> a) All pixels have random intensity values</div>
-                              <div><input type="radio" name="q1" value="b"> b) Neighboring pixels within a region have similar values</div>
-                              <div><input type="radio" name="q1" value="c"> c) Pixels are selected based on user input only</div>
-                              <div><input type="radio" name="q1" value="d"> d) Each pixel must be isolated before segmentation</input></div>
-                            </div>
-                            <div id="result-1" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>2. What is the role of 'seeds' in region growing segmentation?</b></p>
-                            <div class="options">
-                            <div><input type="radio" name="q2" value="a"> a) They mark boundaries between regions</div>
-                            <div><input type="radio" name="q2" value="b"> b) They are used to define starting points for region growth</div>
-                          <div><input type="radio" name="q2" value="c"> c) They represent background pixels</div>
-                        <div><input type="radio" name="q2" value="d"> d) They delete noise from the image</div>
-                            </div>
-                            <div id="result-2" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>3. Which of the following is NOT a similarity criterion used in region growing?</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q3" value="a"> a) Absolute intensity difference</div>
-                              <div><input type="radio" name="q3" value="b"> b) Euclidean distance in color space</div>
-                              <div><input type="radio" name="q3" value="c"> c) Texture similarity</div>
-                              <div><input type="radio" name="q3" value="d"> d) Image compression ratio</div>
-                            </div>
-                            <div id="result-3" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>4. Which data structure is commonly used in region splitting segmentation?</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q4" value="a"> a) Stack</div>
-                              <div><input type="radio" name="q4" value="b"> b) Queue</div>
-                              <div><input type="radio" name="q4" value="c"> c) Quadtree</div>
-                              <div><input type="radio" name="q4" value="d"> d) Hashmap</div>
-                            </div>
-                            <div id="result-4" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>5. What does the watershed algorithm simulate to perform segmentation?</b></p>
-                            <div class="options">
-                              <div><input type="radio" name="q5" value="a"> a) Pixel matching</div>
-                              <div><input type="radio" name="q5" value="b"> b) Edge sharpening</div>
-                              <div><input type="radio" name="q5" value="c"> c) Flooding of a topographic surface</div>
-                              <div><input type="radio" name="q5" value="d"> d) Histogram equalization</div>
-                            </div>
-                            <div id="result-5" class="result"></div>
-                          </div>
-                          <div class="submit-btn">
-                            <button type="button" onclick="checkAnswers()" style="color: #fff;
-                            background-color: #007bff;
-                            border-color: #007bff;">SUBMIT</button>
-                          </div>
-                          <div id="final-result" class="result"></div>
-                        </div>
-                      
-                        <script>
-                           function checkAnswers() {
-                                var answers = ['b', 'b', 'd', 'c', 'c']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            
-                           </script>
-                      </div>
-                     
+<div style="padding: 20px;font-size: 1.8rem;">
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. Region splitting starts with:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) Individual pixels</div>
+        <div><input type="radio" name="q1" value="b"> b) The entire image as one region</div>
+        <div><input type="radio" name="q1" value="c"> c) Detected edge pixels</div>
+        <div><input type="radio" name="q1" value="d"> d) Predefined subregions</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. If a region fails the homogeneity test in splitting, the algorithm:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) Stops immediately</div>
+        <div><input type="radio" name="q2" value="b"> b) Merges it with adjacent regions</div>
+        <div><input type="radio" name="q2" value="c"> c) Splits it into four smaller subregions</div>
+        <div><input type="radio" name="q2" value="d"> d) Filters the region with a Gaussian kernel</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. Which data structure is commonly used to implement region splitting?</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Queue</div>
+        <div><input type="radio" name="q3" value="b"> b) Quadtree</div>
+        <div><input type="radio" name="q3" value="c"> c) Graph</div>
+        <div><input type="radio" name="q3" value="d"> d) Linked list</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. Region splitting continues recursively until:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) All regions are homogeneous or a minimum size is reached</div>
+        <div><input type="radio" name="q4" value="b"> b) A single large region remains</div>
+        <div><input type="radio" name="q4" value="c"> c) The image resolution halves each step</div>
+        <div><input type="radio" name="q4" value="d"> d) Pixel variance is maximized</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. In split-and-merge algorithms, after splitting, adjacent homogeneous regions are:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Further split into smaller parts</div>
+        <div><input type="radio" name="q5" value="b"> b) Left unchanged</div>
+        <div><input type="radio" name="q5" value="c"> c) Merged together to reduce over-segmentation</div>
+        <div><input type="radio" name="q5" value="d"> d) Converted to edges</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['b', 'c', 'b', 'a', 'c']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                       
                     <!--Theory of experiment -->
                     </p>
