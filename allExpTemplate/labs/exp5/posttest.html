@@ -193,133 +193,134 @@
                               }
                             </style>
                       
-                          <div style="padding: 20px;font-size: 1.8rem;">
-                           
-                            <div id="quiz">
-                              <div class="question">
-                                <p><b>1. Which of the following is a stopping condition in region merging?</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q1" value="a"> a) When all regions are equal in size</input></div>
-                                  <div><input type="radio" name="q1" value="b"> b) When a predefined similarity threshold is reached</div>
-                                  <div><input type="radio" name="q1" value="c"> c) When the number of pixels is odd</div>
-                                  <div><input type="radio" name="q1" value="d"> d) When brightness exceeds 255</div>
-                                </div>
-                                <div id="result-1" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>2. What is a 'superpixel' in the context of region merging?</b></p>
-                                <div class="options">
-                                <div><input type="radio" name="q2" value="a"> a) A pixel with maximum brightness</div>
-                                <div><input type="radio" name="q2" value="b"> b) A compressed version of the image</div>
-                                <div><input type="radio" name="q2" value="c"> c) A small homogeneous region of the image used as a basic unit for merging</div>
-                                <div><input type="radio" name="q2" value="d"> d) A noisy pixel</div>
-                                </div>
-                                <div id="result-2" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>3. If you apply region growing segmentation but the result shows leakage into unrelated areas, what is the most likely cause?</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q3" value="a"> a) Incorrect filter size</div>
-                                  <div><input type="radio" name="q3" value="b"> b) Poor seed point selection</div>
-                                  <div><input type="radio" name="q3" value="c"> c) Low resolution of the image</div>
-                                  <div><input type="radio" name="q3" value="d"> d) Color quantization</div>
-                                </div>
-                                <div id="result-3" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>4. If you are segmenting satellite images with large areas of uniform vegetation, which method would be most effective?</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q4" value="a"> a) Edge Detection</div>
-                                  <div><input type="radio" name="q4" value="b"> b) Watershed</div>
-                                  <div><input type="radio" name="q4" value="c"> c) Canny Thresholding</div>
-                                  <div><input type="radio" name="q4" value="d"> d) Region Splitting</div>
-                                </div>
-                                <div id="result-4" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>5. An image contains touching circular objects (such as coins). Which segmentation method would be most effective to separate them?</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q5" value="a"> a) Thresholding</div>
-                                  <div><input type="radio" name="q5" value="b"> b) Region Growing</div>
-                                  <div><input type="radio" name="q5" value="c"> c) Watershed with Distance Transform</div>
-                                  <div><input type="radio" name="q5" value="d"> d) Region Merging</div>
-                                </div>
-                                <div id="result-5" class="result"></div>
-                              </div>
-                              <div class="submit-btn">
-                                <button type="button" onclick="checkAnswers()" style="color: #fff;
-                                background-color: #007bff;
-                                border-color: #007bff;">SUBMIT</button>
-                              </div>
-                              <div id="final-result" class="result"></div>
-                            </div>
-                          
-                            <script>
-                              function checkAnswers() {
-                                var answers = ['b', 'c', 'b', 'd', 'c']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            </script>
-                          </div>
+<div style="padding: 20px;font-size: 1.8rem;">
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. If region growing “leaks” into unwanted areas, the most likely cause is:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) Poor seed point selection</div>
+        <div><input type="radio" name="q1" value="b"> b) Excessive smoothing</div>
+        <div><input type="radio" name="q1" value="c"> c) Low image contrast</div>
+        <div><input type="radio" name="q1" value="d"> d) Too many regions</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. Region growing segmentation is primarily based on:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) Edge detection</div>
+        <div><input type="radio" name="q2" value="b"> b) Pixel similarity</div>
+        <div><input type="radio" name="q2" value="c"> c) Histogram equalization</div>
+        <div><input type="radio" name="q2" value="d"> d) Frequency domain analysis</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. Region growing segmentation is sensitive to:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Noise in the image (which may cause seeds to be misplaced)</div>
+        <div><input type="radio" name="q3" value="b"> b) Image compression artifacts</div>
+        <div><input type="radio" name="q3" value="c"> c) The file format (JPEG vs PNG)</div>
+        <div><input type="radio" name="q3" value="d"> d) Color space conversion</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. Seed points in region growing must be chosen:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) Manually only</div>
+        <div><input type="radio" name="q4" value="b"> b) Automatically only</div>
+        <div><input type="radio" name="q4" value="c"> c) Either manually or automatically</div>
+        <div><input type="radio" name="q4" value="d"> d) Randomly at runtime</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. In seeded region growing, a pixel is included in a region if:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Its intensity is close to the region’s mean intensity</div>
+        <div><input type="radio" name="q5" value="b"> b) It lies on the boundary of an edge</div>
+        <div><input type="radio" name="q5" value="c"> c) Its gradient is zero</div>
+        <div><input type="radio" name="q5" value="d"> d) It is randomly selected</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['a', 'b', 'a', 'c', 'a']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                          
                           
                     <!--Post Test of experiment -->
