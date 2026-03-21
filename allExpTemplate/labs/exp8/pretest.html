@@ -195,138 +195,134 @@
 }
                         </style>
                   
-                      <div style="padding: 20px;font-size: 1.8rem;">
-                       
-                        <div id="quiz">
-                          <div class="question">
-                            <p><b>1. Compressed image can be recovered back by</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q1" value="a"> a) image enhancement</div>
-                              <div><input type="radio" name="q1" value="b"> b) image decompression</div>
-                              <div><input type="radio" name="q1" value="c"> c) image contrast</div>
-                              <div><input type="radio" name="q1" value="d"> d) image equalization</input></div>
-                            </div>
-                            <div id="result-1" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>2. Every run length pair introduce new</b></p>
-                            <div class="options">
-                            <div><input type="radio" name="q2" value="a"> a) pixels</div>
-                            <div><input type="radio" name="q2" value="b"> b) matrix</div>
-                          <div><input type="radio" name="q2" value="c"> c) frames</div>
-                        <div><input type="radio" name="q2" value="d"> d) intensity</div>
-                            </div>
-                            <div id="result-2" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>3. If the pixels are reconstructed without error mapping is said to be</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q3" value="a"> a) reversible</div>
-                              <div><input type="radio" name="q3" value="b"> b) irreversible</div>
-                              <div><input type="radio" name="q3" value="c"> c) temporal</div>
-                              <div><input type="radio" name="q3" value="d"> d) facsimile</div>
-                            </div>
-                            <div id="result-3" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>4. Replication of the pixels is called</b></p>
-                            <div class="options">
-                              
-                              <div><input type="radio" name="q4" value="a"> a) coding redundancy</div>
-                              <div><input type="radio" name="q4" value="b"> b) spatial redundancy</div>
-                              <div><input type="radio" name="q4" value="c"> c) temporal redundancy</div>
-                              <div><input type="radio" name="q4" value="d"> d) both b and c</div>
-                            </div>
-                            <div id="result-4" class="result"></div>
-                          </div>
-                          <div class="question">
-                            <p><b>5. Transforming the difference between adjacent pixels is called</b></p>
-                            <div class="options">
-                              <div><input type="radio" name="q5" value="a"> a) mapping</div>
-                              <div><input type="radio" name="q5" value="b"> b) image compression</div>
-                              <div><input type="radio" name="q5" value="c"> c) image watermarking</div>
-                              <div><input type="radio" name="q5" value="d"> d) image equalization</div>
-                            </div>
-                            <div id="result-5" class="result"></div>
-                          </div>
-                          <div class="submit-btn">
-                            <button type="button" onclick="checkAnswers()" style="color: #fff;
-                            background-color: #007bff;
-                            border-color: #007bff;">SUBMIT</button>
-                          </div>
-                          <div id="final-result" class="result"></div>
-                        </div>
-                      
-                        <script>
-                           function checkAnswers() {
-                                var answers = ['b', 'd', 'a', 'b', 'a']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            
-                           </script>
-                      </div>
-                     
+<div style="padding: 20px;font-size: 1.8rem;">
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. Run-Length Encoding (RLE) is a form of which compression?</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) lossy</div>
+        <div><input type="radio" name="q1" value="b"> b) fractal coding</div>
+        <div><input type="radio" name="q1" value="c"> c) lossless</div>
+        <div><input type="radio" name="q1" value="d"> d) predictive</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. In RLE, a sequence of identical pixels is encoded as:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) The pixel value and its count</div>
+        <div><input type="radio" name="q2" value="b"> b) Only the pixel value</div>
+        <div><input type="radio" name="q2" value="c"> c) The pixel and the next different pixel</div>
+        <div><input type="radio" name="q2" value="d"> d) The difference between successive pixels</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. RLE is most efficient for images that contain:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Many different colors mixed together</div>
+        <div><input type="radio" name="q3" value="b"> b) Complex photographic textures</div>
+        <div><input type="radio" name="q3" value="c"> c) Long runs of identical color (like simple graphics)</div>
+        <div><input type="radio" name="q3" value="d"> d) Random noise patterns</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. If an image has very few repeating pixels, RLE will:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) Compress significantly</div>
+        <div><input type="radio" name="q4" value="b"> b) Leave the image unchanged</div>
+        <div><input type="radio" name="q4" value="c"> c) Possibly increase the file size (expand)</div>
+        <div><input type="radio" name="q4" value="d"> d) Produce lossy output</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. To decompress RLE data, the algorithm:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Repeats each pixel value according to its run-length</div>
+        <div><input type="radio" name="q5" value="b"> b) Applies the inverse DCT</div>
+        <div><input type="radio" name="q5" value="c"> c) Consults an adaptive dictionary</div>
+        <div><input type="radio" name="q5" value="d"> d) Performs wavelet reconstruction</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['c', 'a', 'c', 'c', 'a']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                       
                     <!--Theory of experiment -->
                     </p>
