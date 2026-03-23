@@ -195,134 +195,134 @@
                               }
                             </style>
                       
-                          <div style="padding: 20px;font-size: 1.8rem;">
-                           
-                            <div id="quiz">
-                              <div class="question">
-                                <p><b>1. Which of the following transformations expands the value of dark pixels while the higher-level values are being compressed?</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q1" value="a"> a) Log transformations</div>
-                                  <div><input type="radio" name="q1" value="b"> b) Inverse-log transformations</div>
-                                  <div><input type="radio" name="q1" value="c"> c) Negative transformations</div>
-                                  <div><input type="radio" name="q1" value="d"> d) None of the mentioned</div>
-                                </div>
-                                <div id="result-1" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>2. Image compression comprised of</b></p>
-                                <div class="options">
-                                <div><input type="radio" name="q2" value="a"> a) encoder</div>
-                                <div><input type="radio" name="q2" value="b"> b) decoder</div>
-                                <div><input type="radio" name="q2" value="c"> c) frames</div>
-                                <div><input type="radio" name="q2" value="d"> d) Both a and b</div>
-                                </div>
-                                <div id="result-2" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>3. Compression is done for saving</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q3" value="a"> a) storage</div>
-                                  <div><input type="radio" name="q3" value="b"> b) bandwidth</div>
-                                  <div><input type="radio" name="q3" value="c"> c) money</div>
-                                  <div><input type="radio" name="q3" value="d"> d) Both a and b</div>
-                                </div>
-                                <div id="result-3" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>4. In the formula 1-(1/C), C is the</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q4" value="a"> a) complex ratio</div>
-                                  <div><input type="radio" name="q4" value="b"> b) compression ratio</div>
-                                  <div><input type="radio" name="q4" value="c"> c) constant</div>
-                                  <div><input type="radio" name="q4" value="d"> d) condition</div>
-                                </div>
-                                <div id="result-4" class="result"></div>
-                              </div>
-                              <div class="question">
-                                <p><b>5. Decoder is used for</b></p>
-                                <div class="options">
-                                  <div><input type="radio" name="q5" value="a"> a) image enhancement</div>
-                                  <div><input type="radio" name="q5" value="b"> b) image compression</div>
-                                  <div><input type="radio" name="q5" value="c"> c) image decompression</div>
-                                  <div><input type="radio" name="q5" value="d"> d) image equalization</div>
-                                </div>
-                                <div id="result-5" class="result"></div>
-                              </div>
-                              <div class="submit-btn">
-                                <button type="button" onclick="checkAnswers()" style="color: #fff;
-                                background-color: #007bff;
-                                border-color: #007bff;">SUBMIT</button>
-                              </div>
-                              <div id="final-result" class="result"></div>
-                            </div>
-                          
-                            <script>
-                              function checkAnswers() {
-                                var answers = ['a', 'd', 'd', 'b', 'c']; //write the answer key accordingly
-                                var totalQuestions = 5;
-                                var correctAnswers = 0;
-                               let togetc=document.getElementsByClassName('options')
-                               for (let j=0;j<5;j++){
-                                for(let k=0;k<4;k++){
-                                  togetc=document.getElementsByClassName('options')[j].getElementsByTagName('div')[k]
-                                  togetc.style.color='black'
-                                }
-                               }
-                            
-                                for (var i = 1; i <= totalQuestions; i++) {
-                              var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
-                              var theoption = document.getElementsByClassName('options')
-                              var thevalue = theoption[i-1].getElementsByTagName("div")
-                              var resultElement = document.getElementById('result-' + i);
-                      
-                              if (selectedOption) {
-                                var selectedAnswer = selectedOption.value;
-                      
-                                    if (selectedAnswer === answers[i - 1]) {
-                                      resultElement.style.color = 'green';
-                                      resultElement.innerHTML = 'Correct!';
-                                      selectedOption.style.color="green"
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='green'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='green'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='green'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='green'
-                                      }
-                                      correctAnswers++;
-                                    } else {
-                                      resultElement.style.color = 'red';
-                                      resultElement.innerHTML = 'Wrong!';
-                                      if (selectedAnswer=='a'){
-                                          thevalue[0].style.color='red'
-                                      }
-                                      if (selectedAnswer=='b'){
-                                          thevalue[1].style.color='red'
-                                      }
-                                      if (selectedAnswer=='c'){
-                                          thevalue[2].style.color='red'
-                                      }
-                                      if (selectedAnswer=='d'){
-                                          thevalue[3].style.color='red'
-                                      }
-                                    }
-                                  } else {
-                                    resultElement.style.color = 'red';
-                                    resultElement.innerHTML = 'No answer selected!';
-                                  }
-                                }
-                          
-                                var finalResult = document.getElementById('final-result');
-                                finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
-                              }
-                            </script>
-                          </div>
-                         
+<div style="padding: 20px;font-size: 1.8rem;">
+  <div id="quiz">
+
+    <!-- Q1 -->
+    <div class="question">
+      <p><b>1. JPEG down-samples the:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q1" value="a"> a) Luminance channel</div>
+        <div><input type="radio" name="q1" value="b"> b) Chrominance channels (Cb, Cr)</div>
+        <div><input type="radio" name="q1" value="c"> c) Both equally</div>
+        <div><input type="radio" name="q1" value="d"> d) Alpha channel</div>
+      </div>
+      <div id="result-1" class="result"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="question">
+      <p><b>2. JPEG’s color transform (RGB to YCbCr) takes advantage of:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q2" value="a"> a) Human eye sensitivity</div>
+        <div><input type="radio" name="q2" value="b"> b) Hardware acceleration</div>
+        <div><input type="radio" name="q2" value="c"> c) Vector quantization</div>
+        <div><input type="radio" name="q2" value="d"> d) Edge detection</div>
+      </div>
+      <div id="result-2" class="result"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="question">
+      <p><b>3. A common artifact of high JPEG compression is:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q3" value="a"> a) Blockiness (blocking)</div>
+        <div><input type="radio" name="q3" value="b"> b) Gaussian noise</div>
+        <div><input type="radio" name="q3" value="c"> c) Motion blur</div>
+        <div><input type="radio" name="q3" value="d"> d) Color banding</div>
+      </div>
+      <div id="result-3" class="result"></div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question">
+      <p><b>4. In JPEG’s entropy coding, many AC coefficients become:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q4" value="a"> a) Negative</div>
+        <div><input type="radio" name="q4" value="b"> b) Constant</div>
+        <div><input type="radio" name="q4" value="c"> c) Zero after quantization</div>
+        <div><input type="radio" name="q4" value="d"> d) DC values</div>
+      </div>
+      <div id="result-4" class="result"></div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="question">
+      <p><b>5. JPEG coding requires both an encoder and a decoder for:</b></p>
+      <div class="options">
+        <div><input type="radio" name="q5" value="a"> a) Image enhancement</div>
+        <div><input type="radio" name="q5" value="b"> b) Image compression</div>
+        <div><input type="radio" name="q5" value="c"> c) Image decompression</div>
+        <div><input type="radio" name="q5" value="d"> d) Edge detection</div>
+      </div>
+      <div id="result-5" class="result"></div>
+    </div>
+
+    <!-- Submit -->
+    <div class="submit-btn">
+      <button type="button" onclick="checkAnswers()" style="color:#fff;background-color:#007bff;border-color:#007bff;">
+        SUBMIT
+      </button>
+    </div>
+
+    <div id="final-result" class="result"></div>
+
+  </div>
+
+  <script>
+    function checkAnswers() {
+      var answers = ['b', 'a', 'a', 'c', 'c']; // ✅ correct answers
+      var totalQuestions = 5;
+      var correctAnswers = 0;
+
+      let togetc = document.getElementsByClassName('options');
+
+      for (let j = 0; j < 5; j++) {
+        for (let k = 0; k < 4; k++) {
+          togetc = document.getElementsByClassName('options')[j].getElementsByTagName('div')[k];
+          togetc.style.color = 'black';
+        }
+      }
+
+      for (var i = 1; i <= totalQuestions; i++) {
+        var selectedOption = document.querySelector('input[name=q' + i + ']:checked');
+        var theoption = document.getElementsByClassName('options');
+        var thevalue = theoption[i - 1].getElementsByTagName("div");
+        var resultElement = document.getElementById('result-' + i);
+
+        if (selectedOption) {
+          var selectedAnswer = selectedOption.value;
+
+          if (selectedAnswer === answers[i - 1]) {
+            resultElement.style.color = 'green';
+            resultElement.innerHTML = 'Correct!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'green';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'green';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'green';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'green';
+
+            correctAnswers++;
+          } else {
+            resultElement.style.color = 'red';
+            resultElement.innerHTML = 'Wrong!';
+
+            if (selectedAnswer == 'a') thevalue[0].style.color = 'red';
+            if (selectedAnswer == 'b') thevalue[1].style.color = 'red';
+            if (selectedAnswer == 'c') thevalue[2].style.color = 'red';
+            if (selectedAnswer == 'd') thevalue[3].style.color = 'red';
+          }
+        } else {
+          resultElement.style.color = 'red';
+          resultElement.innerHTML = 'No answer selected!';
+        }
+      }
+
+      var finalResult = document.getElementById('final-result');
+      finalResult.innerHTML = 'You scored ' + correctAnswers + ' out of ' + totalQuestions + ' questions.';
+    }
+  </script>
+</div>
                           
                     <!--Post Test of experiment -->
                     </p>
