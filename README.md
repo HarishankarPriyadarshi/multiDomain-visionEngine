@@ -16,6 +16,6 @@
 
 9. Huffman Coding for Lossless Image Compression
 
-10. Transform-Based Image Compression
+10. Sine and Cosine Transform-Based Image Compression
 
 11. JPEG Image Compression Technique
