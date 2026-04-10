@@ -71,7 +71,7 @@ export default function Sampling() {
       console.error("⛔ OpenCV.js is not fully loaded yet!");
       return;
     }
-
+    console.log("cv", window.cv)
     let imgElement = document.getElementById("inputImage");
     let src = window.cv.imread(imgElement);
     let dst = new window.cv.Mat();
