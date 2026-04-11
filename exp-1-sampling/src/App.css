@@ -8,6 +8,7 @@
   padding: 2px 0;
   box-sizing: border-box;
   left: 0;
+    margin: 0 auto;
   text-align: center;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -79,7 +80,7 @@ h4 {
   height: auto;
   max-height: 120px;
   box-sizing: border-box;
-  left: 0;
+   margin: 0 auto;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -136,16 +137,43 @@ h4 {
 #main-box {
   background-color: #f2f9ff;
   position: relative;
-  left: 0;
-  top: 0;
+  /*   
+  left: auto;
+  right: auto;
+    top: 0; */
+  margin: 0 auto;
+
   height: 90%;
   width: 1200px;
   overflow: hidden;
   color: #333333;
   box-sizing: border-box; /* Ensure padding doesn't affect width and height calculations */
-  
 }
+.grand-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  overflow-x: auto;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100vw;
+}
+.parent-container {
+  position: relative;
 
+  box-sizing: border-box;
+  width: 1400px;
+  /* 898+45 */
+  /* min-height: 943px; */
+  margin: 0 auto;
+  margin-top: 4px;
+  background-color: #1a5376;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border-radius: 10px;
+}
 /* for alerts */
 .MuiDialog-container {
   height: 90%;
@@ -161,7 +189,7 @@ h4 {
 @media (min-width: 1200px) {
   #main-box {
     width: 1200px; /* Maintain original width for large screens */
-    height: 800px; /* Maintain original height for large screens */
+    height: 820px; /* Maintain original height for large screens */
   }
   .MuiDialog-container {
     height: 75%;
@@ -179,7 +207,7 @@ h4 {
   #main-box {
     width: 100%; /* Adjust width to 90% of the viewport width */
     height: 100%; /* Allow height to adjust based on content */
-    max-height: 700px; /* Limit height for medium-sized screens */
+    max-height: 850px; /* Limit height for medium-sized screens */
   }
   .MuiDialog-container {
     width: 100%; /* Adjust width to 90% of the viewport width */
@@ -273,6 +301,7 @@ h4 {
   width: 90%;
   height: auto;
   min-height: 500px;
+  
 }
 
 /* General content container */
@@ -517,3 +546,67 @@ ol {
   
   }
 } */
+
+/* css additional for input images */
+.gridImage {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.gridImageOne:hover {
+  transform: translateY(-5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.25);
+}
+.gridImageTwo:hover {
+  transform: translateY(-5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.25);
+}
+.gridImageThree:hover {
+  transform: translateY(5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.25);
+}
+.gridImageFour:hover {
+  transform: translateY(5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.25);
+}
+/* upload btn */
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 90%;
+  padding: 12px 0;
+
+  background: #dfe3ea;              /* light gray */
+  border: 2px solid #1D2A6D;        /* theme blue */
+  border-radius: 14px;
+
+  font-weight: 600;
+  font-size: 15px;
+  color: #1D2A6D;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.upload-btn:hover {
+  background: #e8ecf3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
+.upload-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.upload-icon {
+  width: 18px;
+  height: 18px;
+}
