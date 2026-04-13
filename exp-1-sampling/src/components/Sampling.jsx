@@ -77,7 +77,8 @@ export default function Sampling() {
       console.error("⛔ OpenCV.js is not fully loaded yet!");
       return;
     }
-    console.log("cv", window.cv);
+    
+    //console.log("cv", window.cv);
     let imgElement = document.getElementById("inputImage");
     let src = window.cv.imread(imgElement);
     let dst = new window.cv.Mat();
@@ -85,6 +86,7 @@ export default function Sampling() {
       notifyE("Scale Factor can't be zero!!");
       return;
     }
+    console.log("natural:", imgElement.naturalWidth, imgElement.naturalHeight);
     let newSize = new cv.Size(src.cols * scaleFactor, src.rows * scaleFactor);
     if (samplingMethod === "Linear") {
       window.cv.resize(src, dst, newSize, 0, 0, cv.INTER_LINEAR);
@@ -96,6 +98,7 @@ export default function Sampling() {
       window.cv.resize(src, dst, newSize, 0, 0, cv.INTER_CUBIC);
     }
     window.cv.imshow("finalImage", dst);
+    console.log("scaleFactor",scaleFactor,"src",src.cols,src.rows,"dst",dst.cols,dst.rows);
     notifyS("Process Completed !!");
     // myProcess1Button.current.disabled=true
     src.delete();
@@ -659,6 +662,7 @@ export default function Sampling() {
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
+                          borderRadius: "10px",
                         }}
                         onChange={(e) => setSamplingMethod(e.target.value)}
                       >
@@ -693,10 +697,10 @@ export default function Sampling() {
                         {/* ToastContainer must be placed somewhere in the component tree */}
                         <ToastContainer />
                         <Button
-                          class="tool_btn"
+                          class="tool_btn print_btn"
                           onClick={handlePrint}
                           variant="outlined"
-                          sx={{ borderColor: "#1D2A6D", color: "#1D2A6D" }}
+                          sx={{ borderColor: "#1D2A6D", color: "#3b3d46ff" }}
                         >
                           Print
                           <svg
@@ -729,9 +733,25 @@ export default function Sampling() {
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        border: 1,
+                                                border: 1,
+                        borderColor: "#9e9e9ec6",
                         borderRadius: 2,
                         marginRight: "5%",
+                                              backgroundColor: "#ffffffff",
+                      boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                      },
                       }}
                     >
                       <Box
@@ -739,8 +759,8 @@ export default function Sampling() {
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -748,6 +768,7 @@ export default function Sampling() {
                           justifyContent: "center",
                           borderTopLeftRadius: 8,
                           borderTopRightRadius: 8,
+                          
                         }}
                       >
                         <h4 style={{ margin: "5px 0px" }}>Input Image</h4>
@@ -764,9 +785,9 @@ export default function Sampling() {
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                          style={{ maxWidth: "190px", minHeight: "190px" }}
+                          style={{ maxWidth: "200px", minHeight: "200px" }}
                         />
-                        <p>Input Image</p>
+                        {/* <p>Input Image</p> */}
                       </Box>
                     </Box>
                     <Box
@@ -776,7 +797,23 @@ export default function Sampling() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: "#9e9e9ec6",
                         borderRadius: 2,
+                                              backgroundColor: "#ffffffff",
+                      boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                      },
                       }}
                     >
                       <Box
@@ -784,8 +821,8 @@ export default function Sampling() {
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -806,11 +843,11 @@ export default function Sampling() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{ }}
                           id="finalImage"
                           alt="Output Image"
                         />
-                        <p>Output Image</p>
+                        {/* <p>Output Image</p> */}
                       </Box>
                     </Box>
                   </div>
@@ -1097,7 +1134,7 @@ export default function Sampling() {
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                          style={{ maxWidth: "190px", minHeight: "190px" }}
+                          // style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
                         <p>Input Image</p>
                       </Box>

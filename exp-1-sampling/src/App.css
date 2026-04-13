@@ -437,7 +437,7 @@ h4 {
   color: #ffff;
   gap: 10px;
   font-weight: bold;
-  border: 3px solid #ffffff4d;
+  border: 2px solid #ffffff4d;
   outline: none;
   overflow: hidden;
   font-size: 14px;
@@ -445,6 +445,12 @@ h4 {
   width: 120px;
   min-height: 35px;
   margin-top: 5px;
+}
+
+.print_btn {
+  background-color: #EFF4FA;
+  border-color: #1d2a6d;
+  color: #1d2a6d;
 }
 
 .icon {
@@ -475,6 +481,27 @@ h4 {
     120deg,
     rgba(255, 255, 255, 0) 30%,
     rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  opacity: 0.6;
+}
+/* print btn shine */
+
+.print_btn:hover {
+  transform: scale(1.05);
+  border-color: #1d2a6d95;
+}
+.print_btn::before{
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(215, 215, 215, 0) 30%,
+    #313f82cb,
     rgba(255, 255, 255, 0) 70%
   );
   top: 0;
@@ -609,4 +636,12 @@ ol {
 .upload-icon {
   width: 18px;
   height: 18px;
+}
+/* input image */
+#inputImage{
+  border-radius: 10px;
+  
+}
+#finalImage{
+  border-radius: 10px;
 }
