@@ -47,6 +47,7 @@ function TabPanel(props) {
 export default function Sampling() {
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
+  const [isImageProcessed, setIsImageProcessed] = useState([0, 0]);
 
   const notifyE = (msg) => {
     toast.error(msg, {
@@ -98,6 +99,7 @@ export default function Sampling() {
       window.cv.resize(src, dst, newSize, 0, 0, cv.INTER_CUBIC);
     }
     window.cv.imshow("finalImage", dst);
+    setIsImageProcessed([1, 0]);
     console.log(
       "scaleFactor",
       scaleFactor,
@@ -132,6 +134,7 @@ export default function Sampling() {
     src.convertTo(dst, cv.CV_8U, (levels - 1) / 255.0); // Scale to 0-15
     dst.convertTo(dst, cv.CV_8U, 255.0 / (levels - 1)); // Scale back to 0-255
     window.cv.imshow("finalImage", dst);
+    setIsImageProcessed([0, 1]);
     // myProcess2Button.current.disabled=true
     notifyS("Process Completed !!");
     src.delete();
@@ -410,7 +413,11 @@ export default function Sampling() {
               />
             </Button>
 
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{ color: "#D1D3D8" }}
+              onClick={instr}
+            >
               Instructions
             </Button>
           </div>
@@ -622,7 +629,7 @@ export default function Sampling() {
                         </div>
                         {uploadedImageName && (
                           <p className="upload-success">
-                            {uploadedImageName} image uploaded ✅
+                            {uploadedImageName} image uploaded
                           </p>
                         )}
                       </div>
@@ -852,6 +859,33 @@ export default function Sampling() {
                       >
                         <canvas style={{}} id="finalImage" alt="Output Image" />
                         {/* <p>Output Image</p> */}
+                        {isImageProcessed[0] === 0 && (
+                          <div className="process-message-container">
+                            <div className="placeholder-content">
+                              <div className="file-icon">
+                                {" "}
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="20"
+                                  height="20"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="css-i6dzq1"
+                                >
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                  <polyline points="14 2 14 8 20 8"></polyline>
+                                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                                  <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                              </div>
+                              <p>Process an image to view results.</p>
+                            </div>
+                          </div>
+                        )}
                       </Box>
                     </Box>
                   </div>
@@ -866,7 +900,7 @@ export default function Sampling() {
                 <div id="left_bar">
                   <Box
                     sx={{
-                                            width: "100%",
+                      width: "100%",
                       height: "85%",
                       display: "flex",
                       flexDirection: "column",
@@ -898,8 +932,8 @@ export default function Sampling() {
                         borderTopLeftRadius: 8,
                         borderTopRightRadius: 8,
                         borderColor: "divider",
-                          backgroundColor: "#CDD5E7",
-                          color: "#1D2A6D",
+                        backgroundColor: "#CDD5E7",
+                        color: "#1D2A6D",
                         height: "50px",
                         display: "flex",
                         alignContent: "center",
@@ -1008,7 +1042,7 @@ export default function Sampling() {
                           </div>
                         </div>
 
-<div style={{ marginTop: "15px", textAlign: "center" }}>
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
                           <label htmlFor="file-upload" className="upload-btn">
                             <svg
                               className="upload-icon"
@@ -1034,7 +1068,7 @@ export default function Sampling() {
                         </div>
                         {uploadedImageName && (
                           <p className="upload-success">
-                            {uploadedImageName} image uploaded ✅
+                            {uploadedImageName} image uploaded 
                           </p>
                         )}
                       </div>
@@ -1183,7 +1217,7 @@ export default function Sampling() {
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                           style={{ maxWidth: "190px", minHeight: "190px" }}
+                          style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
                         {/* <p>Input Image</p> */}
                       </Box>
@@ -1246,6 +1280,33 @@ export default function Sampling() {
                           alt="Output Image"
                         />
                         {/* <p>Output Image</p> */}
+                                                {isImageProcessed[1] === 0 && (
+                          <div className="process-message-container quant">
+                            <div className="placeholder-content">
+                              <div className="file-icon">
+                                {" "}
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="20"
+                                  height="20"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="css-i6dzq1"
+                                >
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                  <polyline points="14 2 14 8 20 8"></polyline>
+                                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                                  <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                              </div>
+                              <p>Process an image to view results.</p>
+                            </div>
+                          </div>
+                        )}
                       </Box>
                     </Box>
                   </div>
