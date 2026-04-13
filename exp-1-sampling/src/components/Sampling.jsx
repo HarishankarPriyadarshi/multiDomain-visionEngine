@@ -77,7 +77,7 @@ export default function Sampling() {
       console.error("⛔ OpenCV.js is not fully loaded yet!");
       return;
     }
-    
+
     //console.log("cv", window.cv);
     let imgElement = document.getElementById("inputImage");
     let src = window.cv.imread(imgElement);
@@ -98,7 +98,16 @@ export default function Sampling() {
       window.cv.resize(src, dst, newSize, 0, 0, cv.INTER_CUBIC);
     }
     window.cv.imshow("finalImage", dst);
-    console.log("scaleFactor",scaleFactor,"src",src.cols,src.rows,"dst",dst.cols,dst.rows);
+    console.log(
+      "scaleFactor",
+      scaleFactor,
+      "src",
+      src.cols,
+      src.rows,
+      "dst",
+      dst.cols,
+      dst.rows,
+    );
     notifyS("Process Completed !!");
     // myProcess1Button.current.disabled=true
     src.delete();
@@ -310,7 +319,7 @@ export default function Sampling() {
   return (
     <OpenCvProvider>
       <div id="main-box">
-        <div id="bottom-footer">&copy; 2025 Virtual Labs, IIT Roorkee</div>
+        <div id="bottom-footer">&copy; 2026 Virtual Labs, IIT Roorkee</div>
 
         <div id="top-header">
           {/* <p id="heading">Sampling and Quantization of Images</p> */}
@@ -733,25 +742,25 @@ export default function Sampling() {
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                                                border: 1,
+                        border: 1,
                         borderColor: "#9e9e9ec6",
                         borderRadius: 2,
                         marginRight: "5%",
-                                              backgroundColor: "#ffffffff",
-                      boxShadow: `
+                        backgroundColor: "#ffffffff",
+                        boxShadow: `
     0 4px 8px rgba(0,0,0,0.15),
     0 8px 16px rgba(0,0,0,0.10),
     0 16px 24px rgba(0,0,0,0.05)
   `,
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: `
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `
       0 6px 12px rgba(0,0,0,0.2),
       0 12px 24px rgba(0,0,0,0.15),
       0 20px 40px rgba(0,0,0,0.1)
     `,
-                      },
+                        },
                       }}
                     >
                       <Box
@@ -759,7 +768,7 @@ export default function Sampling() {
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-backgroundColor: " #EAF2F9",
+                          backgroundColor: " #EAF2F9",
                           color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
@@ -768,7 +777,6 @@ backgroundColor: " #EAF2F9",
                           justifyContent: "center",
                           borderTopLeftRadius: 8,
                           borderTopRightRadius: 8,
-                          
                         }}
                       >
                         <h4 style={{ margin: "5px 0px" }}>Input Image</h4>
@@ -799,21 +807,21 @@ backgroundColor: " #EAF2F9",
                         border: 1,
                         borderColor: "#9e9e9ec6",
                         borderRadius: 2,
-                                              backgroundColor: "#ffffffff",
-                      boxShadow: `
+                        backgroundColor: "#ffffffff",
+                        boxShadow: `
     0 4px 8px rgba(0,0,0,0.15),
     0 8px 16px rgba(0,0,0,0.10),
     0 16px 24px rgba(0,0,0,0.05)
   `,
-                      transition: "all 0.3s ease-in-out",
-                      "&:hover": {
-                        transform: "translateY(-4px)",
-                        boxShadow: `
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `
       0 6px 12px rgba(0,0,0,0.2),
       0 12px 24px rgba(0,0,0,0.15),
       0 20px 40px rgba(0,0,0,0.1)
     `,
-                      },
+                        },
                       }}
                     >
                       <Box
@@ -842,11 +850,7 @@ backgroundColor: " #EAF2F9",
                           alignItems: "center",
                         }}
                       >
-                        <canvas
-                          style={{ }}
-                          id="finalImage"
-                          alt="Output Image"
-                        />
+                        <canvas style={{}} id="finalImage" alt="Output Image" />
                         {/* <p>Output Image</p> */}
                       </Box>
                     </Box>
@@ -862,12 +866,28 @@ backgroundColor: " #EAF2F9",
                 <div id="left_bar">
                   <Box
                     sx={{
-                      width: "100%",
-                      height: "80%",
+                                            width: "100%",
+                      height: "85%",
                       display: "flex",
                       flexDirection: "column",
                       border: 1,
+                      borderColor: "divider",
                       borderRadius: 2,
+                      backgroundColor: "#ffffffff",
+                      boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                      },
                     }}
                   >
                     <Box
@@ -878,8 +898,8 @@ backgroundColor: " #EAF2F9",
                         borderTopLeftRadius: 8,
                         borderTopRightRadius: 8,
                         borderColor: "divider",
-                        backgroundColor: "#1D2A6D",
-                        color: "#fff5ee",
+                          backgroundColor: "#CDD5E7",
+                          color: "#1D2A6D",
                         height: "50px",
                         display: "flex",
                         alignContent: "center",
@@ -916,7 +936,7 @@ backgroundColor: " #EAF2F9",
                           Choose an Image
                         </h4>
                         <div
-                          className="image-grid"
+                          className="image-grid "
                           sx={{
                             width: "100%",
                             position: "relative",
@@ -936,7 +956,7 @@ backgroundColor: " #EAF2F9",
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageOne"
                               onClick={() => handleImageClick(0)}
                             >
                               <img
@@ -946,7 +966,7 @@ backgroundColor: " #EAF2F9",
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageTwo"
                               onClick={() => handleImageClick(1)}
                             >
                               <img
@@ -966,7 +986,7 @@ backgroundColor: " #EAF2F9",
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageThree"
                               onClick={() => handleImageClick(2)}
                             >
                               <img
@@ -976,7 +996,7 @@ backgroundColor: " #EAF2F9",
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageFour"
                               onClick={() => handleImageClick(3)}
                             >
                               <img
@@ -988,23 +1008,35 @@ backgroundColor: " #EAF2F9",
                           </div>
                         </div>
 
-                        <div style={{ marginTop: "10px" }}>
-                          <div className="relative inline-block">
-                            <label
-                              htmlFor="file-upload"
-                              className="cursor-pointer inline-block text-sm font-semibold py-2 px-4 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200"
+<div style={{ marginTop: "15px", textAlign: "center" }}>
+                          <label htmlFor="file-upload" className="upload-btn">
+                            <svg
+                              className="upload-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
                             >
-                              Upload file
-                            </label>
-                            <input
-                              id="file-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                            />
-                          </div>
+                              <path d="M12 16V4" />
+                              <path d="M8 8l4-4 4 4" />
+                              <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                            </svg>
+                            Upload file
+                          </label>
+
+                          <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            hidden
+                          />
                         </div>
+                        {uploadedImageName && (
+                          <p className="upload-success">
+                            {uploadedImageName} image uploaded ✅
+                          </p>
+                        )}
                       </div>
                       <h4
                         style={{
@@ -1030,6 +1062,7 @@ backgroundColor: " #EAF2F9",
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
+                          borderRadius: "10px",
                         }}
                       >
                         <MenuItem value="2">2 Bit</MenuItem>
@@ -1063,7 +1096,7 @@ backgroundColor: " #EAF2F9",
                         <ToastContainer />
 
                         <Button
-                          class="tool_btn"
+                          class="tool_btn print_btn"
                           onClick={handlePrint}
                           variant="outlined"
                           sx={{ borderColor: "#1D2A6D", color: "#1D2A6D" }}
@@ -1100,8 +1133,24 @@ backgroundColor: " #EAF2F9",
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: "#9e9e9ec6",
                         borderRadius: 2,
                         marginRight: "5%",
+                        backgroundColor: "#ffffffff",
+                        boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                        },
                       }}
                     >
                       <Box
@@ -1109,8 +1158,8 @@ backgroundColor: " #EAF2F9",
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -1134,9 +1183,9 @@ backgroundColor: " #EAF2F9",
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                          // style={{ maxWidth: "190px", minHeight: "190px" }}
+                           style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
-                        <p>Input Image</p>
+                        {/* <p>Input Image</p> */}
                       </Box>
                     </Box>
                     <Box
@@ -1146,7 +1195,23 @@ backgroundColor: " #EAF2F9",
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: "#9e9e9ec6",
                         borderRadius: 2,
+                        backgroundColor: "#ffffffff",
+                        boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                        },
                       }}
                     >
                       <Box
@@ -1154,8 +1219,8 @@ backgroundColor: " #EAF2F9",
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -1180,7 +1245,7 @@ backgroundColor: " #EAF2F9",
                           id="finalImage"
                           alt="Output Image"
                         />
-                        <p>Output Image</p>
+                        {/* <p>Output Image</p> */}
                       </Box>
                     </Box>
                   </div>
