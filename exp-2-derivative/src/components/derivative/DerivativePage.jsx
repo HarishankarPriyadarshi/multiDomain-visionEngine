@@ -685,7 +685,7 @@ export default function DerivativePage() {
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage g"
                               onClick={() => handleImageClick(0)}
                             >
                               <img

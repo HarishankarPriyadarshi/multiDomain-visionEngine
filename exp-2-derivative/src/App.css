@@ -8,6 +8,7 @@
   padding: 2px 0;
   box-sizing: border-box;
   left: 0;
+  margin: 0 auto;
   text-align: center;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
@@ -79,7 +80,7 @@ h4 {
   height: auto;
   max-height: 120px;
   box-sizing: border-box;
-  left: 0;
+  margin: 0 auto;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -136,18 +137,46 @@ h4 {
 #main-box {
   background-color: #f2f9ff;
   position: relative;
-  left: 0;
-  top: 0;
+  /*   
+  left: auto;
+  right: auto;
+    top: 0; */
+  margin: 0 auto;
+
   height: 90%;
   width: 1200px;
   overflow: hidden;
   color: #333333;
   box-sizing: border-box; /* Ensure padding doesn't affect width and height calculations */
-  
+  border-radius: 10px;
 }
+.grand-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  overflow-x: auto;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100vw;
+}
+.parent-container {
+  position: relative;
 
+  box-sizing: border-box;
+  width: 1400px;
+  /* 898+45 */
+  /* min-height: 943px; */
+  margin: 0 auto;
+  margin-top: 4px;
+  background-color: #1a5376;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border-radius: 10px;
+}
 /* for alerts */
-.MuiDialog-container {
+/* .MuiDialog-container {
   height: 90%;
   width: 1200px;
 }
@@ -155,23 +184,23 @@ h4 {
 .MuiBackdrop-root {
   height: 90%;
   width: 1200px;
-}
+} */
 
 /* Media query for larger screens (desktop and above) */
 @media (min-width: 1200px) {
   #main-box {
     width: 1200px; /* Maintain original width for large screens */
-    height: 800px; /* Maintain original height for large screens */
+    height: 820px; /* Maintain original height for large screens */
   }
-  .MuiDialog-container {
+  /* .MuiDialog-container {
     height: 75%;
     width: 1200px;
-  }
+  } */
 
-  .MuiBackdrop-root {
+  /* .MuiBackdrop-root {
     height: 800px;
     width: 1200px;
-  }
+  } */
 }
 
 /* Media query for tablets and medium screens */
@@ -179,18 +208,18 @@ h4 {
   #main-box {
     width: 100%; /* Adjust width to 90% of the viewport width */
     height: 100%; /* Allow height to adjust based on content */
-    max-height: 700px; /* Limit height for medium-sized screens */
+    max-height: 850px; /* Limit height for medium-sized screens */
   }
-  .MuiDialog-container {
-    width: 100%; /* Adjust width to 90% of the viewport width */
-    height: 100%; /* Allow height to adjust based on content */
-    max-height: 700px; /* Limit height for medium-sized screens */
+  /* .MuiDialog-container {
+    width: 100%;
+    height: 100%;
+    max-height: 700px;
   }
   .MuiBackdrop-root {
-    width: 100%; /* Adjust width to 90% of the viewport width */
-    height: 100%; /* Allow height to adjust based on content */
-    max-height: 700px; /* Limit height for medium-sized screens */
-  }
+    width: 100%;      
+    height: 100%;     
+    max-height: 700px;
+  } */
 }
 
 /* Media query for mobile devices */
@@ -198,15 +227,16 @@ h4 {
   #main-box {
     width: 100%; /* Make the width 100% of the screen on mobile */
     height: 100%; /* Allow height to adjust based on content */
+     border-radius: 0px;
   }
-  .MuiDialog-container {
-    width: 100%; /* Adjust width to 90% of the viewport width */
-    height: 100%; /* Allow height to adjust based on content */
+  /* .MuiDialog-container {
+    width: 100%; 
+    height: 100%;
   }
   .MuiBackdrop-root {
-    width: 100%; /* Adjust width to 90% of the viewport width */
-    height: 100%; /* Allow height to adjust based on content */
-  }
+    width: 100%; 
+    height: 100%;
+  } */
 }
 
 #mainbox {
@@ -408,7 +438,7 @@ h4 {
   color: #ffff;
   gap: 10px;
   font-weight: bold;
-  border: 3px solid #ffffff4d;
+  border: 2px solid #ffffff4d;
   outline: none;
   overflow: hidden;
   font-size: 14px;
@@ -416,6 +446,12 @@ h4 {
   width: 120px;
   min-height: 35px;
   margin-top: 5px;
+}
+
+.print_btn {
+  background-color: #eff4fa;
+  border-color: #1d2a6d;
+  color: #1d2a6d;
 }
 
 .icon {
@@ -452,6 +488,27 @@ h4 {
   left: -100px;
   opacity: 0.6;
 }
+/* print btn shine */
+
+.print_btn:hover {
+  transform: scale(1.05);
+  border-color: #1d2a6d95;
+}
+.print_btn::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(215, 215, 215, 0) 30%,
+    #313f82cb,
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  opacity: 0.6;
+}
 
 @keyframes shine {
   0% {
@@ -468,7 +525,12 @@ h4 {
 }
 
 #instructions-dialog-title {
-  background-color: #84c1fc;
+  background-color: #1d2a6d;
+  color: #fff5ee;
+  text-align: center;
+  padding: 10px;
+  font-size: 1.4rem;
+  font-weight: bold;
 }
 
 [role="tabpanel"] > div {
@@ -517,3 +579,137 @@ ol {
   
   }
 } */
+
+/* css additional for input images */
+.gridImage {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gridImageOne:hover {
+  transform: translateY(-5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageTwo:hover {
+  transform: translateY(-5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageThree:hover {
+  transform: translateY(5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageFour:hover {
+  transform: translateY(5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+/* upload btn */
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 90%;
+  padding: 12px 0;
+
+  background: #dfe3ea; /* light gray */
+  border: 2px solid #1d2a6d; /* theme blue */
+  border-radius: 14px;
+
+  font-weight: 600;
+  font-size: 15px;
+  color: #1d2a6d;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.upload-btn:hover {
+  background: #e8ecf3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
+.upload-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.upload-icon {
+  width: 18px;
+  height: 18px;
+}
+/* input image */
+#inputImage {
+  border-radius: 10px;
+}
+#finalImage {
+  border-radius: 10px;
+}
+
+#instruction-btn {
+  border-radius: 10px;
+  border: 2px solid #e7e7e7;
+  padding: 5px 10px;
+  height: 40px;
+  margin: auto auto;
+}
+/* process message container */
+
+
+.process-message-container {
+  position: relative;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 260px;
+  width: 100%;
+  margin-top: -150px;
+ 
+  padding: 20px;
+
+  background: linear-gradient(
+    135deg,
+    #e4e7eb,
+    #EAF1F9
+  );
+
+  border-radius: 14px;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.quant{
+  margin-top: -190px;
+}
+
+/* Inner Content */
+.placeholder-content {
+  text-align: center;
+  color: #444;
+}
+
+.file-icon {
+  
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+.placeholder-content p {
+  text-align: center;
+  font-size: 1rem;
+  color: #101111cd;
+}@keyframes highlightPulseBlue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(28, 42, 109, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(28, 42, 109, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(28, 42, 109, 0);
+  }
+}
