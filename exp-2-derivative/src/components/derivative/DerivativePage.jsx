@@ -973,7 +973,7 @@ p: 2,
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                          style={{ maxWidth: "190px", minHeight: "190px" }}
+                          style={{ minWidth: "260px", minHeight: "190px" }}
                         />
                         {/* <p>Input Image</p> */}
                       </Box>
