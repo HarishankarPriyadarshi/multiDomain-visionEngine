@@ -923,17 +923,33 @@ backgroundColor: "#CDD5E7",
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: "#9e9e9ec6",
                         borderRadius: 2,
                         marginRight: "5%",
+                        backgroundColor: "#ffffffff",
+                        boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                        transition: "all 0.3s ease-in-out",
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                          boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                        },
                       }}
                     >
                       <Box
                         sx={{
-                          p: 2,
+p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -959,7 +975,7 @@ backgroundColor: "#CDD5E7",
                           alt="Input Image"
                           style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
-                        <p>Input Image</p>
+                        {/* <p>Input Image</p> */}
                       </Box>
                     </Box>
                     <Box
@@ -969,7 +985,35 @@ backgroundColor: "#CDD5E7",
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: isAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                        },
                       }}
                     >
                       <Box
@@ -977,8 +1021,8 @@ backgroundColor: "#CDD5E7",
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -999,11 +1043,38 @@ backgroundColor: "#CDD5E7",
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{ }}
                           id="finalImage"
                           alt="Output Image"
                         />
-                        <p>Output Image</p>
+                        {/* <p>Output Image</p>  */}
+                                                {isImageProcessed === false && (
+                          <div className="process-message-container">
+                            <div className="placeholder-content">
+                              <div className="file-icon">
+                                {" "}
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="20"
+                                  height="20"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="css-i6dzq1"
+                                >
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                  <polyline points="14 2 14 8 20 8"></polyline>
+                                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                                  <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                              </div>
+                              <p>Process an image to view results.</p>
+                            </div>
+                          </div>
+                        )}
                       </Box>
                     </Box>
                   </div>
