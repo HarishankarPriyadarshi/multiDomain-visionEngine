@@ -48,6 +48,7 @@ export default function Sampling() {
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
   const [isImageProcessed, setIsImageProcessed] = useState([0, 0]);
+  const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyE = (msg) => {
     toast.error(msg, {
@@ -100,6 +101,10 @@ export default function Sampling() {
     }
     window.cv.imshow("finalImage", dst);
     setIsImageProcessed([1, 0]);
+    setIsAnimationPlaying(true);
+    setTimeout(() => {
+      setIsAnimationPlaying(false);
+    }, 1000);
     console.log(
       "scaleFactor",
       scaleFactor,
@@ -135,6 +140,11 @@ export default function Sampling() {
     dst.convertTo(dst, cv.CV_8U, 255.0 / (levels - 1)); // Scale back to 0-255
     window.cv.imshow("finalImage", dst);
     setIsImageProcessed([0, 1]);
+    setIsAnimationPlaying(true);
+    setTimeout(() => {
+      setIsAnimationPlaying(false);
+    }, 1000);
+
     // myProcess2Button.current.disabled=true
     notifyS("Process Completed !!");
     src.delete();
@@ -812,22 +822,34 @@ export default function Sampling() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
-                        borderColor: "#9e9e9ec6",
+                        borderColor: isAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
-                        backgroundColor: "#ffffffff",
-                        boxShadow: `
-    0 4px 8px rgba(0,0,0,0.15),
-    0 8px 16px rgba(0,0,0,0.10),
-    0 16px 24px rgba(0,0,0,0.05)
-  `,
-                        transition: "all 0.3s ease-in-out",
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
                         "&:hover": {
                           transform: "translateY(-4px)",
-                          boxShadow: `
-      0 6px 12px rgba(0,0,0,0.2),
-      0 12px 24px rgba(0,0,0,0.15),
-      0 20px 40px rgba(0,0,0,0.1)
-    `,
                         },
                       }}
                     >
@@ -1068,7 +1090,7 @@ export default function Sampling() {
                         </div>
                         {uploadedImageName && (
                           <p className="upload-success">
-                            {uploadedImageName} image uploaded 
+                            {uploadedImageName} image uploaded
                           </p>
                         )}
                       </div>
@@ -1229,22 +1251,34 @@ export default function Sampling() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
-                        borderColor: "#9e9e9ec6",
+                        borderColor: isAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
-                        backgroundColor: "#ffffffff",
-                        boxShadow: `
-    0 4px 8px rgba(0,0,0,0.15),
-    0 8px 16px rgba(0,0,0,0.10),
-    0 16px 24px rgba(0,0,0,0.05)
-  `,
-                        transition: "all 0.3s ease-in-out",
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
                         "&:hover": {
                           transform: "translateY(-4px)",
-                          boxShadow: `
-      0 6px 12px rgba(0,0,0,0.2),
-      0 12px 24px rgba(0,0,0,0.15),
-      0 20px 40px rgba(0,0,0,0.1)
-    `,
                         },
                       }}
                     >
@@ -1280,7 +1314,7 @@ export default function Sampling() {
                           alt="Output Image"
                         />
                         {/* <p>Output Image</p> */}
-                                                {isImageProcessed[1] === 0 && (
+                        {isImageProcessed[1] === 0 && (
                           <div className="process-message-container quant">
                             <div className="placeholder-content">
                               <div className="file-icon">
