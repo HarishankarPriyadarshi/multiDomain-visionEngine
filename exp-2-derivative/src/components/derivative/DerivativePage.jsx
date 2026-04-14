@@ -54,6 +54,9 @@ export default function DerivativePage() {
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
   const myProcess3Button = useRef(null);
+  const [uploadedImageName, setUploadedImageName] = useState(null);
+   const [isImageProcessed, setIsImageProcessed] = useState(false);
+  const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyE = (msg) => {
     toast.error(msg, {
@@ -247,6 +250,11 @@ export default function DerivativePage() {
     }
 
     window.cv.imshow("finalImage", edgeDetected);
+    setIsImageProcessed(true);
+    setIsAnimationPlaying(true);
+    setTimeout(() => {
+      setIsAnimationPlaying(false);
+    }, 1000);
     notifyS("Process Completed !!");
 
     src.delete();
@@ -442,6 +450,8 @@ export default function DerivativePage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
+      setUploadedImageName(file.name);
+      console.log(file.name);
       // Create a URL for the image file
       const imageUrl = URL.createObjectURL(file);
 
@@ -612,7 +622,23 @@ export default function DerivativePage() {
                       display: "flex",
                       flexDirection: "column",
                       border: 1,
+                      borderColor: "divider",
                       borderRadius: 2,
+                      backgroundColor: "#ffffffff",
+                      boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                      },
                     }}
                   >
                     <Box
@@ -623,8 +649,8 @@ export default function DerivativePage() {
                         borderTopLeftRadius: 8,
                         borderTopRightRadius: 8,
                         borderColor: "divider",
-                        backgroundColor: "#1D2A6D",
-                        color: "#fff5ee",
+backgroundColor: "#CDD5E7",
+                        color: "#1D2A6D",
                         height: "50px",
                         display: "flex",
                         alignContent: "center",
@@ -685,7 +711,7 @@ export default function DerivativePage() {
                             }}
                           >
                             <div
-                              className="gridImage g"
+                              className="gridImage gridImageOne"
                               onClick={() => handleImageClick(0)}
                             >
                               <img
@@ -695,7 +721,7 @@ export default function DerivativePage() {
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageTwo"
                               onClick={() => handleImageClick(1)}
                             >
                               <img
@@ -715,7 +741,7 @@ export default function DerivativePage() {
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageThree"
                               onClick={() => handleImageClick(2)}
                             >
                               <img
@@ -725,7 +751,7 @@ export default function DerivativePage() {
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageFour"
                               onClick={() => handleImageClick(3)}
                             >
                               <img
@@ -737,23 +763,36 @@ export default function DerivativePage() {
                           </div>
                         </div>
 
-                        <div style={{ marginTop: "10px" }}>
-                          <div className="relative inline-block">
-                            <label
-                              htmlFor="file-upload"
-                              className="cursor-pointer inline-block text-sm font-semibold py-2 px-4 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
+                          <label htmlFor="file-upload" className="upload-btn">
+                            <svg
+                              className="upload-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
                             >
-                              Upload file
-                            </label>
-                            <input
-                              id="file-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                            />
-                          </div>
+                              <path d="M12 16V4" />
+                              <path d="M8 8l4-4 4 4" />
+                              <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                            </svg>
+                            Upload file
+                          </label>
+
+                          <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            hidden
+                          />
                         </div>
+                        {uploadedImageName && (
+                          <p className="upload-success">
+                            {uploadedImageName} image uploaded
+                          </p>
+                        )}
                       </div>
 
                       <h4
@@ -767,6 +806,7 @@ export default function DerivativePage() {
                       </h4>
                       <Select
                         value={derivativeMethod}
+                        className="derivative-btn"
                         sx={{
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
@@ -778,6 +818,7 @@ export default function DerivativePage() {
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
+                          borderRadius: "10px",
                         }}
                         onChange={(e) => setDerivativeMethod(e.target.value)}
                       >
@@ -797,6 +838,7 @@ export default function DerivativePage() {
                           </h4>
                           <Select
                             value={filter1Type}
+                            className="derivative-btn"
                             sx={{
                               color: "#1D2A6D",
                               "& .MuiSelect-icon": {
@@ -808,6 +850,7 @@ export default function DerivativePage() {
                                 paddingTop: 1,
                                 paddingBottom: 1,
                               },
+                              borderRadius: "10px",
                             }}
                             onChange={(e) => setFilter1Type(e.target.value)}
                           >
@@ -835,6 +878,7 @@ export default function DerivativePage() {
                           </h4>
                           <Select
                             value={o2Kernel}
+                            className="derivative-btn"
                             sx={{
                               color: "#1D2A6D",
                               "& .MuiSelect-icon": {
@@ -846,6 +890,7 @@ export default function DerivativePage() {
                                 paddingTop: 1,
                                 paddingBottom: 1,
                               },
+                              borderRadius: "10px",
                             }}
                             onChange={(e) => setO2Kernel(e.target.value)}
                           >
