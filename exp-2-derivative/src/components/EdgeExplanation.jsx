@@ -363,21 +363,21 @@ export default function EdgeExplanation(){
                     <div  style={{display:'flex',flexDirection:'column',width:'45%'}}>
                         <div id="image-box">
                             <div style={{display:'flex',flexDirection:'row',justifyContent:'space-evenly',alignItems:'center', width:'100%'} }>
-                                <div onClick={() => !imagesDisabled && handleImage(0)}><img src={plus} id="image" style={{
+                                <div onClick={() => !imagesDisabled && handleImage(0)}><img src={plus} className={image === 0 ? "image-selected" : ""} id="image" style={{
                                 opacity: imagesDisabled ? 0.7 : 1,
                                 cursor: imagesDisabled ? 'not-allowed' : 'pointer',
                                 }} /></div>
-                                <div onClick={() => !imagesDisabled && handleImage(1)}><img src={minus} id="image" style={{
+                                <div onClick={() => !imagesDisabled && handleImage(1)}><img src={minus} className={image === 1 ? "image-selected" : ""} id="image" style={{
                                 opacity: imagesDisabled ? 0.7 : 1,
                                 cursor: imagesDisabled ? 'not-allowed' : 'pointer',
                                 }} /></div>
                             </div>
                             <div style={{display:'flex',flexDirection:'row',justifyContent:'space-evenly',alignItems:'center', width:'100%'} }>
-                                <div onClick={() => !imagesDisabled && handleImage(2)}><img src={multiply} id="image" style={{
+                                <div onClick={() => !imagesDisabled && handleImage(2)}><img src={multiply} className={image === 2 ? "image-selected" : ""} id="image" style={{
                                 opacity: imagesDisabled ? 0.7 : 1,
                                 cursor: imagesDisabled ? 'not-allowed' : 'pointer',
                                 }} /></div>
-                                <div onClick={() => !imagesDisabled && handleImage(3)}><img src={divide} id="image" style={{
+                                <div onClick={() => !imagesDisabled && handleImage(3)}><img src={divide} className={image === 3 ? "image-selected" : ""} id="image" style={{
                                 opacity: imagesDisabled ? 0.7 : 1,
                                 cursor: imagesDisabled ? 'not-allowed' : 'pointer',
                                 }} /></div>
@@ -440,10 +440,11 @@ export default function EdgeExplanation(){
                                     <div
                                         key={`${rowIndex}-${colIndex}`}
                                         id="originalGrid"
-                                        style={{
-                                            // backgroundColor: cell === 1 ? 'black' : 'white',
-                                            color: cell === 1 ? 'red' : 'black',
-                                        }}
+                                         className="matrix-animate"
+  style={{
+    color: cell === 1 ? 'red' : 'black',
+    animationDelay: `${rowIndex * 0.15}s`
+  }}
                                         
                                     >{original[rowIndex][colIndex]}</div>
                                 ))
@@ -505,6 +506,12 @@ export default function EdgeExplanation(){
                                     <div
                                         key={`${rowIndex}-${colIndex}`}
                                         id="kernelGrid"
+                                                                                 className="matrix-animate"
+  style={{
+    
+    animationDelay: `${rowIndex * 0.15}s`
+  }}
+       
                                     
                                     >{kernelx[rowIndex][colIndex]}</div>
                                 ))
@@ -522,6 +529,12 @@ export default function EdgeExplanation(){
                                     <div
                                         key={`${rowIndex}-${colIndex}`}
                                         id="kernelGrid"
+                                                                                 className="matrix-animate"
+  style={{
+   
+    animationDelay: `${rowIndex * 0.15}s`
+  }}
+       
                                     >{kernely[rowIndex][colIndex]}</div>
                                 ))
                             )}
@@ -547,6 +560,7 @@ export default function EdgeExplanation(){
                                     <div
                                         key={`${rowIndex}-${colIndex}`}
                                         id="kernelGrid"
+                                        
                                     >{dx[rowIndex][colIndex]}</div>
                                 ))
                             )}
