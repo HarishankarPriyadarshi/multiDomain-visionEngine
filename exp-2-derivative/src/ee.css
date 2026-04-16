@@ -599,3 +599,37 @@ button:disabled{
     transform: translateY(0);
   }
 }
+/*  dx-active style */
+.dx-active, .dy-active , .res-active  {
+  border: 2px solid #0028f2;
+  background-color: #5975d1;
+  color: #fff;
+  transform: scale(1.1);
+  pointer-events: none;
+transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+
+/* Finished cells */
+.dx-completed,
+.dy-completed , .res-completed {
+  background-color: rgba(89, 117, 209, 0.25);
+  border: 1px solid #5975d1;
+  color: #0028f2;
+  transition: background-color 0.3s ease;
+}
+
+.res-active  {
+  border: 2px solid #6900f2;
+  background-color: #8260d9;
+  color: #fff;
+  transform: scale(1.1);
+  pointer-events: none;
+transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.res-completed {
+  border: 2px solid #6900f2;
+  background-color: #8260d985;
+  color: #5b31c3;
+  transition: background-color 0.3s ease;
+}
