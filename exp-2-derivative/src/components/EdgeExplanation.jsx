@@ -520,6 +520,7 @@ export default function EdgeExplanation() {
                     height: `${((document.getElementById("originalGrid")?.offsetHeight || 0) + 0.5) * (kernelx ? kernelx.length : 0)}px`,
                     border: "2px solid red",
                     pointerEvents: "none",
+                    zIndex: 1000,
                   }}
                 ></div>
               )}
