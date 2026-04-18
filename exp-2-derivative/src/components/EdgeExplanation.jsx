@@ -43,6 +43,8 @@ export default function EdgeExplanation() {
   const [completedDX, setCompletedDX] = useState([]);
   const [completedDY, setCompletedDY] = useState([]);
   const [completedRes, setCompletedRes] = useState([]);
+  const [imageAnimateKey, setImageAnimateKey] = useState(0);
+  const [kernelAnimateKey, setKernelAnimateKey] = useState(0);
 
   useEffect(() => {
     isPausedRef.current = isPaused;
@@ -64,6 +66,7 @@ export default function EdgeExplanation() {
 
   function handleImage(x) {
     setImage(x);
+     setImageAnimateKey(prev => prev + 1);
     const signs = [
       [
         [0, 0, 0, 1, 0, 0, 0],
@@ -113,6 +116,7 @@ export default function EdgeExplanation() {
     runIdRef.current++;
     setIsDone(false);
     setKernel(x);
+    setKernelAnimateKey(prev => prev + 1);
     let kernelX, kernelY;
     switch (x) {
       case "sobel":
@@ -560,7 +564,7 @@ export default function EdgeExplanation() {
                   original.map((row, rowIndex) =>
                     row.map((cell, colIndex) => (
                       <div
-                        key={`${rowIndex}-${colIndex}`}
+                        key={`${rowIndex}-${colIndex}-${imageAnimateKey}`}
                         id="originalGrid"
                         className="matrix-animate"
                         style={{
@@ -705,7 +709,7 @@ export default function EdgeExplanation() {
                     kernelx.map((row, rowIndex) =>
                       row.map((cell, colIndex) => (
                         <div
-                          key={`${rowIndex}-${colIndex}`}
+                          key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
                           id="kernelGrid"
                           className="matrix-animate"
                           style={{
@@ -734,7 +738,7 @@ export default function EdgeExplanation() {
                     kernely.map((row, rowIndex) =>
                       row.map((cell, colIndex) => (
                         <div
-                          key={`${rowIndex}-${colIndex}`}
+                          key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
                           id="kernelGrid"
                           className="matrix-animate"
                           style={{
@@ -906,8 +910,15 @@ export default function EdgeExplanation() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="result_grid"
+                                                        className={
+                              activeRes.row === rowIndex &&
+                              activeRes.col === colIndex
+                                ? "resImage-active"
+                                :  ""
+                            }
                             style={{
                               backgroundColor: `rgb(${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255})`,
+                              
                             }}
                           ></div>
                         )),
