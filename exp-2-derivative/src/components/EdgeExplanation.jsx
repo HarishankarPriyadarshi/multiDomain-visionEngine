@@ -33,16 +33,16 @@ export default function EdgeExplanation() {
   const mySpeedUpButton = useRef(null);
   const mySpeedDownButton = useRef(null);
 
-  const isCancelledRef = useRef(false);
+  const runIdRef = useRef(0);
   const [isDisabled, setIsDisabled] = React.useState(false);
   const [imagesDisabled, setImagesDisabled] = useState(false);
   // for style
   const [activeDX, setActiveDX] = useState({ row: -1, col: -1 });
   const [activeDY, setActiveDY] = useState({ row: -1, col: -1 });
+  const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
   const [completedDX, setCompletedDX] = useState([]);
   const [completedDY, setCompletedDY] = useState([]);
   const [completedRes, setCompletedRes] = useState([]);
-  const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
 
   useEffect(() => {
     isPausedRef.current = isPaused;
@@ -110,7 +110,7 @@ export default function EdgeExplanation() {
   }
 
   function changeKernel(x) {
-    isCancelledRef.current = false;
+    runIdRef.current++;
     setIsDone(false);
     setKernel(x);
     let kernelX, kernelY;
@@ -200,7 +200,7 @@ export default function EdgeExplanation() {
   }
 
   function handleReset() {
-    isCancelledRef.current = true; // cancel current loop
+    runIdRef.current++; // cancel current loop
     setDx([]);
     setDy([]);
     setRes([]);
@@ -222,10 +222,20 @@ export default function EdgeExplanation() {
     setCurrentIndex(0);
     setActiveRes({ row: -1, col: -1 });
     setCompletedRes([]);
+    setCompletedDX([]);
+    setCompletedDY([]);
+    setActiveRes({ row: -1, col: -1 });
+    setActiveDX({ row: -1, col: -1 });
+    setActiveDY({ row: -1, col: -1 });
   }
+  //   useEffect(() => {
+  //   console.log("active changed", activeDX, activeDY, activeRes);
+  // }, [activeDX, activeDY, activeRes]);
 
   async function calculateDerivatives() {
     if (!original || !kernelx || !kernely) return;
+
+    const currentRunId = ++runIdRef.current;
 
     const rows = original.length + 1 - kernelx.length;
     const cols = original[0].length + 1 - kernelx.length;
@@ -245,89 +255,81 @@ export default function EdgeExplanation() {
     const kernelSizeY = kernely.length;
 
     setIsDisabled(true); //disabled select box
-
     setIsRunning(true);
+    setIsVisible(true);
+    setIsDone(false);
 
-    (async function calculateWithDelay() {
-      const kernelOffsetX = Math.floor(kernelSizeX / 2);
-      const kernelOffsetY = Math.floor(kernelSizeY / 2);
+    const kernelOffsetX = Math.floor(kernelSizeX / 2);
+    const kernelOffsetY = Math.floor(kernelSizeY / 2);
 
-      let countX = 0; // for play button
-      setCompletedDX([]);
-      setCompletedDY([]);
-      setCompletedRes([]);
+    setCompletedDX([]);
+    setCompletedDY([]);
+    setCompletedRes([]);
+    setActiveDX({ row: -1, col: -1 });
+    setActiveDY({ row: -1, col: -1 });
+    setActiveRes({ row: -1, col: -1 });
 
-      for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-          if (isCancelledRef.current) return; // ❗Exit early if reset
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        if (currentRunId !== runIdRef.current) return; // ❗Exit early if reset or kernel changed
 
-          while (isPausedRef.current) {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            if (isCancelledRef.current) return; // ❗Exit early if reset
-          }
+        while (isPausedRef.current) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          if (currentRunId !== runIdRef.current) return; // ❗Exit early if reset or kernel changed
+        }
 
-          setPosX(i); // <== These trigger a re-render
-          setPosY(j);
+        setPosX(i); // <== These trigger a re-render
+        setPosY(j);
 
-          let sumX = 0;
-          let sumY = 0;
+        let sumX = 0;
+        let sumY = 0;
 
-          for (let ki = 0; ki < kernelSizeX; ki++) {
-            for (let kj = 0; kj < kernelSizeY; kj++) {
-              const x = i + ki;
-              const y = j + kj;
+        for (let ki = 0; ki < kernelSizeX; ki++) {
+          for (let kj = 0; kj < kernelSizeY; kj++) {
+            const x = i + ki;
+            const y = j + kj;
 
-              if (
-                x >= 0 &&
-                x < original.length &&
-                y >= 0 &&
-                y < original[0].length
-              ) {
-                sumX += original[x][y] * kernelx[ki][kj];
-                sumY += original[x][y] * kernely[ki][kj];
-              }
+            if (
+              x >= 0 &&
+              x < original.length &&
+              y >= 0 &&
+              y < original[0].length
+            ) {
+              sumX += original[x][y] * kernelx[ki][kj];
+              sumY += original[x][y] * kernely[ki][kj];
             }
           }
-
-          di_dx[i][j] = sumX;
-          di_dy[i][j] = sumY;
-          setCompletedDX((prev) => [...prev, { row: i, col: j }]);
-          setCompletedDY((prev) => [...prev, { row: i, col: j }]);
-          resultant[i][j] = Math.floor(Math.sqrt(sumX * sumX + sumY * sumY));
-          // style update
-          setDx([...di_dx]);
-          setDy([...di_dy]);
-          setRes([...resultant]);
-          setCompletedRes((prev) => [...prev, { row: i, col: j }]);
-          setActiveDX({ row: i, col: j });
-          setActiveDY({ row: i, col: j });
-          setActiveRes({ row: i, col: j });
-
-          // Add a delay for each calculation
-          // await new Promise(resolve => setTimeout(resolve, 300));
-          await new Promise((resolve) => setTimeout(resolve, delayRef.current));
         }
-        countX++;
-      }
 
-      if (countX == rows) {
-        myPauseButton.current.style.display = "none";
-        myPlayButton.current.style.display = "block";
-        mySpeedUpButton.current.disabled = true;
-        mySpeedDownButton.current.disabled = true;
-        // setImagesDisabled(false);
-        setIsDisabled(false); //enabled select box
+        di_dx[i][j] = sumX;
+        di_dy[i][j] = sumY;
+        resultant[i][j] = Math.floor(Math.sqrt(sumX * sumX + sumY * sumY));
+
+        setCompletedDX((prev) => [...prev, { row: i, col: j }]);
+        setCompletedDY((prev) => [...prev, { row: i, col: j }]);
+        setCompletedRes((prev) => [...prev, { row: i, col: j }]);
+
+        setDx([...di_dx]);
+        setDy([...di_dy]);
+        setRes([...resultant]);
+
+        setActiveDX({ row: i, col: j });
+        setActiveDY({ row: i, col: j });
+        setActiveRes({ row: i, col: j });
+
+        await new Promise((resolve) => setTimeout(resolve, delayRef.current));
       }
-    })();
-    // setDx(di_dx);
-    // setDy(di_dy);
-    // setRes(resultant);
-    setRes([...resultant]);
-    console.log("di/dx:", di_dx);
-    console.log("di/dy:", di_dy);
-    setIsVisible(true);
-    setIsDone(true);
-    setIsRunning(false);
+    }
+
+    if (currentRunId === runIdRef.current) {
+      myPauseButton.current.style.display = "none";
+      myPlayButton.current.style.display = "block";
+      mySpeedUpButton.current.disabled = true;
+      mySpeedDownButton.current.disabled = true;
+      setIsDisabled(false);
+      setIsDone(true);
+      setIsRunning(false);
+    }
   }
 
   const instructions = [
@@ -538,7 +540,7 @@ export default function EdgeExplanation() {
                       <div
                         key={`${rowIndex}-${colIndex}`}
                         id="originalGrid"
-                        className="matrix-animate"
+                        className="matriix-animate"
                         style={{
                           color: cell === 1 ? "red" : "black",
                           animationDelay: `${rowIndex * 0.15}s`,
