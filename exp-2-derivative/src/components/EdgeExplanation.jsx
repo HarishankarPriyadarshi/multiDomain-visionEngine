@@ -520,11 +520,33 @@ export default function EdgeExplanation() {
                     left: `${posy * ((document.getElementById("originalGrid")?.offsetHeight || 0) - 0.5) + document.getElementById("ogimage")?.offsetLeft || 0}px`,
                     width: `${((document.getElementById("originalGrid")?.offsetWidth || 0) + 0.5) * (kernelx ? kernelx[0].length : 0)}px`,
                     height: `${((document.getElementById("originalGrid")?.offsetHeight || 0) + 0.5) * (kernelx ? kernelx.length : 0)}px`,
-                    border: "2px solid red",
+                    border: "3px solid #ff4d4d",
+                    backgroundColor: "rgba(255, 77, 77, 0.12)",
+                    boxShadow: "inset 0 0 10px rgba(255, 77, 77, 0.5)",
                     pointerEvents: "none",
+                    transition: "top 0.25s ease, left 0.25s ease",
                     zIndex: 1000,
                   }}
-                ></div>
+                >
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${kernelx?.[0].length}, 1fr)`,
+                      gridTemplateRows: `repeat(${kernelx?.length}, 1fr)`,
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  >
+                    {Array(kernelx?.length * kernelx?.[0].length)
+                      .fill(0)
+                      .map((_, i) => (
+                        <div
+                          key={i}
+                          style={{ border: "1px solid rgba(255,0,0,0.3)" }}
+                        />
+                      ))}
+                  </div>
+                </div>
               )}
               <h4 style={{ margin: "0px" }}>Image Chosen</h4>
               <div
@@ -540,7 +562,7 @@ export default function EdgeExplanation() {
                       <div
                         key={`${rowIndex}-${colIndex}`}
                         id="originalGrid"
-                        className="matriix-animate"
+                        className="matrix-animate"
                         style={{
                           color: cell === 1 ? "red" : "black",
                           animationDelay: `${rowIndex * 0.15}s`,
