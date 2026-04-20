@@ -20,8 +20,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { OpenCvConsumer, OpenCvProvider } from 'opencv-react';
 
 
-import EdgeExplanation from '../EdgeExplanation';
-import CannyExplanation from '../CannyExplanation';
+
 import Morphological from '../Morphological';
 
 
@@ -715,7 +714,7 @@ export default function MorphologyPage() {
 
                 <DialogContent sx={{ padding: '0px',height:'1200px',overflow:'clip' }}>
                   {/* {EdgeExplanation()} */}
-                  {openExplanationModal && <EdgeExplanation />}
+                  {/* {openExplanationModal && <EdgeExplanation />} */}
                 </DialogContent>
 
               </Dialog>
@@ -902,7 +901,7 @@ export default function MorphologyPage() {
                     </DialogTitle>
 
                     <DialogContent sx={{ padding: '0px',height:'1200px' }}>
-                    {openCannyModal && <CannyExplanation />}
+                    {/* {openCannyModal && <CannyExplanation />} */}
                       {/* {CannyExplanation()} */}
                     </DialogContent>
 
