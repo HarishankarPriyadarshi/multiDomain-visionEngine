@@ -273,9 +273,10 @@ h1,h2,h3,h4,h5,h6{
 
 }
 .button-container{
-   border-radius: 100px;
     height: fit-content;
-    border-radius: 10px;
+    width: fit-content;
+    border: 1px solid #c6c3c3;
+    border-radius: 1px;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -284,4 +285,7 @@ h1,h2,h3,h4,h5,h6{
 #commmon-btn{
     background-color: #ffffff;
     
+}
+#commmon-btn:hover{
+    background-color: #171717bc;
 }

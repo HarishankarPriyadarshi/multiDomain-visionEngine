@@ -598,6 +598,22 @@ export default function Morphological(){
                 <div id="footer_buttons" className="morph_btn">
                 <div className="button-container " style={{height:'fit-content'}}>
                     
+
+
+
+                    <button 
+                    id="commmon-btn"    
+                    onClick={() => delayRef.current += 100}
+                    ref={mySpeedDownButton}
+                    title="speed down" 
+                    className="px-4 py-2 font-medium text-gray-600 transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <g transform="scale(-1,1) translate(-24,0)">
+                        <path fill="none" d="M0 0h24v24H0z" />
+                        <path d="M12 13.333l-9.223 6.149A.5.5 0 0 1 2 19.066V4.934a.5.5 0 0 1 .777-.416L12 10.667V4.934a.5.5 0 0 1 .777-.416l10.599 7.066a.5.5 0 0 1 0 .832l-10.599 7.066a.5.5 0 0 1-.777-.416v-5.733zM10.394 12L4 7.737v8.526L10.394 12zM14 7.737v8.526L20.394 12 14 7.737z" />
+                    </g>
+                    </svg>
+                    </button>
                     <button
                     ref={myPlayButton}
                     onClick={()=>play()}
@@ -629,22 +645,6 @@ className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:p
                         </svg>
                          }
                     </button>
-
-
-                    <button 
-                    id="commmon-btn"    
-                    onClick={() => delayRef.current += 100}
-                    ref={mySpeedDownButton}
-                    title="speed down" 
-                    className="px-4 py-2 font-medium text-gray-600 transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <g transform="scale(-1,1) translate(-24,0)">
-                        <path fill="none" d="M0 0h24v24H0z" />
-                        <path d="M12 13.333l-9.223 6.149A.5.5 0 0 1 2 19.066V4.934a.5.5 0 0 1 .777-.416L12 10.667V4.934a.5.5 0 0 1 .777-.416l10.599 7.066a.5.5 0 0 1 0 .832l-10.599 7.066a.5.5 0 0 1-.777-.416v-5.733zM10.394 12L4 7.737v8.526L10.394 12zM14 7.737v8.526L20.394 12 14 7.737z" />
-                    </g>
-                    </svg>
-                    </button>
-
                     <button 
                     id="commmon-btn"    
                     onClick={() => delayRef.current = Math.max(50, delayRef.current - 100)}
