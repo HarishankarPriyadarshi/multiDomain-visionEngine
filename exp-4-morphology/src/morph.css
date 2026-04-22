@@ -259,3 +259,29 @@ h1,h2,h3,h4,h5,h6{
     }
 
 }
+
+/* for buttons */
+#footer_buttons {
+   
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  width: 100%;
+  margin-top: auto;
+  position: relative;
+  top: -5%;
+
+}
+.button-container{
+   border-radius: 100px;
+    height: fit-content;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+#commmon-btn{
+    background-color: #ffffff;
+    
+}

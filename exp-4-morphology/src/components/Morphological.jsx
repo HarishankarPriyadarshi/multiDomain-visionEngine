@@ -596,14 +596,15 @@ export default function Morphological(){
                 </div>
 
                 <div id="footer_buttons" className="morph_btn">
-                <div className="flex overflow-hidden bg-white border divide-x rounded-lg rtl:flex-row-reverse dark:bg-gray-900 dark:border-gray-700 dark:divide-gray-700" style={{height:'fit-content'}}>
+                <div className="button-container " style={{height:'fit-content'}}>
                     
                     <button
                     ref={myPlayButton}
                     onClick={()=>play()}
+                    id="commmon-btn"
                     title='Play' 
-                    className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
-                    style={{display:'block'}}
+className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
+                    style={{dispslay:'block'}}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="5,3 19,12 5,21"></polygon>
@@ -612,6 +613,7 @@ export default function Morphological(){
 
                     <button
                     ref={myPauseButton}
+                    id="commmon-btn"
                     onClick={() => pauseFun()}
                     title={isPaused ? "Play":"Pause"}
                     className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
@@ -630,6 +632,7 @@ export default function Morphological(){
 
 
                     <button 
+                    id="commmon-btn"    
                     onClick={() => delayRef.current += 100}
                     ref={mySpeedDownButton}
                     title="speed down" 
@@ -643,6 +646,7 @@ export default function Morphological(){
                     </button>
 
                     <button 
+                    id="commmon-btn"    
                     onClick={() => delayRef.current = Math.max(50, delayRef.current - 100)}
                     ref={mySpeedUpButton}
                     title="speed up" 
@@ -657,6 +661,7 @@ export default function Morphological(){
 
 
                     <button 
+                    id="commmon-btn"    
                     title="reset" 
                     onClick={()=>handleReset()} 
                     className="px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100">
@@ -671,8 +676,10 @@ export default function Morphological(){
                         </defs>
                     </svg>
                     </button>
+                    
                 </div>
             </div>
+            
             </div>
         </OpenCvProvider>
     ) 

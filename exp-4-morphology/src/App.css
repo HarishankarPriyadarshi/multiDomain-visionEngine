@@ -190,8 +190,8 @@ h4 {
 @media (min-width: 1200px) {
   #main-box {
     width: 1200px; /* Maintain original width for large screens */
-    height: 820px; /* Maintain original height for large screens */
-  }
+    height: 870px; /* Maintain original height for large screens */
+  } 
   /* .MuiDialog-container {
     height: 75%;
     width: 1200px;
@@ -662,7 +662,7 @@ ol {
   border-radius: 10px;
 }
 
-#instruction-btn {
+    #instruction-btn {
   border-radius: 10px;
   border: 2px solid #e7e7e7;
   padding: 5px 10px;
@@ -727,4 +727,12 @@ ol {
   100% {
     box-shadow: 0 0 0 0 rgba(28, 42, 109, 0);
   }
+}
+
+/* enhanced css */
+.dialog-title{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
