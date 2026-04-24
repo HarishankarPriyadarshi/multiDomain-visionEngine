@@ -179,7 +179,7 @@ export default function CannyExplanation() {
     setShowButtons(true);
   }
 
-  function padding() {
+  function padsding() {
     let rows = [];
     for (let i = 0; i < original.length + 2; i++) {
       let col = [];
@@ -202,7 +202,47 @@ export default function CannyExplanation() {
     myPadButton.current.disabled = true;
     enabledNext();
   }
+function padding() {
+  const totalRows = original.length + 2;
+  const totalCols = original[0].length + 2;
 
+  let baseMatrix = [];
+  let borderPositions = [];
+
+  for (let i = 0; i < totalRows; i++) {
+    let row = [];
+    for (let j = 0; j < totalCols; j++) {
+      if (
+        i === 0 ||
+        i === totalRows - 1 ||
+        j === 0 ||
+        j === totalCols - 1
+      ) {
+        row.push(null); // will animate
+        borderPositions.push([i, j]);
+      } else {
+        row.push(original[i - 1][j - 1]); // show instantly
+      }
+    }
+    baseMatrix.push(row);
+  }
+
+  setPadded(baseMatrix);
+
+  // Animate only borders
+  borderPositions.forEach(([i, j], index) => {
+    setTimeout(() => {
+      setPadded(prev => {
+        const updated = prev.map(r => [...r]);
+        updated[i][j] = 0;
+        return updated;
+      });
+    }, index * 60);
+  });
+
+  myPadButton.current.disabled = true;
+  enabledNext();
+}
   async function blur() {
     if (isBlurring) return; // Prevent re-entry if already running
     setIsBlurring(true); // Set the flag to true to lock execution
@@ -746,9 +786,9 @@ export default function CannyExplanation() {
                                 key={`${rowIndex}-${colIndex}`}
                                 id="nonpadded_matrix"
                                 style={{
-                                  backgroundColor:
-                                    cell === 0 ? "black" : "white",
-                                }}
+    backgroundColor: cell === 0 ? "black" : "white",
+  }}
+
                               ></div>
                             )),
                           )}
@@ -766,18 +806,33 @@ export default function CannyExplanation() {
                         }}
                       >
                         {padded &&
-                          padded.map((row, rowIndex) =>
-                            row.map((cell, colIndex) => (
-                              <div
-                                key={`${rowIndex}-${colIndex}`}
-                                id="padded_matrix"
-                                style={{
-                                  backgroundColor:
-                                    cell === 0 ? "black" : "white",
-                                }}
-                              ></div>
-                            )),
-                          )}
+  padded.map((row, rowIndex) =>
+    row.map((cell, colIndex) => {
+      const isBorder =
+        rowIndex === 0 ||
+        rowIndex === padded.length - 1 ||
+        colIndex === 0 ||
+        colIndex === row.length - 1;
+
+      return (
+        <div
+          key={`${rowIndex}-${colIndex}`}
+          id="padded_matrix"
+          className={`padded-cell ${
+            cell === 0 && isBorder ? "animate-border" : ""
+          }`}
+          style={{
+            backgroundColor:
+              cell === null
+                ? "transparent"
+                : cell === 0
+                ? "black"
+                : "white",
+          }}
+        ></div>
+      );
+    })
+  )}
                       </div>
                       {padded && <span>9×9</span>}
                     </div>

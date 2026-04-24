@@ -1,6 +1,7 @@
 1. Sampling and Quantization
 
 <!-- Edge based segmentation -->
+<!-- Detects object boundaries based on intensity changes. EXAMPLE:Shape detection, contour extraction, feature recognition. -->
 
 2. Derivative-Based Edge Detection
 
@@ -9,6 +10,7 @@
 4. Morphology-Based Edge Detection
 
 <!-- Region based segmentation -->
+<!-- Groups pixels into regions based on similarity (e.g., color, texture, intensity). EXAMPLE:Medical imaging, scene segmentation, region analysis. -->
 
 5. Region Growing Segmentation
 
