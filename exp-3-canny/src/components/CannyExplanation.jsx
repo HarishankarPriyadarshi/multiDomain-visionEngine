@@ -272,29 +272,50 @@ function padding() {
   }
 
   const [padBlur, setPadBlur] = useState(null);
+  
+
   function padblurred() {
-    myPadBlurButton.current.disabled = true;
-    let rows = [];
-    for (let i = 0; i < blurred.length + 2; i++) {
-      let col = [];
-      for (let j = 0; j < blurred[0].length + 2; j++) {
-        if (
-          i === 0 ||
-          i === blurred.length + 1 ||
-          j === 0 ||
-          j === blurred[0].length + 1
-        ) {
-          col.push(0);
-        } else {
-          col.push(blurred[i - 1][j - 1]);
-        }
+  myPadBlurButton.current.disabled = true;
+
+  const totalRows = blurred.length + 2;
+  const totalCols = blurred[0].length + 2;
+
+  let baseMatrix = [];
+  let borderPositions = [];
+
+  for (let i = 0; i < totalRows; i++) {
+    let row = [];
+    for (let j = 0; j < totalCols; j++) {
+      if (
+        i === 0 ||
+        i === totalRows - 1 ||
+        j === 0 ||
+        j === totalCols - 1
+      ) {
+        row.push(null); // 👈 SAME AS STEP 1
+        borderPositions.push([i, j]);
+      } else {
+        row.push(blurred[i - 1][j - 1]);
       }
-      rows.push(col);
     }
-    setPadBlur(rows);
-    console.log(rows);
-    enabledNext();
+    baseMatrix.push(row);
   }
+
+  setPadBlur(baseMatrix);
+
+  // Animate borders one-by-one
+  borderPositions.forEach(([i, j], index) => {
+    setTimeout(() => {
+      setPadBlur(prev => {
+        const updated = prev.map(r => [...r]);
+        updated[i][j] = 0;
+        return updated;
+      });
+    }, index * 60);
+  });
+
+  enabledNext();
+}
 
   async function applySobelConvolution() {
     if (!padBlur || !sobelx || !sobely) return;
@@ -583,6 +604,7 @@ function padding() {
                           <img
                             src={plus}
                             id="image"
+                              className={image === 0 ? "image-selected" : ""}
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -595,6 +617,7 @@ function padding() {
                           <img
                             src={minus}
                             id="image"
+                              className={image === 1 ? "image-selected" : ""} 
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -607,6 +630,7 @@ function padding() {
                           <img
                             src={multiply}
                             id="image"
+                              className={image === 2 ? "image-selected" : ""} 
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -619,6 +643,7 @@ function padding() {
                           <img
                             src={divide}
                             id="image"
+                              className={image === 3 ? "image-selected" : ""} 
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -649,8 +674,10 @@ function padding() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="original_matrix"
+                            className="matrix-animate"
                             style={{
                               backgroundColor: cell === 0 ? "black" : "white",
+                                                        animationDelay: `${rowIndex * 0.15}s`,
                             }}
                           ></div>
                         )),
@@ -669,11 +696,14 @@ function padding() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="original_matrix"
+                            className="matrix-animate"
                             style={{
                               backgroundColor: "white",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
+                                                        color: cell === 1 ? "red" : "black",
+                                                        animationDelay: `${rowIndex * 0.15}s`,
                             }}
                           >
                             {cell}
@@ -744,6 +774,9 @@ function padding() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="gaussian_matrix"
+                            className="matrix-animate"
+                            style={{  animationDelay: `${rowIndex * 0.15}s`,
+                            }}
                           >
                             {cell}
                           </div>
@@ -1031,18 +1064,39 @@ function padding() {
                         gap: "2px",
                       }}
                     >
-                      {padBlur &&
-                        padBlur.map((row, rowIndex) =>
-                          row.map((cell, colIndex) => (
-                            <div
-                              key={`${rowIndex}-${colIndex}`}
-                              id="padded-blurred-out-canny-matrix"
-                              style={{
-                                backgroundColor: `rgb(${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255})`,
-                              }}
-                            ></div>
-                          )),
-                        )}
+{padBlur &&
+  padBlur.map((row, rowIndex) =>
+    row.map((cell, colIndex) => {
+      const isBorder =
+        rowIndex === 0 ||
+        rowIndex === padBlur.length - 1 ||
+        colIndex === 0 ||
+        colIndex === row.length - 1;
+        
+
+      return (
+        <div
+          key={`${rowIndex}-${colIndex}`}
+          id="padded-blurred-out-canny-matrix"
+          className={`padded-cell ${
+              cell === 0 && isBorder ? "animate-border" : ""
+          }`}
+          style={{
+            backgroundColor:
+              cell === null
+                ? "transparent"
+                : `rgb(${
+                    (cell / Math.max(...blurred.flat())) * 255
+                  },${
+                    (cell / Math.max(...blurred.flat())) * 255
+                  },${
+                    (cell / Math.max(...blurred.flat())) * 255
+                  })`,
+          }}
+        ></div>
+      );
+    })
+  )}
                     </div>
                   </div>
                 </div>
