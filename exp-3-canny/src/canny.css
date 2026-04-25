@@ -829,3 +829,8 @@ h6 {
     background-color: rgb(0, 0, 0);
   }
 }
+
+.dir-0 { background-color: #ffe0e0; }
+.dir-45 { background-color: #e0ffe0; }
+.dir-90 { background-color: #e0e0ff; }
+.dir-135 { background-color: #fff0cc; }

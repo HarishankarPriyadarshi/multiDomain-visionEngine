@@ -358,7 +358,7 @@ function padding() {
     enabledNext();
   }
 
-  function quantiseGrad() {
+  function qsuantiseGrad() {
     if (!gradient) return;
     myQuantButton.current.disabled = true;
     let quantised = Array(7)
@@ -370,7 +370,7 @@ function padding() {
     for (let i = 0; i < gradient.length; i++) {
       for (let j = 0; j < gradient[0].length; j++) {
         let angle = gradient[i][j] ? gradient[i][j] % 180 : 0; // Normalize angle to [0, 180)
-        if (angle < 22.5 && angle >= 157.5) {
+        if (angle < 22.5 || angle >= 157.5) {
           quantised[i][j] = 0; // Closest to 0 degrees
         } else if (angle >= 22.5 && angle < 67.5) {
           quantised[i][j] = 45; // Closest to 45 degrees
@@ -386,7 +386,52 @@ function padding() {
     console.log(quantised);
     enabledNext();
   }
+function quantiseGrad() {
+  if (!gradient) return;
+  myQuantButton.current.disabled = true;
 
+  const rows = gradient.length;
+  const cols = gradient[0].length;
+
+  // Step 1: initialize with null (for animation)
+  let initialMatrix = Array(rows)
+    .fill(null)
+    .map(() => Array(cols).fill(null));
+
+  setQuantize(initialMatrix);
+
+  let index = 0;
+
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      let angle = gradient[i][j] ? gradient[i][j] % 180 : 0;
+
+      let value;
+
+      if (angle < 22.5 || angle >= 157.5) {
+        value = 0;
+      } else if (angle >= 22.5 && angle < 67.5) {
+        value = 45;
+      } else if (angle >= 67.5 && angle < 112.5) {
+        value = 90;
+      } else {
+        value = 135;
+      }
+
+      setTimeout(() => {
+        setQuantize(prev => {
+          const updated = prev.map(r => [...r]);
+          updated[i][j] = value;
+          return updated;
+        });
+      }, index * 70);
+
+      index++;
+    }
+  }
+
+  enabledNext();
+}
   function nonmax() {
     if (!convolutedx || !convolutedy || !gradient) return;
     myNonMaxButton.current.disabled = true;
@@ -580,7 +625,7 @@ function padding() {
             indicators={false}
             onSelect={(selectedIndex) => setIndex(selectedIndex)}
           >
-            {/* 0: choose image & sigma value*/}
+            {/* step1: choose image & sigma value*/}
             <Carousel.Item>
               <div id="Choose_box_canny">
                 <div className="coolinput_canny">
@@ -787,7 +832,7 @@ function padding() {
               </div>
             </Carousel.Item>
 
-            {/* 1:padding */}
+            {/* step2:padding */}
             <Carousel.Item>
               <div id="padding-canny">
                 {gKernel && (
@@ -879,7 +924,7 @@ function padding() {
               </div>
             </Carousel.Item>
 
-            {/* 2: */}
+            {/* step3: Gaussian Blur */}
             <Carousel.Item>
               <div id="gaussian-blur-canny">
                 {padded && <h2>Gaussian Blur</h2>}
@@ -1000,7 +1045,7 @@ function padding() {
               </div>
             </Carousel.Item>
 
-            {/* 3: blurred padding */}
+            {/* step4: blurred padding */}
             <Carousel.Item>
               <div id="pad-after-canny">
                 {blurred && (
@@ -1113,7 +1158,7 @@ function padding() {
               </div>
             </Carousel.Item>
 
-            {/* 4: sobel*/}
+            {/* step5: sobel application */}
             <Carousel.Item>
               {padBlur && (
                 <div id="sobel-application-canny">
@@ -1319,7 +1364,7 @@ function padding() {
               )}
             </Carousel.Item>
 
-            {/* 5: quantise */}
+            {/* step6: quantise */}
             <Carousel.Item>
               <div id="quantised-canny">
                 <h2>Quantisation of gradient</h2>
@@ -1389,9 +1434,16 @@ function padding() {
                           row.map((cell, colIndex) => (
                             <div
                               key={`${rowIndex}-${colIndex}`}
-                              class="quantised-canny-matrix"
+                              
+                              className={`quantised-canny-matrix dir-${cell}`}
                             >
-                              {cell}
+{
+  cell === null ? "" :
+  cell === 0 ? "0" :
+  cell === 45 ? "45" :
+  cell === 90 ? "90" :
+  "135"
+}
                             </div>
                           )),
                         )}
@@ -1409,7 +1461,7 @@ function padding() {
               </div>
             </Carousel.Item>
 
-            {/* 6:non-max */}
+            {/* step7:non-maximum suppression */}
             <Carousel.Item>
               {gradient && (
                 <div id="non-max-supression-canny">
@@ -1450,7 +1502,7 @@ function padding() {
               )}
             </Carousel.Item>
 
-            {/* 7: threshold */}
+            {/* step8: thresholding */}
             <Carousel.Item>
               {supressed && (
                 <div id="final-grid-canny">
