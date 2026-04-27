@@ -72,7 +72,13 @@ export default function CannyExplanation() {
 
   const [supressed, setSupressed] = useState(null);
   const [finalGrid, setFinalGrid] = useState(null);
-  // state tracking for gaussian kernel
+  // state tracking and animation for gaussian kernel
+  const [gussianConvSteps, setGussianConvSteps] = useState([]);
+  const [gussianCurrentSum, setGussianCurrentSum] = useState(0);
+  const [plusFlag, setPlusFlag] = useState(true);
+  const [gussianStep, setGussianStep] = useState(0);
+    const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
+    const [completedRes, setCompletedRes] = useState([]);
 
   console.log("index value:", index);
 
@@ -243,6 +249,9 @@ export default function CannyExplanation() {
     if (isBlurring) return; // Prevent re-entry if already running
     setIsBlurring(true); // Set the flag to true to lock execution
     setStartBlur(true);
+    setGussianStep(0);
+    setActiveRes({ row: -1, col: -1 });
+    setCompletedRes([]);
     let rows = Array(7)
       .fill(0)
       .map(() => Array(7).fill("")); // Initialize a 7x7 grid with zeros
@@ -251,17 +260,35 @@ export default function CannyExplanation() {
         setBlurX(i);
         setBlurY(j);
         let sum = 0;
+        setGussianConvSteps([]);
+        setGussianStep((prev) => prev + 1);
+        setGussianCurrentSum(0);
+        setPlusFlag(true);
+        console.log("plusFlag:", plusFlag);
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
-            sum += padded[i + k][j + l] * gKernel[k + 1][l + 1];
+            // sum += padded[i + k][j + l] * gKernel[k + 1][l + 1];
+            const pixel = padded[i + k][j + l] ?? 0; // if null → use 0
+            const kernelVal = gKernel[k + 1][l + 1];
+
+            sum += pixel * kernelVal;
+
+            setGussianConvSteps((prev) => [...prev, `${pixel} * ${kernelVal}`]);
+
+            setGussianCurrentSum(sum.toFixed(2));
           }
         }
+        setPlusFlag(false);
+        setActiveRes({ row: i - 1, col: j - 1 });
+        setCompletedRes((prev) => [...prev, { row: i - 1, col: j - 1 }]);
         rows[i - 1][j - 1] = sum.toFixed(2); // Update each value individually
+        //console.log("sum at each step:", sum.toFixed(2));
         setBlurred([...rows]); // Update the state after each value is calculated
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
     console.log(rows);
+
     setIsBlurring(false); // Unlock after completion
     myBlurButton.current.disabled = true;
     enabledNext();
@@ -1001,6 +1028,18 @@ export default function CannyExplanation() {
                             <div
                               id="gaussian_blur_matrix"
                               key={`${rowIndex}-${colIndex}`}
+                              className={
+                              activeRes.row === rowIndex &&
+                              activeRes.col === colIndex
+                                ? "res-active"
+                                : completedRes.some(
+                                      (item) =>
+                                        item.row === rowIndex &&
+                                        item.col === colIndex,
+                                    )
+                                  ? "res-completed"
+                                  : ""
+                            }
                             >
                               {cell}
                             </div>
@@ -1026,6 +1065,12 @@ export default function CannyExplanation() {
                               <div
                                 key={`${rowIndex}-${colIndex}`}
                                 id="result_gaussian_blur_matrix"
+                                className={
+                              activeRes.row === rowIndex &&
+                              activeRes.col === colIndex
+                                ? "resImage-active"
+                                :  ""
+                            }
                                 style={{
                                   backgroundColor: `rgb(${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255})`,
                                 }}
@@ -1037,6 +1082,22 @@ export default function CannyExplanation() {
                     </div>
                   </div>
                 </div>
+                {startBlur && (
+                  <div className="conv-steps-box">
+                    <h4>Current Gaussian Convolution Step</h4>
+
+                    <div className="conv-steps">
+                      <div className="gussian-step">Step {gussianStep} :</div>
+                      {gussianConvSteps.map((step, index) => (
+                        <div key={index}>
+                          {step}
+                          {index !== gussianConvSteps.length - 1 && " +"}
+                        </div>
+                      ))}
+                      <div className="conv-result">= {gussianCurrentSum}</div>
+                    </div>
+                  </div>
+                )}
 
                 {padded && (
                   <Button

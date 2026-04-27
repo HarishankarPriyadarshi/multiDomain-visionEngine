@@ -858,25 +858,60 @@ h6 {
 .dir-45 { background-color: #e0ffe0; }
 .dir-90 { background-color: #e0e0ff; }
 .dir-135 { background-color: #fff0cc; }
+
 .conv-steps-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+ 
   margin-top: 20px;
   padding: 15px;
-  background: #f4f8ff;
-  border-radius: 10px;
-  width: 250px;
   font-size: 14px;
 }
 
 .conv-steps {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 180px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
   overflow-y: auto;
+  color: #141414;
 }
 
 .conv-result {
-  margin-top: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #df3615;
+}
+.gussian-step {
+  font-size: 15px;
   font-weight: bold;
   color: #1D2A6D;
+  margin-right: 5px;
+}
+
+
+/* Finished cells */
+
+
+.res-active  {
+  border: 2px solid #711ede !important;
+  background-color: #6f46d845 !important;
+  color: #ff0000;
+  z-index: 2222;
+   transform: scale(1.1);
+  pointer-events: none;
+transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.res-completed {
+  border: 2px solid #6900f2;
+  background-color: #8260d985;
+  color: #5b31c3;
+  transition: background-color 0.3s ease;
+}
+.resImage-active {
+  transform: scale(1.19);
+  border: 2px solid  #5b31c3 !important;
 }
