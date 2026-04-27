@@ -16,6 +16,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Box from "@mui/material/Box";
 import Carousel from "react-bootstrap/Carousel";
 // import ExampleCarouselImage from 'components/ExampleCarouselImage';
+import { BlockMath, InlineMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 const notifyS = (msg) => {
   toast.success(msg, {
@@ -77,8 +79,16 @@ export default function CannyExplanation() {
   const [gussianCurrentSum, setGussianCurrentSum] = useState(0);
   const [plusFlag, setPlusFlag] = useState(true);
   const [gussianStep, setGussianStep] = useState(0);
-    const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
-    const [completedRes, setCompletedRes] = useState([]);
+  const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
+  const [completedRes, setCompletedRes] = useState([]);
+  // state trecking for sobel kernel animation
+  const [activeSobelDX, setActiveSobelDX] = useState({ row: -1, col: -1 });
+  const [activeSobelDY, setActiveSobelDY] = useState({ row: -1, col: -1 });
+  const [activeSobelRes, setActiveSobelRes] = useState({ row: -1, col: -1 });
+  const [completedSobelDXSteps, setCompletedSobelDXSteps] = useState([]);
+  const [completedSobelDYSteps, setCompletedSobelDYSteps] = useState([]);
+  const [completedSobelRes, setCompletedSobelRes] = useState([]);
+  const equation1 = "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
 
   console.log("index value:", index);
 
@@ -264,7 +274,7 @@ export default function CannyExplanation() {
         setGussianStep((prev) => prev + 1);
         setGussianCurrentSum(0);
         setPlusFlag(true);
-        
+
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
             // sum += padded[i + k][j + l] * gKernel[k + 1][l + 1];
@@ -284,10 +294,10 @@ export default function CannyExplanation() {
         rows[i - 1][j - 1] = sum.toFixed(2); // Update each value individually
         //console.log("sum at each step:", sum.toFixed(2));
         setBlurred([...rows]); // Update the state after each value is calculated
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1));
       }
     }
-   // console.log(rows);
+    // console.log(rows);
 
     setIsBlurring(false); // Unlock after completion
     myBlurButton.current.disabled = true;
@@ -980,12 +990,12 @@ export default function CannyExplanation() {
                             gridTemplateColumns: "repeat(3, 1fr)",
                             gap: "2px",
                             border: "2px solid red",
-                           
-                    backgroundColor: "rgba(255, 77, 77, 0.37)",
-                    boxShadow: "inset 0 0 10px rgba(255, 77, 77, 1)",
-                    pointerEvents: "none",
-                    transition: "top 0.25s ease, left 0.25s ease",
-                    zIndex: 1000,
+
+                            backgroundColor: "rgba(255, 77, 77, 0.37)",
+                            boxShadow: "inset 0 0 10px rgba(255, 77, 77, 1)",
+                            pointerEvents: "none",
+                            transition: "top 0.25s ease, left 0.25s ease",
+                            zIndex: 1000,
                           }}
                           className=""
                         ></div>
@@ -1036,17 +1046,17 @@ export default function CannyExplanation() {
                               id="gaussian_blur_matrix"
                               key={`${rowIndex}-${colIndex}`}
                               className={
-                              activeRes.row === rowIndex &&
-                              activeRes.col === colIndex
-                                ? "res-active"
-                                : completedRes.some(
-                                      (item) =>
-                                        item.row === rowIndex &&
-                                        item.col === colIndex,
-                                    )
-                                  ? "res-completed"
-                                  : ""
-                            }
+                                activeRes.row === rowIndex &&
+                                activeRes.col === colIndex
+                                  ? "res-active"
+                                  : completedRes.some(
+                                        (item) =>
+                                          item.row === rowIndex &&
+                                          item.col === colIndex,
+                                      )
+                                    ? "res-completed"
+                                    : ""
+                              }
                             >
                               {cell}
                             </div>
@@ -1073,11 +1083,11 @@ export default function CannyExplanation() {
                                 key={`${rowIndex}-${colIndex}`}
                                 id="result_gaussian_blur_matrix"
                                 className={
-                              activeRes.row === rowIndex &&
-                              activeRes.col === colIndex
-                                ? "resImage-active"
-                                :  ""
-                            }
+                                  activeRes.row === rowIndex &&
+                                  activeRes.col === colIndex
+                                    ? "resImage-active"
+                                    : ""
+                                }
                                 style={{
                                   backgroundColor: `rgb(${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255})`,
                                 }}
@@ -1097,7 +1107,7 @@ export default function CannyExplanation() {
                       <div className="gussian-step">Step {gussianStep} :</div>
                       {gussianConvSteps.map((step, index) => (
                         <div key={index}>
-                          {step}
+                          ({step})
                           {index !== gussianConvSteps.length - 1 && " +"}
                         </div>
                       ))}
@@ -1239,6 +1249,36 @@ export default function CannyExplanation() {
               {padBlur && (
                 <div id="sobel-application-canny">
                   <div style={{ display: "flex", flexDirection: "column" }}>
+                    {padBlur && (
+                      <div className="padded-blurred-image">
+                        Padded Blurred Image (9x9)
+                      </div>
+                    )}
+
+                    {padBlur && (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(9, 1fr)",
+                          gap: "0px",
+                        }}
+                      >
+                        {(() => {
+                          return padBlur.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                class="padded-sobel-matrix"
+                              >
+                                {cell}
+                              </div>
+                            )),
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column" }}>
                     <h2>Sobel Application</h2>
                     <div id="sobel-kernel-div">
                       <div
@@ -1248,7 +1288,7 @@ export default function CannyExplanation() {
                           alignItems: "center",
                         }}
                       >
-                        <h4>Sobel X Kernel</h4>
+                        <h4 style={{ color: "#625f5fff" }}> Sobel X Kernel</h4>
                         <div
                           style={{
                             textAlign: "center",
@@ -1260,7 +1300,7 @@ export default function CannyExplanation() {
                             style={{
                               display: "grid",
                               gridTemplateColumns: "repeat(3, 1fr)",
-                              gap: "2px",
+                              gap: "0px",
                             }}
                           >
                             {sobelx &&
@@ -1292,7 +1332,7 @@ export default function CannyExplanation() {
                           alignItems: "center",
                         }}
                       >
-                        <h4>Sobel Y Kernel</h4>
+                        <h4 style={{ color: "#625f5fff" }}> Sobel Y Kernel</h4>
                         <div
                           style={{
                             textAlign: "center",
@@ -1304,7 +1344,7 @@ export default function CannyExplanation() {
                             style={{
                               display: "grid",
                               gridTemplateColumns: "repeat(3, 1fr)",
-                              gap: "2px",
+                              gap: "0px",
                             }}
                           >
                             {sobely &&
@@ -1358,12 +1398,14 @@ export default function CannyExplanation() {
                     {convolutedx && <h2>Applying Convolution</h2>}
                     <div id="convolution-sobel-canny">
                       <div id="sobel-x-canny">
-                        {convolutedx && <h4>Sobel X</h4>}
+                        {convolutedx && (
+                          <h4 style={{ color: "#625f5fff" }}> Sobel X</h4>
+                        )}
                         <div
                           style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(7, 1fr)",
-                            gap: "2px",
+                            gap: "0px",
                           }}
                         >
                           {convolutedx &&
@@ -1372,21 +1414,23 @@ export default function CannyExplanation() {
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
                                   class="sobel-matrix"
-                                  style={{
-                                    backgroundColor: `rgb(${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255},${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255},${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255})`,
-                                  }}
-                                ></div>
+                                  style={{}}
+                                >
+                                  {cell}
+                                </div>
                               )),
                             )}
                         </div>
                       </div>
                       <div id="sobel-y-canny">
-                        {convolutedx && <h4>Sobel Y</h4>}
+                        {convolutedy && (
+                          <h4 style={{ color: "#625f5fff" }}> Sobel Y</h4>
+                        )}
                         <div
                           style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(7, 1fr)",
-                            gap: "2px",
+                            gap: "0px",
                           }}
                         >
                           {convolutedy &&
@@ -1395,10 +1439,10 @@ export default function CannyExplanation() {
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
                                   class="sobel-matrix"
-                                  style={{
-                                    backgroundColor: `rgb(${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255},${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255},${(Math.abs(cell) / Math.max(...convolutedx.flat())) * 255})`,
-                                  }}
-                                ></div>
+                                  style={{}}
+                                >
+                                  {cell}
+                                </div>
                               )),
                             )}
                         </div>
@@ -1414,12 +1458,13 @@ export default function CannyExplanation() {
 
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <div id="gradient-canny">
-                      {gradient && <h4>Gradient</h4>}
+                      {gradient && <h4>Resultant Gradient</h4>}
+                      {gradient && <BlockMath math={equation1} />}
                       <div
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
-                          gap: "2px",
+                          gap: "0px",
                         }}
                       >
                         {gradient &&

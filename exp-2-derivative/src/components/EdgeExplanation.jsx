@@ -910,7 +910,7 @@ export default function EdgeExplanation() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="result_grid"
-                                                        className={
+                                                className={        
                               activeRes.row === rowIndex &&
                               activeRes.col === colIndex
                                 ? "resImage-active"

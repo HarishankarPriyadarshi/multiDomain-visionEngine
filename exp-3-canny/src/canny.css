@@ -332,9 +332,10 @@ h6 {
 }
 
 .sobel-matrix {
-  width: 30px;
-  height: 30px;
+  width: 37px;
+  height: 37px;
   border: 1px solid #ccc;
+  display: flex;
   align-items: center;
   justify-content: center;
 }
@@ -643,8 +644,8 @@ h6 {
     transform: rotate(90deg);
   }
   .sobel-matrix {
-    width: 20px;
-    height: 20px;
+    width: 37px;
+    height: 35px;
   }
   .sobel-gradient-matrix {
     width: 30px;
@@ -652,7 +653,8 @@ h6 {
     font-size: 14px;
   }
   #convolution-sobel-canny {
-    flex-direction: row;
+    flex-direction: column;
+
   }
   #quantised-canny-div {
     flex-direction: column;
@@ -915,3 +917,21 @@ transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   transform: scale(1.19);
   border: 2px solid  #5b31c3 !important;
 }
+
+/* Sobel Matrix */
+.padded-blurred-image {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0b0b0b;
+  margin-bottom: 10px;
+}
+.padded-sobel-matrix {
+  width: 37px;
+  height: 37px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fcf6da81;
+}
+
