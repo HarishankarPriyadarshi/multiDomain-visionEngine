@@ -264,7 +264,7 @@ export default function CannyExplanation() {
         setGussianStep((prev) => prev + 1);
         setGussianCurrentSum(0);
         setPlusFlag(true);
-        console.log("plusFlag:", plusFlag);
+        
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
             // sum += padded[i + k][j + l] * gKernel[k + 1][l + 1];
@@ -287,7 +287,7 @@ export default function CannyExplanation() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
-    console.log(rows);
+   // console.log(rows);
 
     setIsBlurring(false); // Unlock after completion
     myBlurButton.current.disabled = true;
@@ -980,7 +980,14 @@ export default function CannyExplanation() {
                             gridTemplateColumns: "repeat(3, 1fr)",
                             gap: "2px",
                             border: "2px solid red",
+                           
+                    backgroundColor: "rgba(255, 77, 77, 0.37)",
+                    boxShadow: "inset 0 0 10px rgba(255, 77, 77, 1)",
+                    pointerEvents: "none",
+                    transition: "top 0.25s ease, left 0.25s ease",
+                    zIndex: 1000,
                           }}
+                          className=""
                         ></div>
                       )}
                     </div>
