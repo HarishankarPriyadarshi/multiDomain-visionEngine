@@ -212,7 +212,25 @@ h6 {
   gap: 20px;
   justify-content: center;
   align-items: center;
+  margin-top: 30px;
+    
 }
+.common-flex {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;  
+  
+}
+.matrix-size {
+  font-size: 15px;
+  font-weight: 500;
+
+  color: #1D2A6D;
+  
+}
+
+
 
 #padded-canny {
   width: 20px;
@@ -571,7 +589,13 @@ h6 {
   #conv-mult-canny {
     flex-direction: column;
     gap: 0px;
+      margin-top: 0px;
   }
+  .matrix-size {
+  font-size: 11px;
+
+
+}
   .carousel__btns {
     justify-content: space-between;
   }
@@ -834,3 +858,25 @@ h6 {
 .dir-45 { background-color: #e0ffe0; }
 .dir-90 { background-color: #e0e0ff; }
 .dir-135 { background-color: #fff0cc; }
+.conv-steps-box {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f4f8ff;
+  border-radius: 10px;
+  width: 250px;
+  font-size: 14px;
+}
+
+.conv-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.conv-result {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #1D2A6D;
+}

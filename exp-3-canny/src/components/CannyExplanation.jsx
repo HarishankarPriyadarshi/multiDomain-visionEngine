@@ -72,6 +72,7 @@ export default function CannyExplanation() {
 
   const [supressed, setSupressed] = useState(null);
   const [finalGrid, setFinalGrid] = useState(null);
+  // state tracking for gaussian kernel
 
   console.log("index value:", index);
 
@@ -244,7 +245,7 @@ export default function CannyExplanation() {
     setStartBlur(true);
     let rows = Array(7)
       .fill(0)
-      .map(() => Array(7).fill(0)); // Initialize a 7x7 grid with zeros
+      .map(() => Array(7).fill("")); // Initialize a 7x7 grid with zeros
     for (let i = 1; i < padded.length - 1; i++) {
       for (let j = 1; j < padded[0].length - 1; j++) {
         setBlurX(i);
@@ -919,109 +920,124 @@ export default function CannyExplanation() {
               <div id="gaussian-blur-canny">
                 {padded && <h2>Gaussian Blur</h2>}
                 <div id="conv-mult-canny">
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(9, 1fr)",
-                      gap: "2px",
-                    }}
-                  >
-                    {padded &&
-                      padded.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            key={`${rowIndex}-${colIndex}`}
-                            id="padded-canny"
-                            style={{
-                              backgroundColor: cell === 0 ? "black" : "white",
-                            }}
-                          ></div>
-                        )),
-                      )}
+                  <div className="common-flex">
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(9, 1fr)",
+                        gap: "2px",
+                      }}
+                    >
+                      {padded &&
+                        padded.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => (
+                            <div
+                              key={`${rowIndex}-${colIndex}`}
+                              id="padded-canny"
+                              style={{
+                                backgroundColor: cell === 0 ? "black" : "white",
+                              }}
+                            ></div>
+                          )),
+                        )}
 
-                    {startBlur && (
-                      <div
-                        style={{
-                          position: "absolute",
-                          top: `${(blurX - 1) * (document.getElementById("padded-canny").offsetWidth + 2) + document.getElementById("padded-canny").offsetTop}px`,
-                          left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight + 2) + document.getElementById("padded-canny").offsetLeft}px`,
-                          width: `${document.getElementById("padded-canny").offsetWidth * 3 + 6}px`,
-                          height: `${document.getElementById("padded-canny").offsetHeight * 3 + 6}px`,
-                          display: "grid",
-                          gridTemplateColumns: "repeat(3, 1fr)",
-                          gap: "2px",
-                          border: "2px solid red",
-                        }}
-                      ></div>
-                    )}
-                  </div>
-                  <div class="blur_oper">*</div>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, 1fr)",
-                      gap: "2px",
-                    }}
-                  >
-                    {padded &&
-                      gKernel &&
-                      gKernel.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            id="gaussian_matrix"
-                            key={`${rowIndex}-${colIndex}`}
-                          >
-                            {cell}
-                          </div>
-                        )),
+                      {startBlur && (
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: `${(blurX - 1) * (document.getElementById("padded-canny").offsetWidth + 2) + document.getElementById("padded-canny").offsetTop}px`,
+                            left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight + 2) + document.getElementById("padded-canny").offsetLeft}px`,
+                            width: `${document.getElementById("padded-canny").offsetWidth * 3 + 6}px`,
+                            height: `${document.getElementById("padded-canny").offsetHeight * 3 + 6}px`,
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)",
+                            gap: "2px",
+                            border: "2px solid red",
+                          }}
+                        ></div>
                       )}
+                    </div>
+                    {padded && <span className="matrix-size">9×9</span>}
+                  </div>
+
+                  <div class="blur_oper">*</div>
+                  <div className="common-flex">
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: "2px",
+                      }}
+                    >
+                      {padded &&
+                        gKernel &&
+                        gKernel.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => (
+                            <div
+                              id="gaussian_matrix"
+                              key={`${rowIndex}-${colIndex}`}
+                            >
+                              {cell}
+                            </div>
+                          )),
+                        )}
+                    </div>
+
+                    {gKernel && <span className="matrix-size">3×3</span>}
                   </div>
 
                   <div class="blur_oper">=</div>
+                  <div className="common-flex">
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(7, 1fr)",
+                        gap: "2px",
+                      }}
+                    >
+                      {startBlur &&
+                        blurred.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => (
+                            <div
+                              id="gaussian_blur_matrix"
+                              key={`${rowIndex}-${colIndex}`}
+                            >
+                              {cell}
+                            </div>
+                          )),
+                        )}
+                    </div>
+                    {startBlur && <span className="matrix-size">7×7</span>}
+                  </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
-                    }}
-                  >
-                    {startBlur &&
-                      blurred.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            id="gaussian_blur_matrix"
-                            key={`${rowIndex}-${colIndex}`}
-                          >
-                            {cell}
-                          </div>
-                        )),
-                      )}
+                  {startBlur && <div class="blur_oper">☰</div>}
+                  <div id="blurred-out-canny">
+                    <div className="common-flex">
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(7, 1fr)",
+                          gap: "2px",
+                        }}
+                      >
+                        {startBlur &&
+                          blurred.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                id="result_gaussian_blur_matrix"
+                                style={{
+                                  backgroundColor: `rgb(${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255})`,
+                                }}
+                              ></div>
+                            )),
+                          )}
+                      </div>
+                      {startBlur && <span className="matrix-size">7x7</span>}
+                    </div>
                   </div>
                 </div>
-                <div id="blurred-out-canny">
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
-                    }}
-                  >
-                    {startBlur &&
-                      blurred.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            key={`${rowIndex}-${colIndex}`}
-                            id="result_gaussian_blur_matrix"
-                            style={{
-                              backgroundColor: `rgb(${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255},${(cell / Math.max(...blurred.flat())) * 255})`,
-                            }}
-                          ></div>
-                        )),
-                      )}
-                  </div>
-                </div>
-                {startBlur && <span>7x7</span>}
+
                 {padded && (
                   <Button
                     ref={myBlurButton}
