@@ -179,70 +179,65 @@ export default function CannyExplanation() {
     setShowButtons(true);
   }
 
-  function padsding() {
-    let rows = [];
-    for (let i = 0; i < original.length + 2; i++) {
-      let col = [];
-      for (let j = 0; j < original[0].length + 2; j++) {
-        if (
-          i == 0 ||
-          i == original.length + 1 ||
-          j == 0 ||
-          j == original[0].length + 1
-        ) {
-          col.push(0);
+  // function padding() {
+  //   let rows = [];
+  //   for (let i = 0; i < original.length + 2; i++) {
+  //     let col = [];
+  //     for (let j = 0; j < original[0].length + 2; j++) {
+  //       if (
+  //         i == 0 ||
+  //         i == original.length + 1 ||
+  //         j == 0 ||
+  //         j == original[0].length + 1
+  //       ) {
+  //         col.push(0);
+  //       } else {
+  //         col.push(original[i - 1][j - 1]);
+  //       }
+  //     }
+  //     rows.push(col);
+  //   }
+  //   setPadded(rows);
+  //   console.log(rows);
+  //   myPadButton.current.disabled = true;
+  //   enabledNext();
+  // }
+  function padding() {
+    const totalRows = original.length + 2;
+    const totalCols = original[0].length + 2;
+
+    let baseMatrix = [];
+    let borderPositions = [];
+
+    for (let i = 0; i < totalRows; i++) {
+      let row = [];
+      for (let j = 0; j < totalCols; j++) {
+        if (i === 0 || i === totalRows - 1 || j === 0 || j === totalCols - 1) {
+          row.push(null); // will animate
+          borderPositions.push([i, j]);
         } else {
-          col.push(original[i - 1][j - 1]);
+          row.push(original[i - 1][j - 1]); // show instantly
         }
       }
-      rows.push(col);
+      baseMatrix.push(row);
     }
-    setPadded(rows);
-    console.log(rows);
+
+    setPadded(baseMatrix);
+
+    // Animate only borders
+    borderPositions.forEach(([i, j], index) => {
+      setTimeout(() => {
+        setPadded((prev) => {
+          const updated = prev.map((r) => [...r]);
+          updated[i][j] = 0;
+          return updated;
+        });
+      }, index * 60);
+    });
+
     myPadButton.current.disabled = true;
     enabledNext();
   }
-function padding() {
-  const totalRows = original.length + 2;
-  const totalCols = original[0].length + 2;
-
-  let baseMatrix = [];
-  let borderPositions = [];
-
-  for (let i = 0; i < totalRows; i++) {
-    let row = [];
-    for (let j = 0; j < totalCols; j++) {
-      if (
-        i === 0 ||
-        i === totalRows - 1 ||
-        j === 0 ||
-        j === totalCols - 1
-      ) {
-        row.push(null); // will animate
-        borderPositions.push([i, j]);
-      } else {
-        row.push(original[i - 1][j - 1]); // show instantly
-      }
-    }
-    baseMatrix.push(row);
-  }
-
-  setPadded(baseMatrix);
-
-  // Animate only borders
-  borderPositions.forEach(([i, j], index) => {
-    setTimeout(() => {
-      setPadded(prev => {
-        const updated = prev.map(r => [...r]);
-        updated[i][j] = 0;
-        return updated;
-      });
-    }, index * 60);
-  });
-
-  myPadButton.current.disabled = true;
-  enabledNext();
-}
   async function blur() {
     if (isBlurring) return; // Prevent re-entry if already running
     setIsBlurring(true); // Set the flag to true to lock execution
@@ -272,50 +267,44 @@ function padding() {
   }
 
   const [padBlur, setPadBlur] = useState(null);
-  
 
   function padblurred() {
-  myPadBlurButton.current.disabled = true;
+    myPadBlurButton.current.disabled = true;
 
-  const totalRows = blurred.length + 2;
-  const totalCols = blurred[0].length + 2;
+    const totalRows = blurred.length + 2;
+    const totalCols = blurred[0].length + 2;
 
-  let baseMatrix = [];
-  let borderPositions = [];
+    let baseMatrix = [];
+    let borderPositions = [];
 
-  for (let i = 0; i < totalRows; i++) {
-    let row = [];
-    for (let j = 0; j < totalCols; j++) {
-      if (
-        i === 0 ||
-        i === totalRows - 1 ||
-        j === 0 ||
-        j === totalCols - 1
-      ) {
-        row.push(null); // 👈 SAME AS STEP 1
-        borderPositions.push([i, j]);
-      } else {
-        row.push(blurred[i - 1][j - 1]);
+    for (let i = 0; i < totalRows; i++) {
+      let row = [];
+      for (let j = 0; j < totalCols; j++) {
+        if (i === 0 || i === totalRows - 1 || j === 0 || j === totalCols - 1) {
+          row.push(null); // 👈 SAME AS STEP 1
+          borderPositions.push([i, j]);
+        } else {
+          row.push(blurred[i - 1][j - 1]);
+        }
       }
+      baseMatrix.push(row);
     }
-    baseMatrix.push(row);
+
+    setPadBlur(baseMatrix);
+
+    // Animate borders one-by-one
+    borderPositions.forEach(([i, j], index) => {
+      setTimeout(() => {
+        setPadBlur((prev) => {
+          const updated = prev.map((r) => [...r]);
+          updated[i][j] = 0;
+          return updated;
+        });
+      }, index * 60);
+    });
+
+    enabledNext();
   }
-
-  setPadBlur(baseMatrix);
-
-  // Animate borders one-by-one
-  borderPositions.forEach(([i, j], index) => {
-    setTimeout(() => {
-      setPadBlur(prev => {
-        const updated = prev.map(r => [...r]);
-        updated[i][j] = 0;
-        return updated;
-      });
-    }, index * 60);
-  });
-
-  enabledNext();
-}
 
   async function applySobelConvolution() {
     if (!padBlur || !sobelx || !sobely) return;
@@ -358,80 +347,80 @@ function padding() {
     enabledNext();
   }
 
-  function qsuantiseGrad() {
+  // function quantiseGrad() {
+  //   if (!gradient) return;
+  //   myQuantButton.current.disabled = true;
+  //   let quantised = Array(7)
+  //     .fill(0)
+  //     .map(() => Array(7).fill(0));
+
+  //   if (!gradient || !Array.isArray(gradient) || gradient.length === 0) return;
+
+  //   for (let i = 0; i < gradient.length; i++) {
+  //     for (let j = 0; j < gradient[0].length; j++) {
+  //       let angle = gradient[i][j] ? gradient[i][j] % 180 : 0; // Normalize angle to [0, 180)
+  //       if (angle < 22.5 || angle >= 157.5) {
+  //         quantised[i][j] = 0; // Closest to 0 degrees
+  //       } else if (angle >= 22.5 && angle < 67.5) {
+  //         quantised[i][j] = 45; // Closest to 45 degrees
+  //       } else if (angle >= 67.5 && angle < 112.5) {
+  //         quantised[i][j] = 90; // Closest to 90 degrees
+  //       } else {
+  //         quantised[i][j] = 135; // Closest to 135 degrees
+  //       }
+  //     }
+  //   }
+
+  //   setQuantize(quantised);
+  //   console.log(quantised);
+  //   enabledNext();
+  // }
+  function quantiseGrad() {
     if (!gradient) return;
     myQuantButton.current.disabled = true;
-    let quantised = Array(7)
-      .fill(0)
-      .map(() => Array(7).fill(0));
 
-    if (!gradient || !Array.isArray(gradient) || gradient.length === 0) return;
+    const rows = gradient.length;
+    const cols = gradient[0].length;
 
-    for (let i = 0; i < gradient.length; i++) {
-      for (let j = 0; j < gradient[0].length; j++) {
-        let angle = gradient[i][j] ? gradient[i][j] % 180 : 0; // Normalize angle to [0, 180)
+    // Step 1: initialize with null (for animation)
+    let initialMatrix = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(null));
+
+    setQuantize(initialMatrix);
+
+    let index = 0;
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let angle = gradient[i][j] ? gradient[i][j] % 180 : 0;
+
+        let value;
+
         if (angle < 22.5 || angle >= 157.5) {
-          quantised[i][j] = 0; // Closest to 0 degrees
+          value = 0;
         } else if (angle >= 22.5 && angle < 67.5) {
-          quantised[i][j] = 45; // Closest to 45 degrees
+          value = 45;
         } else if (angle >= 67.5 && angle < 112.5) {
-          quantised[i][j] = 90; // Closest to 90 degrees
+          value = 90;
         } else {
-          quantised[i][j] = 135; // Closest to 135 degrees
+          value = 135;
         }
+
+        setTimeout(() => {
+          setQuantize((prev) => {
+            const updated = prev.map((r) => [...r]);
+            updated[i][j] = value;
+            return updated;
+          });
+        }, index * 70);
+
+        index++;
       }
     }
 
-    setQuantize(quantised);
-    console.log(quantised);
     enabledNext();
   }
-function quantiseGrad() {
-  if (!gradient) return;
-  myQuantButton.current.disabled = true;
-
-  const rows = gradient.length;
-  const cols = gradient[0].length;
-
-  // Step 1: initialize with null (for animation)
-  let initialMatrix = Array(rows)
-    .fill(null)
-    .map(() => Array(cols).fill(null));
-
-  setQuantize(initialMatrix);
-
-  let index = 0;
-
-  for (let i = 0; i < rows; i++) {
-    for (let j = 0; j < cols; j++) {
-      let angle = gradient[i][j] ? gradient[i][j] % 180 : 0;
-
-      let value;
-
-      if (angle < 22.5 || angle >= 157.5) {
-        value = 0;
-      } else if (angle >= 22.5 && angle < 67.5) {
-        value = 45;
-      } else if (angle >= 67.5 && angle < 112.5) {
-        value = 90;
-      } else {
-        value = 135;
-      }
-
-      setTimeout(() => {
-        setQuantize(prev => {
-          const updated = prev.map(r => [...r]);
-          updated[i][j] = value;
-          return updated;
-        });
-      }, index * 70);
-
-      index++;
-    }
-  }
-
-  enabledNext();
-}
   function nonmax() {
     if (!convolutedx || !convolutedy || !gradient) return;
     myNonMaxButton.current.disabled = true;
@@ -649,7 +638,7 @@ function quantiseGrad() {
                           <img
                             src={plus}
                             id="image"
-                              className={image === 0 ? "image-selected" : ""}
+                            className={image === 0 ? "image-selected" : ""}
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -662,7 +651,7 @@ function quantiseGrad() {
                           <img
                             src={minus}
                             id="image"
-                              className={image === 1 ? "image-selected" : ""} 
+                            className={image === 1 ? "image-selected" : ""}
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -675,7 +664,7 @@ function quantiseGrad() {
                           <img
                             src={multiply}
                             id="image"
-                              className={image === 2 ? "image-selected" : ""} 
+                            className={image === 2 ? "image-selected" : ""}
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -688,7 +677,7 @@ function quantiseGrad() {
                           <img
                             src={divide}
                             id="image"
-                              className={image === 3 ? "image-selected" : ""} 
+                            className={image === 3 ? "image-selected" : ""}
                             style={{
                               opacity: imagesDisabled ? 0.7 : 1,
                               cursor: imagesDisabled
@@ -722,7 +711,7 @@ function quantiseGrad() {
                             className="matrix-animate"
                             style={{
                               backgroundColor: cell === 0 ? "black" : "white",
-                                                        animationDelay: `${rowIndex * 0.15}s`,
+                              animationDelay: `${rowIndex * 0.15}s`,
                             }}
                           ></div>
                         )),
@@ -747,8 +736,8 @@ function quantiseGrad() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                                                        color: cell === 1 ? "red" : "black",
-                                                        animationDelay: `${rowIndex * 0.15}s`,
+                              color: cell === 1 ? "red" : "black",
+                              animationDelay: `${rowIndex * 0.15}s`,
                             }}
                           >
                             {cell}
@@ -820,8 +809,7 @@ function quantiseGrad() {
                             key={`${rowIndex}-${colIndex}`}
                             id="gaussian_matrix"
                             className="matrix-animate"
-                            style={{  animationDelay: `${rowIndex * 0.15}s`,
-                            }}
+                            style={{ animationDelay: `${rowIndex * 0.15}s` }}
                           >
                             {cell}
                           </div>
@@ -864,9 +852,9 @@ function quantiseGrad() {
                                 key={`${rowIndex}-${colIndex}`}
                                 id="nonpadded_matrix"
                                 style={{
-    backgroundColor: cell === 0 ? "black" : "white",
-  }}
-
+                                  backgroundColor:
+                                    cell === 0 ? "black" : "white",
+                                }}
                               ></div>
                             )),
                           )}
@@ -884,33 +872,35 @@ function quantiseGrad() {
                         }}
                       >
                         {padded &&
-  padded.map((row, rowIndex) =>
-    row.map((cell, colIndex) => {
-      const isBorder =
-        rowIndex === 0 ||
-        rowIndex === padded.length - 1 ||
-        colIndex === 0 ||
-        colIndex === row.length - 1;
+                          padded.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => {
+                              const isBorder =
+                                rowIndex === 0 ||
+                                rowIndex === padded.length - 1 ||
+                                colIndex === 0 ||
+                                colIndex === row.length - 1;
 
-      return (
-        <div
-          key={`${rowIndex}-${colIndex}`}
-          id="padded_matrix"
-          className={`padded-cell ${
-            cell === 0 && isBorder ? "animate-border" : ""
-          }`}
-          style={{
-            backgroundColor:
-              cell === null
-                ? "transparent"
-                : cell === 0
-                ? "black"
-                : "white",
-          }}
-        ></div>
-      );
-    })
-  )}
+                              return (
+                                <div
+                                  key={`${rowIndex}-${colIndex}`}
+                                  id="padded_matrix"
+                                  className={`padded-cell ${
+                                    cell === 0 && isBorder
+                                      ? "animate-border"
+                                      : ""
+                                  }`}
+                                  style={{
+                                    backgroundColor:
+                                      cell === null
+                                        ? "transparent"
+                                        : cell === 0
+                                          ? "black"
+                                          : "white",
+                                  }}
+                                ></div>
+                              );
+                            }),
+                          )}
                       </div>
                       {padded && <span>9×9</span>}
                     </div>
@@ -1109,39 +1099,41 @@ function quantiseGrad() {
                         gap: "2px",
                       }}
                     >
-{padBlur &&
-  padBlur.map((row, rowIndex) =>
-    row.map((cell, colIndex) => {
-      const isBorder =
-        rowIndex === 0 ||
-        rowIndex === padBlur.length - 1 ||
-        colIndex === 0 ||
-        colIndex === row.length - 1;
-        
+                      {padBlur &&
+                        padBlur.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => {
+                            const isBorder =
+                              rowIndex === 0 ||
+                              rowIndex === padBlur.length - 1 ||
+                              colIndex === 0 ||
+                              colIndex === row.length - 1;
 
-      return (
-        <div
-          key={`${rowIndex}-${colIndex}`}
-          id="padded-blurred-out-canny-matrix"
-          className={`padded-cell ${
-              cell === 0 && isBorder ? "animate-border" : ""
-          }`}
-          style={{
-            backgroundColor:
-              cell === null
-                ? "transparent"
-                : `rgb(${
-                    (cell / Math.max(...blurred.flat())) * 255
-                  },${
-                    (cell / Math.max(...blurred.flat())) * 255
-                  },${
-                    (cell / Math.max(...blurred.flat())) * 255
-                  })`,
-          }}
-        ></div>
-      );
-    })
-  )}
+                            return (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                id="padded-blurred-out-canny-matrix"
+                                className={`padded-cell ${
+                                  cell === 0 && isBorder ? "animate-border" : ""
+                                }`}
+                                style={{
+                                  backgroundColor:
+                                    cell === null
+                                      ? "transparent"
+                                      : `rgb(${
+                                          (cell / Math.max(...blurred.flat())) *
+                                          255
+                                        },${
+                                          (cell / Math.max(...blurred.flat())) *
+                                          255
+                                        },${
+                                          (cell / Math.max(...blurred.flat())) *
+                                          255
+                                        })`,
+                                }}
+                              ></div>
+                            );
+                          }),
+                        )}
                     </div>
                   </div>
                 </div>
@@ -1434,16 +1426,17 @@ function quantiseGrad() {
                           row.map((cell, colIndex) => (
                             <div
                               key={`${rowIndex}-${colIndex}`}
-                              
                               className={`quantised-canny-matrix dir-${cell}`}
                             >
-{
-  cell === null ? "" :
-  cell === 0 ? "0" :
-  cell === 45 ? "45" :
-  cell === 90 ? "90" :
-  "135"
-}
+                              {cell === null
+                                ? ""
+                                : cell === 0
+                                  ? "0"
+                                  : cell === 45
+                                    ? "45"
+                                    : cell === 90
+                                      ? "90"
+                                      : "135"}
                             </div>
                           )),
                         )}
