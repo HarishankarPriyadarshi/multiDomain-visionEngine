@@ -82,12 +82,16 @@ export default function CannyExplanation() {
   const [activeRes, setActiveRes] = useState({ row: -1, col: -1 });
   const [completedRes, setCompletedRes] = useState([]);
   // state trecking for sobel kernel animation
+  const [sobelPosX, setSobelPosX] = useState(-1);
+  const [sobelPosY, setSobelPosY] = useState(-1);
+  const [imageAnimateKey, setImageAnimateKey] = useState(0);
   const [activeSobelDX, setActiveSobelDX] = useState({ row: -1, col: -1 });
   const [activeSobelDY, setActiveSobelDY] = useState({ row: -1, col: -1 });
   const [activeSobelRes, setActiveSobelRes] = useState({ row: -1, col: -1 });
   const [completedSobelDXSteps, setCompletedSobelDXSteps] = useState([]);
   const [completedSobelDYSteps, setCompletedSobelDYSteps] = useState([]);
-  const [completedSobelRes, setCompletedSobelRes] = useState([]);
+  const [completedSobelResSteps, setCompletedSobelResSteps] = useState([]);
+
   const equation1 = "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
 
   console.log("index value:", index);
@@ -347,6 +351,14 @@ export default function CannyExplanation() {
   async function applySobelConvolution() {
     if (!padBlur || !sobelx || !sobely) return;
     mySobelButton.current.disabled = true;
+    //animation track
+    setActiveSobelDX({ row: -1, col: -1 });
+    setActiveSobelDY({ row: -1, col: -1 });
+    setActiveSobelRes({ row: -1, col: -1 });
+    setCompletedSobelDXSteps([]);
+    setCompletedSobelDYSteps([]);
+    setCompletedSobelResSteps([]);
+    
 
     let convolutedX = Array(7)
       .fill(0)
@@ -362,6 +374,11 @@ export default function CannyExplanation() {
       for (let j = 1; j < padBlur[0].length - 1; j++) {
         let sumX = 0;
         let sumY = 0;
+        setSobelPosX(i);
+        setSobelPosY(j);
+        setImageAnimateKey((prev) => prev + 1);
+      
+
 
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
@@ -369,6 +386,13 @@ export default function CannyExplanation() {
             sumY += padBlur[i + k][j + l] * sobely[k + 1][l + 1];
           }
         }
+        //animation tracking
+        setActiveSobelDX({ row: i - 1, col: j - 1 });
+        setActiveSobelDY({ row: i - 1, col: j - 1 });
+        setActiveSobelRes({ row: i - 1, col: j - 1 });
+        setCompletedSobelDXSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
+        setCompletedSobelDYSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
+        setCompletedSobelResSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
 
         convolutedX[i - 1][j - 1] = sumX.toFixed(2);
         convolutedY[i - 1][j - 1] = sumY.toFixed(2);
@@ -379,7 +403,7 @@ export default function CannyExplanation() {
         setConvolutedx([...convolutedX]);
         setConvolutedy([...convolutedY]);
         setGradient(grad);
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
     enabledNext();
@@ -1248,7 +1272,7 @@ export default function CannyExplanation() {
             <Carousel.Item>
               {padBlur && (
                 <div id="sobel-application-canny">
-                  <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", flexDirection: "column" ,position:"relative"}}>
                     {padBlur && (
                       <div className="padded-blurred-image">
                         Padded Blurred Image (9x9)
@@ -1262,19 +1286,40 @@ export default function CannyExplanation() {
                           gridTemplateColumns: "repeat(9, 1fr)",
                           gap: "0px",
                         }}
+                        className="matrix-card"
                       >
                         {(() => {
                           return padBlur.map((row, rowIndex) =>
                             row.map((cell, colIndex) => (
                               <div
                                 key={`${rowIndex}-${colIndex}`}
-                                class="padded-sobel-matrix"
+                                className="padded-sobel-matrix"
+                                id="sobel-cell"
                               >
                                 {cell}
                               </div>
                             )),
                           );
                         })()}
+                      </div>
+                    )}
+                    {sobelPosX !== -1 && sobelPosY !== -1 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetTop || 0)-37) }px`,
+                          left: `${sobelPosY * ((document.getElementById("sobel-cell")?.offsetHeight || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetLeft || 0)-37) }px`,
+                          width: `${(document.getElementById("sobel-cell")?.offsetWidth || 0)*3+2.5}px`,
+                          height: `${(document.getElementById("sobel-cell")?.offsetHeight || 0)*3+2.5}px`,
+                          border: "3px solid #ff4d4d",
+                          backgroundColor: "rgba(255, 77, 77, 0.12)",
+                          boxShadow: "inset 0 0 10px rgba(255, 77, 77, 0.5)",
+                          pointerEvents: "none",
+                          transition: "top 0.25s ease, left 0.25s ease",
+                          zIndex: 1000,
+                        }}
+                      >
+                        
                       </div>
                     )}
                   </div>
@@ -1288,7 +1333,7 @@ export default function CannyExplanation() {
                           alignItems: "center",
                         }}
                       >
-                        <h4 style={{ color: "#625f5fff" }}> Sobel X Kernel</h4>
+                        <h4 style={{ color: "#1f2937" }}> Sobel X Kernel</h4>
                         <div
                           style={{
                             textAlign: "center",
@@ -1307,15 +1352,9 @@ export default function CannyExplanation() {
                               sobelx.map((row, rowIndex) =>
                                 row.map((cell, colIndex) => (
                                   <div
-                                    key={`${rowIndex}-${colIndex}`}
-                                    style={{
-                                      width: "30px",
-                                      height: "30px",
-                                      backgroundColor: "white",
-                                      border: "1px solid #ccc",
-                                      alignItems: "center",
-                                      justifyItems: "center",
-                                    }}
+                                    key={`${rowIndex}-${colIndex}-${imageAnimateKey}`}
+                                    className="kernel-matrix"
+                                    
                                   >
                                     {cell}
                                   </div>
@@ -1332,7 +1371,7 @@ export default function CannyExplanation() {
                           alignItems: "center",
                         }}
                       >
-                        <h4 style={{ color: "#625f5fff" }}> Sobel Y Kernel</h4>
+                        <h4 style={{ color: "#1f2937" }}> Sobel Y Kernel</h4>
                         <div
                           style={{
                             textAlign: "center",
@@ -1399,7 +1438,7 @@ export default function CannyExplanation() {
                     <div id="convolution-sobel-canny">
                       <div id="sobel-x-canny">
                         {convolutedx && (
-                          <h4 style={{ color: "#625f5fff" }}> Sobel X</h4>
+                          <h4 style={{ color: "#1f2937" }}> Sobel X</h4>
                         )}
                         <div
                           style={{
@@ -1413,8 +1452,20 @@ export default function CannyExplanation() {
                               row.map((cell, colIndex) => (
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
-                                  class="sobel-matrix"
-                                  style={{}}
+                                  id="sobel-matrix"
+                                  className={
+                                activeSobelDX.row === rowIndex &&
+                                activeSobelDX.col === colIndex
+                                  ? "dx-active"
+                                  : completedSobelDXSteps.some(
+                                        (item) =>
+                                          item.row === rowIndex &&
+                                          item.col === colIndex,
+                                      )
+                                    ? "dx-completed"
+                                    : ""
+                              }
+
                                 >
                                   {cell}
                                 </div>
@@ -1424,7 +1475,7 @@ export default function CannyExplanation() {
                       </div>
                       <div id="sobel-y-canny">
                         {convolutedy && (
-                          <h4 style={{ color: "#625f5fff" }}> Sobel Y</h4>
+                          <h4 style={{ color: "#1f2937" }}> Sobel Y</h4>
                         )}
                         <div
                           style={{
@@ -1438,8 +1489,20 @@ export default function CannyExplanation() {
                               row.map((cell, colIndex) => (
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
-                                  class="sobel-matrix"
+                                  id="sobel-matrix"
                                   style={{}}
+                                  className={
+                                activeSobelDY.row === rowIndex &&
+                                activeSobelDY.col === colIndex
+                                  ? "dy-active"
+                                  : completedSobelDYSteps.some(
+                                        (item) =>
+                                          item.row === rowIndex &&
+                                          item.col === colIndex,
+                                      )
+                                    ? "dy-completed"
+                                    : ""
+                              }
                                 >
                                   {cell}
                                 </div>
@@ -1472,7 +1535,19 @@ export default function CannyExplanation() {
                             row.map((cell, colIndex) => (
                               <div
                                 key={`${rowIndex}-${colIndex}`}
-                                class="sobel-gradient-matrix"
+                                id="sobel-gradient-matrix"
+                                className={
+                                  activeSobelRes.row === rowIndex &&
+                                  activeSobelRes.col === colIndex
+                                  ? "res-active"
+                                  : completedSobelResSteps.some(
+                                        (item) =>
+                                          item.row === rowIndex &&
+                                          item.col === colIndex,
+                                      )
+                                    ? "res-completed"
+                                    : ""
+                                }
                               >
                                 {cell}
                               </div>

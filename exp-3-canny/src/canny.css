@@ -213,24 +213,19 @@ h6 {
   justify-content: center;
   align-items: center;
   margin-top: 30px;
-    
 }
 .common-flex {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;  
-  
+  justify-content: center;
 }
 .matrix-size {
   font-size: 15px;
   font-weight: 500;
 
-  color: #1D2A6D;
-  
+  color: #1d2a6d;
 }
-
-
 
 #padded-canny {
   width: 20px;
@@ -331,7 +326,7 @@ h6 {
   transform: rotate(90deg);
 }
 
-.sobel-matrix {
+#sobel-matrix {
   width: 37px;
   height: 37px;
   border: 1px solid #ccc;
@@ -340,9 +335,9 @@ h6 {
   justify-content: center;
 }
 
-.sobel-gradient-matrix {
-  width: 35px;
-  height: 35px;
+#sobel-gradient-matrix {
+  width: 38px;
+  height: 38px;
   background-color: white;
   border: 1px solid #ccc;
   display: flex;
@@ -590,13 +585,11 @@ h6 {
   #conv-mult-canny {
     flex-direction: column;
     gap: 0px;
-      margin-top: 0px;
+    margin-top: 0px;
   }
   .matrix-size {
-  font-size: 11px;
-
-
-}
+    font-size: 11px;
+  }
   .carousel__btns {
     justify-content: space-between;
   }
@@ -643,18 +636,17 @@ h6 {
     font-size: 30px;
     transform: rotate(90deg);
   }
-  .sobel-matrix {
+  #sobel-matrix {
     width: 37px;
     height: 35px;
   }
-  .sobel-gradient-matrix {
-    width: 30px;
-    height: 30px;
+  #sobel-gradient-matrix {
+    width: 35px;
+    height: 35px;
     font-size: 14px;
   }
   #convolution-sobel-canny {
     flex-direction: column;
-
   }
   #quantised-canny-div {
     flex-direction: column;
@@ -856,17 +848,25 @@ h6 {
   }
 }
 
-.dir-0 { background-color: #ffe0e0; }
-.dir-45 { background-color: #e0ffe0; }
-.dir-90 { background-color: #e0e0ff; }
-.dir-135 { background-color: #fff0cc; }
+.dir-0 {
+  background-color: #ffe0e0;
+}
+.dir-45 {
+  background-color: #e0ffe0;
+}
+.dir-90 {
+  background-color: #e0e0ff;
+}
+.dir-135 {
+  background-color: #fff0cc;
+}
 
 .conv-steps-box {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
- 
+
   margin-top: 20px;
   padding: 15px;
   font-size: 14px;
@@ -890,22 +890,40 @@ h6 {
 .gussian-step {
   font-size: 15px;
   font-weight: bold;
-  color: #1D2A6D;
+  color: #1d2a6d;
   margin-right: 5px;
 }
 
+/* Finished cells */
+/*  dx-active style */
+.dx-active,
+.dy-active {
+  border: 2px solid #0028f2 !important;
+  background-color: #5975d1 !important;
+  border-radius: 4px;
+  color: #fff;
+  transform: scale(1.1);
+  pointer-events: none;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
 /* Finished cells */
+.dx-completed,
+.dy-completed {
+  background-color: rgba(89, 117, 209, 0.25);
+  border: 1px solid #5975d1;
+  color: #0028f2;
+  transition: background-color 0.3s ease;
+}
 
-
-.res-active  {
+.res-active {
   border: 2px solid #711ede !important;
   background-color: #6f46d845 !important;
   color: #ff0000;
   z-index: 2222;
-   transform: scale(1.1);
+  transform: scale(1.1);
   pointer-events: none;
-transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .res-completed {
   border: 2px solid #6900f2;
@@ -915,7 +933,7 @@ transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .resImage-active {
   transform: scale(1.19);
-  border: 2px solid  #5b31c3 !important;
+  border: 2px solid #5b31c3 !important;
 }
 
 /* Sobel Matrix */
@@ -925,7 +943,7 @@ transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   color: #0b0b0b;
   margin-bottom: 10px;
 }
-.padded-sobel-matrix {
+/* .padded-sobel-matrix {
   width: 37px;
   height: 37px;
   border: 1px solid #ccc;
@@ -933,5 +951,69 @@ transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   justify-content: center;
   align-items: center;
   background-color: #fcf6da81;
+} */
+.padded-sobel-matrix {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #1f4ba9;
+  background-color: #ffffff;
+  color: #344055;
+  transition: 0.2s ease;
 }
 
+.padded-sobel-matrix:hover {
+  background-color: #eef3ff;
+}
+
+.matrix-card {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
+  transition: 0.3s ease;
+}
+
+.matrix-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.kernel-matrix {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border: 1px solid #c7d2fe;
+  background-color: #e0e7ff;
+  color: #1e3a8a;
+  border-radius: 6px;
+}
+#sobel-matrix {
+  width: 37px;
+  height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  color: #111827;
+}
+#sobel-gradient-matrix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border: 1px solid #bbf7d0;
+  background-color: #ecfdf5;
+  color: #065f46;
+  border-radius: 4px;
+}
