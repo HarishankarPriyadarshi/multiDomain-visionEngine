@@ -49,26 +49,12 @@ function TabPanel(props) {
 }
 
 export default function MorphologyPage() {
-  const myProcess1Button = useRef(null);
-  const myProcess2Button = useRef(null);
   const myProcess3Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
   const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
-
-  const notifyE = (msg) => {
-    toast.error(msg, {
-      theme: "dark",
-      position: "bottom-left", // Set toast position
-      autoClose: 5000, // Toast auto-closes after 5 seconds
-      hideProgressBar: false, // Show progress bar
-      closeOnClick: true, // Close toast when clicked
-      pauseOnHover: true, // Pause when hovered
-      draggable: true, // Enable dragging
-    });
-  };
 
   const notifyS = (msg) => {
     toast.success(msg, {
@@ -99,95 +85,6 @@ export default function MorphologyPage() {
     let absGradX = new cv.Mat();
     let absGradY = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-    if (tabValue == 0) {
-      if (derivativeMethod == "First Order") {
-        if (filter1Type.startsWith("Sobel")) {
-          let kernelSize = parseInt(filter1Type.split(" ")[1]);
-          cv.Sobel(gray, gradX, cv.CV_64F, 1, 0, kernelSize);
-          cv.Sobel(gray, gradY, cv.CV_64F, 0, 1, kernelSize);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Scharr") {
-          cv.Scharr(gray, gradX, cv.CV_64F, 1, 0);
-          cv.Scharr(gray, gradY, cv.CV_64F, 0, 1);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Prewitt") {
-          let prewittKernelX = cv.matFromArray(
-            3,
-            3,
-            cv.CV_32F,
-            [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-          );
-          let prewittKernelY = cv.matFromArray(
-            3,
-            3,
-            cv.CV_32F,
-            [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-          );
-          cv.filter2D(gray, gradX, cv.CV_64F, prewittKernelX);
-          cv.filter2D(gray, gradY, cv.CV_64F, prewittKernelY);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Roberts") {
-          let prewittKernelX = cv.matFromArray(2, 2, cv.CV_32F, [1, 0, 0, -1]);
-          let prewittKernelY = cv.matFromArray(2, 2, cv.CV_32F, [0, 1, -1, 0]);
-          cv.filter2D(gray, gradX, cv.CV_64F, prewittKernelX);
-          cv.filter2D(gray, gradY, cv.CV_64F, prewittKernelY);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-      }
-
-      if (derivativeMethod == "Second Order") {
-        let ksize = parseInt(o2Kernel);
-        cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0); // Convert to grayscale
-        cv.Laplacian(
-          src,
-          edgeDetected,
-          cv.CV_8U,
-          ksize,
-          1,
-          0,
-          cv.BORDER_DEFAULT,
-        );
-      }
-      // myProcess1Button.current.disabled=true
-    }
-
-    if (tabValue == 1) {
-      if (gaussOn == "Gauss Off") {
-        cv.Canny(gray, edgeDetected, cannyLow, cannyHigh, 3, false);
-      }
-      if (gaussOn == "Gauss On") {
-        let gauss = new window.cv.Mat();
-        let kernel = parseInt(gaussKernelSize);
-        cv.GaussianBlur(
-          gray,
-          gauss,
-          new cv.Size(kernel, kernel),
-          0,
-          0,
-          cv.BORDER_DEFAULT,
-        );
-        cv.Canny(gauss, edgeDetected, cannyLow, cannyHigh, 3, false);
-        let stitched = new cv.Mat();
-        let vec = new cv.MatVector();
-        vec.push_back(gauss);
-        vec.push_back(edgeDetected);
-        cv.hconcat(vec, edgeDetected);
-        gauss.delete();
-      }
-
-      // myProcess2Button.current.disabled=true
-    }
 
     if (tabValue == 2) {
       let shape = {
@@ -264,43 +161,25 @@ export default function MorphologyPage() {
     window.print(); // Triggers the print dialog
   };
 
-  const [derivativeMethod, setDerivativeMethod] = useState("First Order");
   const [tabValue, setTabValue] = useState(2);
-  const [filter1Type, setFilter1Type] = useState("Sobel 3x3");
-  const [o2Kernel, setO2Kernel] = useState("3");
-  const [gaussOn, setGaussOn] = useState("Gauss Off");
+
   const [gaussKernelSize, setGaussKernelSize] = useState("3");
-  const [cannyLow, setCannyLow] = useState(50);
-  const [cannyHigh, setCannyHigh] = useState(150);
+
   const [morphologicalOperation, setMorphologicalOperation] =
     useState("dilation");
   const [kernelShape, setKernelShape] = useState("rectangle");
 
   const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
-  const [openExplanationModal, setOpenExplanationModal] = useState(false);
-  const [openCannyModal, setOpenCannyModal] = useState(false);
+
   const [openMorphModal, setOpenMorphModal] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false); // State for opening/closing the drawer
 
   const voicePause = useRef(null);
   const voicePlay = useRef(null);
 
   var indexTabValue = tabValue;
-  const handleTabChange = (event, newValue) => {
-    indexTabValue = newValue;
-    setTabValue(newValue);
-  };
 
   const instr = () => {
     setOpenInstructionsModal(true);
-  };
-
-  const exp = () => {
-    setOpenExplanationModal(true);
-  };
-
-  const exp2 = () => {
-    setOpenCannyModal(true);
   };
 
   const exp3 = () => {
@@ -315,25 +194,6 @@ export default function MorphologyPage() {
   }, []);
 
   const instructionsList = {
-    0: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose the desired order of the derivative.",
-      "If First Order is selected, choose the filter you want to apply.",
-      "Otherwise, select the kernel size to apply.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose whether to turn Gauss On or Off.",
-      "If Gauss On is selected, choose the kernel size.",
-      "Set the Canny Low Threshold.",
-      "Set the Canny High Threshold.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
     2: [
       "Select an image from the available options or upload one using the Upload File button.",
       "Select the Morphological Operation.",
@@ -435,10 +295,6 @@ export default function MorphologyPage() {
     }
   };
 
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen); // Toggle drawer state (open or close)
-  };
-
   const initialImages = [sample1, sample2, sample3, sample4];
 
   // State to hold the images
@@ -450,7 +306,7 @@ export default function MorphologyPage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
-            setUploadedImageName(file.name);
+      setUploadedImageName(file.name);
       setIsInputImageAnimationPlaying(true);
       setTimeout(() => {
         setIsInputImageAnimationPlaying(false);
@@ -481,14 +337,6 @@ export default function MorphologyPage() {
 
   const handleCloseModal = () => {
     setOpenInstructionsModal(false); // Close the modal
-  };
-
-  const handleClose2Modal = () => {
-    setOpenExplanationModal(false);
-  };
-
-  const handleClose3Modal = () => {
-    setOpenCannyModal(false);
   };
 
   const handleClose4Modal = () => {
@@ -607,14 +455,12 @@ export default function MorphologyPage() {
         </div>
 
         <div id="mainbox" style={{ top: "50px" }}>
-
-
           <TabPanel tabValue={tabValue} index={2}>
             <div class="flex-container">
               <div class="flex-item-left">
                 <div id="left_bar">
                   <Box
-                                        sx={{
+                    sx={{
                       width: "100%",
                       height: "85%",
                       display: "flex",
@@ -759,7 +605,7 @@ export default function MorphologyPage() {
                           </div>
                         </div>
 
-<div style={{ marginTop: "15px", textAlign: "center" }}>
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
                           <label htmlFor="file-upload" className="upload-btn">
                             <svg
                               className="upload-icon"
@@ -815,7 +661,7 @@ export default function MorphologyPage() {
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
-                            borderRadius: "10px",
+                          borderRadius: "10px",
                         }}
                       >
                         <MenuItem value="dilation">Dilation</MenuItem>
@@ -847,7 +693,7 @@ export default function MorphologyPage() {
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
-                            borderRadius: "10px",
+                          borderRadius: "10px",
                         }}
                       >
                         <MenuItem value="3">3x3</MenuItem>
@@ -863,7 +709,7 @@ export default function MorphologyPage() {
                       >
                         Kernel Shape:
                       </h4>
-                              <Select
+                      <Select
                         value={kernelShape}
                         className="derivative-btn"
                         onChange={(e) => setKernelShape(e.target.value)}
@@ -878,7 +724,7 @@ export default function MorphologyPage() {
                             paddingTop: 1,
                             paddingBottom: 1,
                           },
-                            borderRadius: "10px",
+                          borderRadius: "10px",
                         }}
                       >
                         <MenuItem value="rectangle">Rectangle</MenuItem>
@@ -976,7 +822,7 @@ export default function MorphologyPage() {
                       </Box>
                     </Box>
                     <Box
-                                            sx={{
+                      sx={{
                         width: "auto",
                         height: "100%",
                         display: "flex",
@@ -1045,7 +891,7 @@ export default function MorphologyPage() {
                           alt="Output Image"
                         />
                         {/* <p>Output Image</p> */}
-                                                {isImageProcessed === false && (
+                        {isImageProcessed === false && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
@@ -1128,7 +974,6 @@ export default function MorphologyPage() {
                       <path d="M6 7h12v2H6zm0 4h12v2H6zm0 4h6v2H6z" />
                     </svg>
                   </Button>
-
                 </div>
 
                 {/* ToastContainer must be placed somewhere in the component tree */}
@@ -1143,8 +988,11 @@ export default function MorphologyPage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle id="instructions-dialog-title" className="dialog-title">
-                    <div style={{  }}>Morphological Concept</div>
+                  <DialogTitle
+                    id="instructions-dialog-title"
+                    className="dialog-title"
+                  >
+                    <div style={{}}>Morphological Concept</div>
                     <div
                       style={{
                         width: "50%",
