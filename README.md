@@ -7,7 +7,7 @@
 
 3. Canny Edge Detection
 
-4. Morphology-Based Edge Detection
+4. Morphology-Based Edge Detection 
 
 <!-- Region based segmentation -->
 <!-- Groups pixels into regions based on similarity (e.g., color, texture, intensity). EXAMPLE:Medical imaging, scene segmentation, region analysis. -->

@@ -27,8 +27,11 @@ export default function Morphological() {
   const myPauseButton = useRef(null);
   const mySpeedUpButton = useRef(null);
   const mySpeedDownButton = useRef(null);
-
   const isCancelledRef = useRef(false);
+  const [activePixel, setActivePixel] = useState(null);
+  const [overlapCells, setOverlapCells] = useState([]);
+  const [explanation, setExplanation] = useState("");
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     handleImage(0);
@@ -143,6 +146,7 @@ export default function Morphological() {
     setProcess("dilation");
     handleImage(0);
     setCurrentIndex(0);
+    setStep(0);
   }
 
   async function erode() {
@@ -222,6 +226,7 @@ export default function Morphological() {
     for (let i = 0; i < original.length; i++) {
       for (let j = 0; j < original[0].length; j++) {
         if (isCancelledRef.current) return; // ❗Exit early if reset
+        setActivePixel({ i, j });
 
         while (isPausedRef.current) {
           await new Promise((resolve) => setTimeout(resolve, 100));
@@ -229,6 +234,7 @@ export default function Morphological() {
         }
 
         let overlaps = false;
+        setOverlapCells([]); // Reset overlap cells
         for (let ki = 0; ki < kernel.length; ki++) {
           for (let kj = 0; kj < kernel[0].length; kj++) {
             const ni = i + ki - Math.floor(kernel.length / 2);
@@ -239,18 +245,36 @@ export default function Morphological() {
               nj >= 0 &&
               nj < original[0].length
             ) {
-              if (kernel[ki][kj] === 1 && original[ni][nj] === 1) {
-                overlaps = true;
+              if (kernel[ki][kj] === 1) {
+                if (
+                  ni >= 0 &&
+                  ni < original.length &&
+                  nj >= 0 &&
+                  nj < original[0].length
+                ) {
+                  if (original[ni][nj] === 1) {
+                    overlaps = true;
+                    setOverlapCells((prev) => [...prev, { ni, nj }]);
+                  }
+                }
               }
             }
           }
         }
         processed[i][j] = overlaps ? 1 : 0;
         setProcessed(processed.map((row) => [...row])); // Update processed state
+        if (overlaps) {
+          setExplanation(
+            `Pixel (${i},${j}) → Kernel overlaps at least one white pixel → Output = 1`,
+          );
+        } else {
+          setExplanation(`Pixel (${i},${j}) → No overlap found → Output = 0`);
+        }
+        setStep((prev) => prev + 1);
 
         // Update position of moving-kernel
         const movingKernel = document.getElementById("moving-kernel");
-        const img = document.getElementById("processed-img-morph");
+        const img = document.querySelector("#orig-morph .morph_matrix");
         if (movingKernel && img && i < 6 && j < 6) {
           const imgRect = img.getBoundingClientRect();
           const imgTop =
@@ -475,6 +499,7 @@ export default function Morphological() {
                 border: 1,
                 borderRadius: 2,
                 justifyContent: "space-around",
+                
               }}
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
@@ -483,6 +508,7 @@ export default function Morphological() {
                     <img
                       src={plus}
                       id="image-morph"
+                      className={image === 0 ? "image-selected" : ""}
                       style={{
                         opacity: imagesDisabled ? 0.7 : 1,
                         cursor: imagesDisabled ? "not-allowed" : "pointer",
@@ -493,6 +519,7 @@ export default function Morphological() {
                     <img
                       src={minus}
                       id="image-morph"
+                      className={image === 1 ? "image-selected" : ""}
                       style={{
                         opacity: imagesDisabled ? 0.7 : 1,
                         cursor: imagesDisabled ? "not-allowed" : "pointer",
@@ -503,6 +530,7 @@ export default function Morphological() {
                     <img
                       src={multiply}
                       id="image-morph"
+                      className={image === 2 ? "image-selected" : ""}
                       style={{
                         opacity: imagesDisabled ? 0.7 : 1,
                         cursor: imagesDisabled ? "not-allowed" : "pointer",
@@ -513,6 +541,7 @@ export default function Morphological() {
                     <img
                       src={divide}
                       id="image-morph"
+                      className={image === 3 ? "image-selected" : ""}
                       style={{
                         opacity: imagesDisabled ? 0.7 : 1,
                         cursor: imagesDisabled ? "not-allowed" : "pointer",
@@ -523,6 +552,7 @@ export default function Morphological() {
               </div>
 
               <hr className="custom-divider" />
+              
 
               <div
                 style={{
@@ -564,8 +594,9 @@ export default function Morphological() {
 
         <div id="process-box-morph">
           <div id="original-kernel-morph">
+            {/* original image */}
             <div id="orig-morph">
-              <h2>Original Image</h2>
+              <h2>Original Image(A)</h2>
               <div
                 style={{
                   display: "grid",
@@ -575,12 +606,51 @@ export default function Morphological() {
               >
                 {original &&
                   original.map((row, rowIndex) =>
+                    row.map((cell, cellIndex) => {
+                      const isActive =
+                        activePixel &&
+                        activePixel.i === rowIndex &&
+                        activePixel.j === cellIndex;
+                      const isOverlap = overlapCells.some(
+                        (cell) => cell.ni === rowIndex && cell.nj === cellIndex,
+                      );
+
+                      return (
+                        <div
+                          key={`${rowIndex}-${cellIndex}`}
+                          className="morph_matrix matrix-animate"
+                          style={{
+                            animationDelay: `${rowIndex * 0.15}s`,
+                            backgroundColor: cell === 0 ? "black" : "white",
+                            border: isActive
+                              ? "2px solid blue"
+                              : "1px solid gray",
+                            boxShadow: isOverlap ? "0 0 10px lime" : "none",
+                          }}
+                        ></div>
+                      );
+                    }),
+                  )}
+              </div>
+              <div
+                style={{
+                  position: "fixed",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: "2px",
+                  zIndex: 10,
+                }}
+                id="moving-kernel"
+              >
+                {document.getElementById("processed-img-morph") &&
+                  kernel.map((row, rowIndex) =>
                     row.map((cell, cellIndex) => (
                       <div
                         key={`${rowIndex}-${cellIndex}`}
                         class="morph_matrix"
                         style={{
                           backgroundColor: cell === 0 ? "black" : "white",
+                          border: "1px solid #ff0000",
                         }}
                       ></div>
                     )),
@@ -588,10 +658,18 @@ export default function Morphological() {
               </div>
             </div>
 
-            <div className="morph_op">*</div>
-
+            <div className="morph_op">
+              {process === "dilation"
+                ? "⊕"
+                : process === "erosion"
+                  ? "⊖"
+                  : process === "opening"
+                    ? "○"
+                    : "●"}
+            </div>
+            {/* kernel */}
             <div id="kernel-morph">
-              <h2>Kernel</h2>
+              <h2>Kernel(B)</h2>
               <div
                 style={{
                   display: "grid",
@@ -600,74 +678,95 @@ export default function Morphological() {
                 }}
               >
                 {kernel.map((row, rowIndex) =>
-                  row.map((cell, cellIndex) => (
-                    <div
-                      key={`${rowIndex}-${cellIndex}`}
-                      class="morph_matrix"
-                      style={{
-                        backgroundColor: cell === 0 ? "black" : "white",
-                      }}
-                    ></div>
-                  )),
+                  row.map((cell, cellIndex) => {
+                    const isCenter =
+                      rowIndex === Math.floor(kernel.length / 2) &&
+                      cellIndex === Math.floor(kernel[0].length / 2);
+
+                    return (
+                      <div
+                        key={`${rowIndex}-${cellIndex}`}
+                        className="morph_matrix matrix-animate"
+                        style={{
+                          animationDelay: `${rowIndex * 0.15}s`,
+                          backgroundColor: cell === 0 ? "black" : "white",
+                          border: isCenter ? "2px solid red" : "1px solid gray",
+                        }}
+                      ></div>
+                    );
+                  }),
                 )}
               </div>
             </div>
 
-            <div className="morph_op">=</div>
-          </div>
+            <div className="morph_op morph_op_container">
+              <div className="morph_op_text">
+                {" "}
+                {process === "dilation"
+                  ? "A ⊕ B"
+                  : process === "erosion"
+                    ? "A ⊖ B"
+                    : process === "opening"
+                      ? "A ○ B"
+                      : "A ● B"}
+              </div>
+              <div className="morph_op_arrow">───➤ </div>
+            </div>
+            {/* processed image */}
+            <div id="animation-morph">
+              <h2>
+                Processed Image
+                {step !== 0 && (
+                  <div style={{ fontSize: "14px", color: "#38383aff" }}>
+                    {process && ` (Step No. ${step})`}
+                  </div>
+                )}
+              </h2>
 
-          <div id="animation-morph">
-            <h2>Processed Image</h2>
-            <div
-              style={{
-                position: "fixed",
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "2px",
-                zIndex: 10,
-              }}
-              id="moving-kernel"
-            >
-              {document.getElementById("processed-img-morph") &&
-                kernel.map((row, rowIndex) =>
-                  row.map((cell, cellIndex) => (
-                    <div
-                      key={`${rowIndex}-${cellIndex}`}
-                      class="morph_matrix"
-                      style={{
-                        backgroundColor: cell === 0 ? "black" : "white",
-                        border: "1px solid #ff0000",
-                      }}
-                    ></div>
-                  )),
-                )}
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(7, 1fr)",
-                gap: "2px",
-                zIndex: "0",
-              }}
-            >
-              {processed &&
-                processed.map((row, rowIndex) =>
-                  row.map((cell, cellIndex) => (
-                    <div
-                      key={`${rowIndex}-${cellIndex}`}
-                      class="morph_matrix"
-                      id="processed-img-morph"
-                      style={{
-                        backgroundColor: cell === 0 ? "black" : "white",
-                      }}
-                    ></div>
-                  )),
-                )}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(7, 1fr)",
+                  gap: "2px",
+                  zIndex: "0",
+                }}
+              >
+                {processed &&
+                  processed.map((row, rowIndex) =>
+                    row.map((cell, cellIndex) => (
+                      <div
+                        key={`${rowIndex}-${cellIndex}`}
+                        class="morph_matrix"
+                        id="processed-img-morph"
+                        style={{
+                          backgroundColor: cell === 0 ? "black" : "white",
+                        }}
+                      ></div>
+                    )),
+                  )}
+              </div>
             </div>
           </div>
+          {/* explanation */}
+          {processed && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "10px",
+                border: "1px solid #1D2A6D",
+                borderRadius: "8px",
+                minHeight: "40px",
+                backgroundColor: "#f4f6ff",
+                fontWeight: "500",
+              }}
+            >
+              <strong>Step Explanation:</strong>
+              <div>{explanation}</div>
+            </div>
+          )}
         </div>
-
-        <div id="footer_buttons" className="morph_btn">
+        {/* footer buttons */}
+        <div id="footer_buttons" className="morph_btn footer-animate">
           <div className="button-container " style={{ height: "fit-content" }}>
             <button
               id="commmon-btn"
