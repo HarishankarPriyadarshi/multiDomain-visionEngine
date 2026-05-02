@@ -638,6 +638,7 @@ ol {
   transform: translateY(0px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 } 
+
 .derivative-btn:hover {
   background: #e8ecf3;
   transform: translateY(-2px);
@@ -727,3 +728,114 @@ ol {
     box-shadow: 0 0 0 0 rgba(28, 42, 109, 0);
   }
 }
+
+
+/* tutor */
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 0 0 0px rgba(255, 165, 0, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 15px rgba(255, 165, 0, 0);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 0 0px rgba(255, 165, 0, 0);
+    transform: scale(1);
+  }
+}
+
+.tutor-highlight {
+  animation: highlightPulse 1.5s infinite;
+  border: 3px solid orange !important;
+  z-index: 2000;
+  position: relative;
+}
+
+.tutor-popper {
+  z-index: 3000;
+  pointer-events: auto;
+}
+
+.tutor-paper {
+  padding: 15px;
+  max-width: 300px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  border: 3px solid rgba(38, 74, 255, 0.1);
+  background: rgb(166, 112, 112);
+  position: relative;
+}
+
+.tutor-arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: rgb(239, 239, 239);
+  transform: rotate(45deg);
+  border: 1px solid rgba(29, 42, 109, 0.1);
+}
+
+/* Arrow positioning based on placement */
+[data-popper-placement^='bottom'] .tutor-arrow {
+  top: -6px;
+  left: calc(50% - 6px);
+  border-bottom: none;
+  border-right: none;
+}
+
+[data-popper-placement^='top'] .tutor-arrow {
+  bottom: -6px;
+  left: calc(50% - 6px);
+  border-top: none;
+  border-left: none;
+}
+
+[data-popper-placement^='left'] .tutor-arrow {
+  right: -6px;
+  top: calc(50% - 6px);
+  border-bottom: none;
+  border-left: none;
+}
+
+[data-popper-placement^='right'] .tutor-arrow {
+  left: -6px;
+  top: calc(50% - 6px);
+  border-top: none;
+  border-right: none;
+}
+
+.tutor-title {
+  color: #1D2A6D;
+  font-weight: bold;
+  margin-bottom: 8px;
+  border-bottom: 2px solid #FFD700;
+  display: inline-block;
+}
+
+.tutor-content {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #444;
+  margin-bottom: 15px;
+}
+
+.tutor-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .tutor-paper {
+    max-width: 250px;
+    padding: 10px;
+  }
+  .tutor-content {
+    font-size: 0.85rem;
+  }
+}
+
+#bottom-footer {}

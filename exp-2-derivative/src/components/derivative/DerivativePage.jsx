@@ -13,6 +13,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Popper,
+  Fade,
+  Paper,
+  Typography,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import { useEffect, useState, useRef } from "react";
@@ -30,9 +34,6 @@ import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
 import EdgeExplanation from "../EdgeExplanation";
-import CannyExplanation from "../CannyExplanation";
-import Morphological from "../Morphological";
-
 //returns a tab panel
 function TabPanel(props) {
   const { children, tabValue, index, ...other } = props;
@@ -174,6 +175,122 @@ export default function DerivativePage() {
   const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
   const [openExplanationModal, setOpenExplanationModal] = useState(false);
 
+  // State to hold the images
+
+  const initialImages = [sample1, sample2, sample3, sample4];
+  const [images, setImages] = useState(initialImages);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [imageName, setImageName] = useState("");
+
+  // Guided Tutor State
+  const [tutorStep, setTutorStep] = useState(0);
+  const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const tutorBtnRef = useRef(null);
+
+  // Show welcome modal on initial load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcome(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const tutorSteps = [
+    {
+      title: "Welcome",
+      content:
+        "Welcome! Learn edge detection using 1st & 2nd order derivatives. Click Next to start.",
+      targetId: "guided-tutor-btn",
+      placement: "bottom",
+    },
+    {
+      title: " Read Instructions",
+      content:
+        " Read Instructions to learn more about edge detection.",
+      targetId: "instruction-btn",
+      placement: "bottom",
+    },
+    {
+      title: "Select Image",
+      content: " Select a sample image or upload your own to begin.",
+      targetId: "image-selection-zone",
+      placement: "right-start",
+    },
+    {
+      title: "Upload Image",
+      content: " Click Upload to select your own  image.",
+      targetId: "upload-btn-zone",
+      placement: "right-start",
+    },
+    {
+      title: "Choose Order",
+      content:
+        " Pick 1st Order (Gradient) or 2nd Order (Laplacian) derivative.",
+      targetId: "derivative-order-zone",
+      placement: "right",
+    },
+    {
+      title:
+        derivativeMethod === "First Order"
+          ? "First Order Path"
+          : "Second Order Path",
+      content:
+        derivativeMethod === "First Order"
+          ? " Select a filter (Sobel, Scharr, etc.) to compute gradients."
+          : "Choose kernel size. Larger sizes smoothen but reduce sharpness.",
+      targetId:
+        derivativeMethod === "First Order"
+          ? "filter-type-zone"
+          : "kernel-size-zone",
+      placement: "right",
+    },
+    {
+      title: "Processing",
+      content: " Click Process to convert to grayscale and detect edges.",
+      targetId: "process-button",
+      placement: "bottom",
+    },
+    {
+      title: "Observe Output",
+      content: " Observe the edges. Brightness indicates gradient strength.",
+      targetId: "output-image-zone",
+      placement: "top",
+    },
+    {
+      title: "Print Results",
+      content: " Click Print to save your results (Optional).",
+      targetId: "print-button",
+      placement: "bottom",
+    },
+    {
+      title: "Final Step",
+      content: "Done! Click Concept for math details on masks and gradients.",
+      targetId: "concept-button",
+      placement: "bottom",
+    },
+  ];
+
+  const handleTutorNext = () => {
+    if (tutorStep < tutorSteps.length - 1) {
+      setTutorStep(tutorStep + 1);
+    } else {
+      setIsTutorOpen(false);
+      setTutorStep(0);
+    }
+  };
+
+  const handleTutorBack = () => {
+    if (tutorStep > 0) {
+      setTutorStep(tutorStep - 1);
+    }
+  };
+
+  const startTutor = () => {
+    setTutorStep(0);
+    setIsTutorOpen(true);
+  };
+
   const voicePause = useRef(null);
   const voicePlay = useRef(null);
 
@@ -194,6 +311,30 @@ export default function DerivativePage() {
     speechSynthesis.cancel(); // Cancel any speech on reload
   }, []);
 
+  
+
+  // Auto-advance tutor for processing
+  useEffect(() => {
+    if (isTutorOpen && tutorStep === 6 && isImageProcessed) {
+      console.log("isImageProcessed from tutor", isImageProcessed);
+      handleTutorNext();
+    }
+  }, [isImageProcessed]);
+
+  useEffect(() => {
+    if (isTutorOpen && tutorSteps[tutorStep]?.targetId) {
+      const targetId = tutorSteps[tutorStep].targetId;
+      const element = document.getElementById(targetId);
+      if (element) {
+        element.classList.add("tutor-highlight");
+        element.scrollIntoView({ behavior: "smooth", block: "center",border: "1px solid red" });
+        return () => {
+          element.classList.remove("tutor-highlight");
+        };
+      }
+    }
+  }, [tutorStep, isTutorOpen]);
+
   const instructionsList = {
     0: [
       "Select an image from the available options or upload one using the Upload File button.",
@@ -204,25 +345,7 @@ export default function DerivativePage() {
       "Click the Print button to print the result.",
       "Note: Click the Concept button to get a detailed explanation.",
     ],
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose whether to turn Gauss On or Off.",
-      "If Gauss On is selected, choose the kernel size.",
-      "Set the Canny Low Threshold.",
-      "Set the Canny High Threshold.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    2: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Select the Morphological Operation.",
-      "Select the Kernel Size.",
-      "Select the Kernel Shape.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
+
   };
 
   const getInstructionsText = () => {
@@ -279,13 +402,7 @@ export default function DerivativePage() {
     }
   };
 
-  const initialImages = [sample1, sample2, sample3, sample4];
-
-  // State to hold the images
-  const [images, setImages] = useState(initialImages);
-
-  const [selectedImage, setSelectedImage] = useState(0);
-  const [imageName, setImageName] = useState("");
+  //const initialImages = [sample1, sample2, sample3, sample4];
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
@@ -360,8 +477,34 @@ export default function DerivativePage() {
               />
             </Button>
 
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#ffffffff",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={instr}
+            >
               Instructions
+            </Button>
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={startTutor}
+            >
+              Guided Tutor
             </Button>
           </div>
 
@@ -512,6 +655,7 @@ export default function DerivativePage() {
                         </h4>
 
                         <div
+                          id="image-selection-zone"
                           className="image-grid"
                           style={{
                             width: "100%",
@@ -584,8 +728,8 @@ export default function DerivativePage() {
                           </div>
                         </div>
 
-                        <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label htmlFor="file-upload" className="upload-btn">
+                        <div  style={{ marginTop: "15px", textAlign: "center" }}>
+                          <label id="upload-btn-zone" htmlFor="file-upload" className="upload-btn">
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -625,6 +769,7 @@ export default function DerivativePage() {
                         Order of Derivative:
                       </h4>
                       <Select
+                        id="derivative-order-zone"
                         value={derivativeMethod}
                         className="derivative-btn"
                         sx={{
@@ -657,6 +802,7 @@ export default function DerivativePage() {
                             Filter Type:
                           </h4>
                           <Select
+                            id="filter-type-zone"
                             value={filter1Type}
                             className="derivative-btn"
                             sx={{
@@ -697,6 +843,7 @@ export default function DerivativePage() {
                             Kernel Size:
                           </h4>
                           <Select
+                            id="kernel-size-zone"
                             value={o2Kernel}
                             className="derivative-btn"
                             sx={{
@@ -810,6 +957,7 @@ export default function DerivativePage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -916,6 +1064,7 @@ export default function DerivativePage() {
                   }}
                 >
                   <Button
+                    id="process-button"
                     ref={myProcess1Button}
                     class="tool_btn"
                     onClick={processImage}
@@ -928,6 +1077,7 @@ export default function DerivativePage() {
                     </svg>
                   </Button>
                   <Button
+                    id="print-button"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -940,6 +1090,7 @@ export default function DerivativePage() {
                   </Button>
 
                   <Button
+                    id="concept-button"
                     class="tool_btn"
                     onClick={exp}
                     variant="outlined"
@@ -1005,6 +1156,140 @@ export default function DerivativePage() {
                     {openExplanationModal && <EdgeExplanation />}
                   </DialogContent>
                 </Dialog>
+
+                {/* Welcome Modal */}
+                <Popper
+                  open={showWelcome}
+                  anchorEl={tutorBtnRef.current}
+                  placement="bottom"
+                  transition
+                  className="tutor-popper tutor-backdrop"
+                  modifiers={[
+                    {
+                      name: "offset",
+                      options: {
+                        offset: [0, 12],
+                      },
+                    },
+                  ]}
+                >
+                  {({ TransitionProps }) => (
+                    <Fade {...TransitionProps} timeout={1500}>
+                      <Paper
+                        className="tutor-paper"
+                        role="dialog"
+                        aria-labelledby="tutor-welcome-title"
+                      >
+                        <div className="tutor-arrow" />
+                        <Typography
+                          id="tutor-welcome-title"
+                          className="tutor-title"
+                        >
+                          Welcome to Simulation
+                        </Typography>
+                        <Typography className="tutor-content">
+                          Would you like assistance from the Guided Tutor Mode?
+                        </Typography>
+                        <div className="tutor-actions">
+                          <Button
+                            size="small"
+                            onClick={() => setShowWelcome(false)}
+                            sx={{
+                              color: "#000000ff",
+                              backgroundColor: "#e5e9faff",
+                              border: "1px solid #1D2A6D",
+                            }}
+                          >
+                            No, thanks
+                          </Button>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => {
+                              setShowWelcome(false);
+                              startTutor();
+                            }}
+                            sx={{ backgroundColor: "#1D2A6D" }}
+                          >
+                            Yes, please!
+                          </Button>
+                        </div>
+                      </Paper>
+                    </Fade>
+                  )}
+                </Popper>
+
+                {/* Guided Tutor Popper (Non-blocking) */}
+                <Popper
+                  open={isTutorOpen}
+                  anchorEl={document.getElementById(
+                    tutorSteps[tutorStep]?.targetId,
+                  )}
+                  placement={tutorSteps[tutorStep]?.placement || "bottom"}
+                  transition
+                  className="tutor-popper"
+                  modifiers={[
+                    {
+                      name: "offset",
+                      options: {
+                        offset: [0, 12],
+                      },
+                    },
+                  ]}
+                >
+                  {({ TransitionProps }) => (
+                    <Fade {...TransitionProps} timeout={350}>
+                      <Paper
+                        className="tutor-paper"
+                        role="dialog"
+                        aria-labelledby="tutor-step-title"
+                      >
+                        <div className="tutor-arrow" />
+                        <Typography
+                          id="tutor-step-title"
+                          className="tutor-title"
+                        >
+                          {tutorSteps[tutorStep].title}
+                        </Typography>
+                        <Typography className="tutor-content">
+                          {tutorSteps[tutorStep].content}
+                        </Typography>
+                        <div className="tutor-actions">
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              setIsTutorOpen(false);
+                              setTutorStep(0);
+                            }}
+                            sx={{ color: "#666" ,backgroundColor: "#1px solid #1D2A6D",border: "1px solid #1D2A6D"}}
+                          >
+                            Exit
+                          </Button>
+                          <Box sx={{ flexGrow: 1 }} />
+                          {tutorStep > 0 && (
+                            <Button
+                              size="small"
+                              onClick={handleTutorBack}
+                              variant="outlined"
+                            >
+                              Back
+                            </Button>
+                          )}
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={handleTutorNext}
+                            sx={{ backgroundColor: "#1D2A6D" }}
+                          >
+                            {tutorStep === tutorSteps.length - 1
+                              ? "Finish"
+                              : "Next"}
+                          </Button>
+                        </div>
+                      </Paper>
+                    </Fade>
+                  )}
+                </Popper>
               </div>
             </div>
           </TabPanel>
