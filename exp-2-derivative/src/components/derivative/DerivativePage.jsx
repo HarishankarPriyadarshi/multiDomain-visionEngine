@@ -19,6 +19,8 @@ import {
   Typography,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
+import Grow from "@mui/material/Grow";
+import { useMediaQuery } from "@mui/material";
 import { useEffect, useState, useRef } from "react";
 import React from "react";
 
@@ -184,9 +186,11 @@ export default function DerivativePage() {
 
   // Guided Tutor State
   const [tutorStep, setTutorStep] = useState(0);
+  const [prevStep, setPrevStep] = useState(0);
   const [isTutorOpen, setIsTutorOpen] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const tutorBtnRef = useRef(null);
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   // Show welcome modal on initial load
   useEffect(() => {
@@ -206,22 +210,31 @@ export default function DerivativePage() {
     },
     {
       title: " Read Instructions",
-      content:
-        " Read Instructions to learn more about edge detection.",
+      content: " Read Instructions to learn more about edge detection.",
       targetId: "instruction-btn",
       placement: "bottom",
+      offset: [-60, 12],
+    },
+    {
+      title: "Sound Mute/Unmute",
+      content: "You can Play/ Pause the sound to focus on the tutorial.",
+      targetId: "sound-btn",
+      placement: "bottom",
+      offset: [-60, 12],
     },
     {
       title: "Select Image",
       content: " Select a sample image or upload your own to begin.",
       targetId: "image-selection-zone",
       placement: "right-start",
+      offset: [-70, 12],
     },
     {
       title: "Upload Image",
       content: " Click Upload to select your own  image.",
       targetId: "upload-btn-zone",
       placement: "right-start",
+      offset: [-35, 22],
     },
     {
       title: "Choose Order",
@@ -229,6 +242,7 @@ export default function DerivativePage() {
         " Pick 1st Order (Gradient) or 2nd Order (Laplacian) derivative.",
       targetId: "derivative-order-zone",
       placement: "right",
+      offset: [0, 12],
     },
     {
       title:
@@ -244,35 +258,41 @@ export default function DerivativePage() {
           ? "filter-type-zone"
           : "kernel-size-zone",
       placement: "right",
+      offset: [0, 12],
     },
     {
       title: "Processing",
       content: " Click Process to convert to grayscale and detect edges.",
       targetId: "process-button",
       placement: "bottom",
+      offset: [-60, 12],
     },
     {
       title: "Observe Output",
       content: " Observe the edges. Brightness indicates gradient strength.",
       targetId: "output-image-zone",
       placement: "top",
+      offset: [0, 12],
     },
     {
       title: "Print Results",
       content: " Click Print to save your results (Optional).",
       targetId: "print-button",
       placement: "bottom",
+      offset: [-60, 12],
     },
     {
       title: "Final Step",
       content: "Done! Click Concept for math details on masks and gradients.",
       targetId: "concept-button",
       placement: "bottom",
+      offset: [-60, 12],
     },
   ];
 
   const handleTutorNext = () => {
     if (tutorStep < tutorSteps.length - 1) {
+      setPrevStep(tutorStep);
       setTutorStep(tutorStep + 1);
     } else {
       setIsTutorOpen(false);
@@ -311,11 +331,9 @@ export default function DerivativePage() {
     speechSynthesis.cancel(); // Cancel any speech on reload
   }, []);
 
-  
-
   // Auto-advance tutor for processing
   useEffect(() => {
-    if (isTutorOpen && tutorStep === 6 && isImageProcessed) {
+    if (isTutorOpen && tutorStep === 7 && isImageProcessed) {
       console.log("isImageProcessed from tutor", isImageProcessed);
       handleTutorNext();
     }
@@ -327,7 +345,11 @@ export default function DerivativePage() {
       const element = document.getElementById(targetId);
       if (element) {
         element.classList.add("tutor-highlight");
-        element.scrollIntoView({ behavior: "smooth", block: "center",border: "1px solid red" });
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          border: "1px solid red",
+        });
         return () => {
           element.classList.remove("tutor-highlight");
         };
@@ -345,7 +367,6 @@ export default function DerivativePage() {
       "Click the Print button to print the result.",
       "Note: Click the Concept button to get a detailed explanation.",
     ],
-
   };
 
   const getInstructionsText = () => {
@@ -445,10 +466,20 @@ export default function DerivativePage() {
     setOpenExplanationModal(false);
   };
 
+  const currentStep = tutorSteps[tutorStep];
+
+  const computedStep = isMobile
+    ? {
+        ...currentStep,
+        placement: "bottom",
+        offset: [80, -832, ],
+      }
+    : currentStep;
+
   return (
     <OpenCvProvider>
       <div id="main-box">
-        <div id="bottom-footer">&copy; 2025 Virtual Labs, IIT Roorkee</div>
+        <div id="bottom-footer">&copy; 2026 Virtual Labs, IIT Roorkee</div>
         <div id="top-header">
           {/* Hamburger Icon for Mobile */}
 
@@ -459,23 +490,23 @@ export default function DerivativePage() {
           <h2 className="header-heading">Derivative Based Segmentation</h2>
 
           <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+            <Button id="sound-btn" title="Play" ref={voicePlay}>
               <img
-                src={voice}
+                src={speak ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
                 onClick={speak}
               />
             </Button>
 
-            <Button ref={voicePause} title="Pause" style={{ display: "none" }}>
+            {/* <Button id="sound-btn"  ref={voicePause} title="Pause" style={{ display: "none" }}>
               <img
                 src={voice_pause}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
                 onClick={speak}
               />
-            </Button>
+            </Button> */}
 
             <Button
               id="instruction-btn"
@@ -498,9 +529,12 @@ export default function DerivativePage() {
                 color: "#1D2A6D",
                 backgroundColor: "#FFD700",
                 fontWeight: "bold",
+
+                margin: "auto auto",
                 marginLeft: "10px",
                 borderRadius: "20px",
                 padding: "5px 15px",
+                height: "40px",
               }}
               onClick={startTutor}
             >
@@ -728,8 +762,12 @@ export default function DerivativePage() {
                           </div>
                         </div>
 
-                        <div  style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label id="upload-btn-zone" htmlFor="file-upload" className="upload-btn">
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
+                          <label
+                            id="upload-btn-zone"
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                          >
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -1156,7 +1194,7 @@ export default function DerivativePage() {
                     {openExplanationModal && <EdgeExplanation />}
                   </DialogContent>
                 </Dialog>
-
+                {isTutorOpen && <div className="tutor-overlay" />}
                 {/* Welcome Modal */}
                 <Popper
                   open={showWelcome}
@@ -1168,13 +1206,16 @@ export default function DerivativePage() {
                     {
                       name: "offset",
                       options: {
-                        offset: [0, 12],
+                        offset: [-60, 12],
                       },
                     },
                   ]}
                 >
                   {({ TransitionProps }) => (
-                    <Fade {...TransitionProps} timeout={1500}>
+                    <Grow
+                      {...TransitionProps}
+                      timeout={{ enter: 1500, exit: 100 }}
+                    >
                       <Paper
                         className="tutor-paper"
                         role="dialog"
@@ -1187,9 +1228,9 @@ export default function DerivativePage() {
                         >
                           Welcome to Simulation
                         </Typography>
-                        <Typography className="tutor-content">
+                        <p className="tutor-content">
                           Would you like assistance from the Guided Tutor Mode?
-                        </Typography>
+                        </p>
                         <div className="tutor-actions">
                           <Button
                             size="small"
@@ -1215,32 +1256,36 @@ export default function DerivativePage() {
                           </Button>
                         </div>
                       </Paper>
-                    </Fade>
+                    </Grow>
                   )}
                 </Popper>
 
                 {/* Guided Tutor Popper (Non-blocking) */}
                 <Popper
                   open={isTutorOpen}
-                  anchorEl={document.getElementById(
-                    tutorSteps[tutorStep]?.targetId,
-                  )}
-                  placement={tutorSteps[tutorStep]?.placement || "bottom"}
+                  anchorEl={
+                    isMobile
+                      ? document.body
+                      : document.getElementById(computedStep?.targetId)
+                  }
+                  placement={computedStep?.placement || "bottom"}
                   transition
                   className="tutor-popper"
                   modifiers={[
                     {
                       name: "offset",
                       options: {
-                        offset: [0, 12],
+                        offset: computedStep?.offset || [-60, 12],
                       },
                     },
                   ]}
                 >
                   {({ TransitionProps }) => (
-                    <Fade {...TransitionProps} timeout={350}>
+                    <Grow {...TransitionProps} timeout={350}>
                       <Paper
-                        className="tutor-paper"
+                        className={`tutor-paper ${
+                          tutorStep > prevStep ? "slide-right" : "slide-left"
+                        }`}
                         role="dialog"
                         aria-labelledby="tutor-step-title"
                       >
@@ -1251,9 +1296,10 @@ export default function DerivativePage() {
                         >
                           {tutorSteps[tutorStep].title}
                         </Typography>
-                        <Typography className="tutor-content">
+
+                        <p className="tutor-content">
                           {tutorSteps[tutorStep].content}
-                        </Typography>
+                        </p>
                         <div className="tutor-actions">
                           <Button
                             size="small"
@@ -1261,7 +1307,11 @@ export default function DerivativePage() {
                               setIsTutorOpen(false);
                               setTutorStep(0);
                             }}
-                            sx={{ color: "#666" ,backgroundColor: "#1px solid #1D2A6D",border: "1px solid #1D2A6D"}}
+                            sx={{
+                              color: "#666",
+                              backgroundColor: "#1px solid #1D2A6D",
+                              border: "1px solid #1D2A6D",
+                            }}
                           >
                             Exit
                           </Button>
@@ -1287,7 +1337,7 @@ export default function DerivativePage() {
                           </Button>
                         </div>
                       </Paper>
-                    </Fade>
+                    </Grow>
                   )}
                 </Popper>
               </div>
