@@ -270,11 +270,9 @@ h4 {
 
 #mainbox {
   position: absolute;
-  top: var(--top-header-height,
-      30px);
+  top: var(--top-header-height, 30px);
   /* Adjust based on the height of the top-header */
-  bottom: var(--bottom-footer-height,
-      30px);
+  bottom: var(--bottom-footer-height, 30px);
   /* Adjust based on the height of the bottom-footer */
   left: 0;
   right: 0;
@@ -310,7 +308,6 @@ h4 {
 
 /* Responsive layout - makes a one column-layout instead of a two-column layout */
 @media (max-width: 800px) {
-
   .flex-container,
   .flex-item-left,
   .flex-item-right {
@@ -363,7 +360,7 @@ h4 {
 }
 
 /* Adjust image containers to be responsive */
-#sampling_area>div {
+#sampling_area > div {
   width: 100%;
   /* Make each box take full width on small screens */
   /* max-width: 400px; Limit width to 600px on larger screens */
@@ -378,21 +375,21 @@ h4 {
 }
 
 /* Input and output box styling */
-#sampling_area>div>.input-output-box {
+#sampling_area > div > .input-output-box {
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
 }
 
-#sampling_area>div>.input-output-box>.header {
+#sampling_area > div > .input-output-box > .header {
   padding: 10px;
   background-color: #1d2a6d;
   color: #fff5ee;
   text-align: center;
 }
 
-#sampling_area>div>.input-output-box img,
-#sampling_area>div>.input-output-box canvas {
+#sampling_area > div > .input-output-box img,
+#sampling_area > div > .input-output-box canvas {
   max-width: 100%;
   height: auto;
 }
@@ -416,19 +413,19 @@ h4 {
     /* Reduce gap between elements */
   }
 
-  #sampling_area>div {
+  #sampling_area > div {
     width: 100%;
     margin-bottom: 20px;
     /* Add space between stacked elements */
   }
 
-  #sampling_area>div>.input-output-box {
+  #sampling_area > div > .input-output-box {
     max-width: 100%;
     /* Ensure it takes full width */
   }
 
   /* Optional: Adjust header size on smaller screens */
-  #sampling_area>div>.input-output-box>.header h4 {
+  #sampling_area > div > .input-output-box > .header h4 {
     font-size: 16px;
   }
 }
@@ -454,13 +451,13 @@ h4 {
     font-size: 14px;
   }
 
-  #sampling_area>div>.input-output-box>.header h4 {
+  #sampling_area > div > .input-output-box > .header h4 {
     font-size: 14px;
   }
 
   /* Image and canvas size adjustments on very small screens */
-  #sampling_area>div>.input-output-box img,
-  #sampling_area>div>.input-output-box canvas {
+  #sampling_area > div > .input-output-box img,
+  #sampling_area > div > .input-output-box canvas {
     width: 100%;
     height: auto;
   }
@@ -520,10 +517,12 @@ h4 {
   position: absolute;
   width: 100px;
   height: 100%;
-  background-image: linear-gradient(120deg,
-      rgba(255, 255, 255, 0) 30%,
-      rgba(255, 255, 255, 0.8),
-      rgba(255, 255, 255, 0) 70%);
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
   top: 0;
   left: -100px;
   opacity: 0.6;
@@ -541,10 +540,12 @@ h4 {
   position: absolute;
   width: 100px;
   height: 100%;
-  background-image: linear-gradient(120deg,
-      rgba(215, 215, 215, 0) 30%,
-      #313f82cb,
-      rgba(255, 255, 255, 0) 70%);
+  background-image: linear-gradient(
+    120deg,
+    rgba(215, 215, 215, 0) 30%,
+    #313f82cb,
+    rgba(255, 255, 255, 0) 70%
+  );
   top: 0;
   left: -100px;
   opacity: 0.6;
@@ -573,7 +574,7 @@ h4 {
   font-weight: bold;
 }
 
-[role="tabpanel"]>div {
+[role="tabpanel"] > div {
   padding: 0px;
 }
 
@@ -780,7 +781,12 @@ ol {
   }
 }
 
-/* tutor */
+/* tutor modal */
+
+.tutor-popper {
+  z-index: 1100;
+  pointer-events: auto;
+}
 @keyframes highlightPulse {
   0% {
     box-shadow: 0 0 0 0px rgba(255, 165, 0, 0.7);
@@ -797,12 +803,6 @@ ol {
     transform: scale(1);
   }
 }
-
-.tutor-popper {
-  z-index: 3000;
-  pointer-events: auto;
-}
-
 .tutor-paper {
   padding: 10px;
   max-width: 300px;
@@ -826,14 +826,14 @@ ol {
   border: 3px solid #ffd700;
 }
 
-/* Arrow positioning based on placement */
+/* tutor Arrow positioning based on placement */
 [data-popper-placement^="bottom"] .tutor-arrow {
   top: -13.2px;
   left: calc(70% - 11px);
   border-bottom: none;
   border-right: none;
   right: 100px;
- }
+}
 
 [data-popper-placement^="top"] .tutor-arrow {
   bottom: -13.2px;
@@ -895,13 +895,7 @@ ol {
 
 /* tutor overlay */
 .tutor-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0);
   backdrop-filter: blur(1px);
-  z-index: 2500;
-  pointer-events: none;
-  animation: fadeOverlay 0.3s ease;
 }
 
 @keyframes fadeOverlay {
@@ -916,15 +910,18 @@ ol {
 
 .tutor-highlight {
   position: relative;
-  z-index: 3000;
+
   animation: highlightPulse 1.5s infinite;
   border: 3px solid orange !important;
-  background: white;
-  color: #1d2a6d;
+
+  position: relative;
+
+  animation: highlightPulse 1.5s infinite;
+
+  box-shadow: 0 0 0 6px rgba(255, 215, 0, 0.4);
 }
 
-
-/* Slide animation */
+/* tutor Slide animation */
 .slide-right {
   animation: slideRight 0.35s ease;
 }

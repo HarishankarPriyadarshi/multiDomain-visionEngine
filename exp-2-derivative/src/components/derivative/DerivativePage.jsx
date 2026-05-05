@@ -55,7 +55,6 @@ function TabPanel(props) {
 
 export default function DerivativePage() {
   const myProcess1Button = useRef(null);
-
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
@@ -310,26 +309,15 @@ export default function DerivativePage() {
     setTutorStep(0);
     setIsTutorOpen(true);
   };
+  const currentStep = tutorSteps[tutorStep];
 
-  const voicePause = useRef(null);
-  const voicePlay = useRef(null);
-
-  var indexTabValue = tabValue;
-
-  const instr = () => {
-    setOpenInstructionsModal(true);
-  };
-
-  const exp = () => {
-    setOpenExplanationModal(true);
-  };
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
-
-  useEffect(() => {
-    speechSynthesis.cancel(); // Cancel any speech on reload
-  }, []);
+  const computedStep = isMobile
+    ? {
+        ...currentStep,
+        placement: "bottom",
+        offset: [80, -832],
+      }
+    : currentStep;
 
   // Auto-advance tutor for processing
   useEffect(() => {
@@ -356,6 +344,27 @@ export default function DerivativePage() {
       }
     }
   }, [tutorStep, isTutorOpen]);
+
+  // voice tutor logic
+  const voicePause = useRef(null);
+  const voicePlay = useRef(null);
+
+  var indexTabValue = tabValue;
+
+  const instr = () => {
+    setOpenInstructionsModal(true);
+  };
+
+  const exp = () => {
+    setOpenExplanationModal(true);
+  };
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const utteranceRef = useRef(null);
+
+  useEffect(() => {
+    speechSynthesis.cancel(); // Cancel any speech on reload
+  }, []);
 
   const instructionsList = {
     0: [
@@ -423,8 +432,6 @@ export default function DerivativePage() {
     }
   };
 
-  //const initialImages = [sample1, sample2, sample3, sample4];
-
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -465,16 +472,6 @@ export default function DerivativePage() {
   const handleClose2Modal = () => {
     setOpenExplanationModal(false);
   };
-
-  const currentStep = tutorSteps[tutorStep];
-
-  const computedStep = isMobile
-    ? {
-        ...currentStep,
-        placement: "bottom",
-        offset: [80, -832, ],
-      }
-    : currentStep;
 
   return (
     <OpenCvProvider>
@@ -1194,6 +1191,7 @@ export default function DerivativePage() {
                     {openExplanationModal && <EdgeExplanation />}
                   </DialogContent>
                 </Dialog>
+                {/* tutor modal */}
                 {isTutorOpen && <div className="tutor-overlay" />}
                 {/* Welcome Modal */}
                 <Popper
