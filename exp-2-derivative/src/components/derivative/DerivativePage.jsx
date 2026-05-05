@@ -19,9 +19,9 @@ import {
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Grow from "@mui/material/Grow";
-import { useMediaQuery } from "@mui/material";
-import { useCallback, useEffect, useState, useRef } from "react";
-import React from "react";
+
+import { useContext, useEffect, useRef, useState } from "react";
+import { CommonContext } from "../context/CommonContext";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
@@ -35,6 +35,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
 import EdgeExplanation from "../EdgeExplanation";
+import Tutor from "../features/tutor/Tutor";
 //returns a tab panel
 function TabPanel(props) {
   const { children, tabValue, index, ...other } = props;
@@ -52,152 +53,25 @@ function TabPanel(props) {
   );
 }
 
-function useSpeechController() {
-  const utteranceRef = useRef(null);
-  const voicesRef = useRef([]);
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
-  // Load voices
-  useEffect(() => {
-    if (!window?.speechSynthesis) return;
-
-    const loadVoices = () => {
-      voicesRef.current = window.speechSynthesis.getVoices();
-    };
-
-    loadVoices();
-
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
-
-  const stop = useCallback(() => {
-    if (!window?.speechSynthesis) return;
-
-    window.speechSynthesis.cancel();
-    utteranceRef.current = null;
-    setIsSpeaking(false);
-    setIsPaused(false);
-  }, []);
-
-  const getIndianVoice = () => {
-    const voices = voicesRef.current;
-
-    // Priority order
-    return (
-      voices.find((v) => v.lang === "en-IN") ||
-      voices.find((v) => v.lang === "hi-IN") ||
-      voices.find((v) => v.name.toLowerCase().includes("india")) ||
-      voices.find((v) => v.name.toLowerCase().includes("english")) ||
-      voices.find((v) => v.default) ||
-      voices[0]
-    );
-  };
-
-  const speak = useCallback(
-    (text) => {
-      if (!window?.speechSynthesis) return;
-
-      const normalizedText = typeof text === "string" ? text.trim() : "";
-      stop();
-      if (!normalizedText) return;
-
-      const utterance = new SpeechSynthesisUtterance(normalizedText);
-
-      // 🎤 Assign Indian voice
-      const indianVoice = getIndianVoice();
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        utterance.lang = indianVoice.lang;
-      }
-
-      utterance.rate = 1;
-      utterance.pitch = 1;
-
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setIsPaused(false);
-      };
-
-      utterance.onpause = () => {
-        setIsSpeaking(false);
-        setIsPaused(true);
-      };
-
-      utterance.onresume = () => {
-        setIsSpeaking(true);
-        setIsPaused(false);
-      };
-
-      utterance.onend = () => {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-        setIsPaused(false);
-      };
-
-      utterance.onerror = () => {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-        setIsPaused(false);
-      };
-
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    },
-    [stop],
-  );
-
-  const pause = useCallback(() => {
-    if (!window?.speechSynthesis?.speaking) return;
-
-    window.speechSynthesis.pause();
-    setIsSpeaking(false);
-    setIsPaused(true);
-  }, []);
-
-  const resume = useCallback(() => {
-    if (!window?.speechSynthesis?.paused) return;
-
-    window.speechSynthesis.resume();
-    setIsSpeaking(true);
-    setIsPaused(false);
-  }, []);
-
-  useEffect(() => {
-    if (!window?.speechSynthesis) return;
-
-    const handleBeforeUnload = () => {
-      window.speechSynthesis.cancel();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.speechSynthesis.cancel();
-    };
-  }, []);
-
-  return {
-    speak,
-    pause,
-    resume,
-    stop,
+export default function DerivativePage() {
+  const {
+    isImageProcessed,
+    setIsImageProcessed,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
     isSpeaking,
     isPaused,
-  };
-}
-
-export default function DerivativePage() {
+  } = useContext(CommonContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
-  const [isImageProcessed, setIsImageProcessed] = useState(false);
+  // const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyS = (msg) => {
@@ -312,7 +186,6 @@ export default function DerivativePage() {
   const [filter1Type, setFilter1Type] = useState("Sobel 3x3");
   const [o2Kernel, setO2Kernel] = useState("3");
 
-  const [isInstructionOpen, setIsInstructionOpen] = useState(false);
   const [openExplanationModal, setOpenExplanationModal] = useState(false);
 
   // State to hold the images
@@ -320,246 +193,113 @@ export default function DerivativePage() {
   const initialImages = [sample1, sample2, sample3, sample4];
   const [images, setImages] = useState(initialImages);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [imageName, setImageName] = useState("");
 
-  // Guided Tutor State
-  const [tutorStep, setTutorStep] = useState(0);
-  const [prevStep, setPrevStep] = useState(0);
-  const [isTutorOpen, setIsTutorOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [showWelcome, setShowWelcome] = useState(false);
-  const tutorBtnRef = useRef(null);
-  const isMobile = useMediaQuery("(max-width:600px)");
-  const { speak, pause, resume, stop, isSpeaking, isPaused } =
-    useSpeechController();
-  const previousSpeechKeyRef = useRef("");
-  const previousPlayStateRef = useRef(true);
-
-  // Show welcome modal on initial load
+  // Tutor steps
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWelcome(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const tutorSteps = [
-    {
-      title: "Welcome",
-      content:
-        "Welcome! Learn edge detection using 1st & 2nd order derivatives. Click Next to start.",
-      targetId: "guided-tutor-btn",
-      placement: "bottom",
-    },
-    {
-      title: " Read Instructions",
-      content: " Read Instructions to learn more about edge detection.",
-      targetId: "instruction-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Sound Mute/Unmute",
-      content: "You can Play/ Pause the sound to focus on the tutorial.",
-      targetId: "sound-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Select Image",
-      content: " Select a sample image or upload your own to begin.",
-      targetId: "image-selection-zone",
-      placement: "right-start",
-      offset: [-70, 12],
-    },
-    {
-      title: "Upload Image",
-      content: " Click Upload to select your own  image.",
-      targetId: "upload-btn-zone",
-      placement: "right-start",
-      offset: [-35, 22],
-    },
-    {
-      title: "Choose Order",
-      content:
-        " Pick 1st Order (Gradient) or 2nd Order (Laplacian) derivative.",
-      targetId: "derivative-order-zone",
-      placement: "right",
-      offset: [0, 12],
-    },
-    {
-      title:
-        derivativeMethod === "First Order"
-          ? "First Order Path"
-          : "Second Order Path",
-      content:
-        derivativeMethod === "First Order"
-          ? " Select a filter (Sobel, Scharr, etc.) to compute gradients."
-          : "Choose kernel size. Larger sizes smoothen but reduce sharpness.",
-      targetId:
-        derivativeMethod === "First Order"
-          ? "filter-type-zone"
-          : "kernel-size-zone",
-      placement: "right",
-      offset: [0, 12],
-    },
-    {
-      title: "Processing",
-      content: " Click Process to convert to grayscale and detect edges.",
-      targetId: "process-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Observe Output",
-      content: " Observe the edges. Brightness indicates gradient strength.",
-      targetId: "output-image-zone",
-      placement: "top",
-      offset: [0, 12],
-    },
-    {
-      title: "Print Results",
-      content: " Click Print to save your results (Optional).",
-      targetId: "print-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Final Step",
-      content: "Done! Click Concept for math details on masks and gradients.",
-      targetId: "concept-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-  ];
-
-  const handleTutorNext = () => {
-    if (tutorStep < tutorSteps.length - 1) {
-      setPrevStep(tutorStep);
-      setTutorStep(tutorStep + 1);
-    } else {
-      setIsTutorOpen(false);
-      setTutorStep(0);
-    }
-  };
-
-  const handleTutorBack = () => {
-    if (tutorStep > 0) {
-      setTutorStep(tutorStep - 1);
-    }
-  };
-
-  const startTutor = () => {
-    setTutorStep(0);
-    setIsTutorOpen(true);
-  };
-  const currentStep = tutorSteps[tutorStep];
-
-  const computedStep = isMobile
-    ? {
-        ...currentStep,
+    setTutorSteps([
+      {
+        title: "Welcome",
+        content:
+          "Welcome! Learn edge detection using 1st & 2nd order derivatives. Click Next to start.",
+        targetId: "guided-tutor-btn",
         placement: "bottom",
-        offset: [80, -832],
-      }
-    : currentStep;
-
-  // Auto-advance tutor for processing
+      },
+      {
+        title: " Read Instructions",
+        content: " Read Instructions to learn more about edge detection.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Mute/Unmute",
+        content: "Click if want to Play or Pause the audio.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content: " Select a sample image or upload your own to begin.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content: " Or Click Upload to select your own  image.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+      {
+        title: "Choose Order",
+        content:
+          " Pick 1st Order (Gradient) or 2nd Order (Laplacian) derivative.",
+        targetId: "derivative-order-zone",
+        placement: "right",
+        offset: [0, 12],
+      },
+      {
+        title:
+          derivativeMethod === "First Order"
+            ? "First Order Path"
+            : "Second Order Path",
+        content:
+          derivativeMethod === "First Order"
+            ? " Select a filter (Sobel, Scharr, etc.) to compute gradients."
+            : "Choose kernel size. Larger sizes smoothen but reduce sharpness.",
+        targetId:
+          derivativeMethod === "First Order"
+            ? "filter-type-zone"
+            : "kernel-size-zone",
+        placement: "right",
+        offset: [0, 12],
+      },
+      {
+        title: "Processing",
+        content: " Click Process to convert to grayscale and detect edges.",
+        targetId: "process-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Observe Output",
+        content: " Observe the edges. Brightness indicates gradient strength.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+      {
+        title: "Print Results",
+        content: " Click Print to save your results (Optional).",
+        targetId: "print-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Final Step",
+        content: "Done! Click Concept for math details on masks and gradients.",
+        targetId: "concept-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    ]);
+  }, [derivativeMethod, setTutorSteps]);
+  // Instructions list
   useEffect(() => {
-    if (isTutorOpen && tutorStep === 7 && isImageProcessed) {
-      console.log("isImageProcessed from tutor", isImageProcessed);
-      handleTutorNext();
-    }
-  }, [isImageProcessed]);
-
-  useEffect(() => {
-    if (isTutorOpen && tutorSteps[tutorStep]?.targetId) {
-      const targetId = tutorSteps[tutorStep].targetId;
-      const element = document.getElementById(targetId);
-      if (element) {
-        element.classList.add("tutor-highlight");
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-          border: "1px solid red",
-        });
-        return () => {
-          element.classList.remove("tutor-highlight");
-        };
-      }
-    }
-  }, [tutorStep, isTutorOpen]);
-
-  const instructionsList = {
-    0: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose the desired order of the derivative.",
-      "If First Order is selected, choose the filter you want to apply.",
-      "Otherwise, select the kernel size to apply.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-  };
-
-  const getInstructionsText = () => {
-    const steps = instructionsList[tabValue];
-    return steps ? steps.join("\n") : "No instructions available.";
-  };
-
-  const currentTutorText = tutorSteps[tutorStep]?.content || "";
-  const instructionText = getInstructionsText();
-  const activeSpeechText = isInstructionOpen
-    ? instructionText
-    : isTutorOpen
-      ? currentTutorText
-      : "";
-  const activeSpeechKey = `${isInstructionOpen ? "instruction" : isTutorOpen ? "tutor" : "idle"}:${activeSpeechText}`;
-
-  const handleSpeechToggle = () => {
-    if (!activeSpeechText) {
-      return;
-    }
-
-    if (isSpeaking && !isPaused) {
-      setIsPlaying(false);
-      return;
-    }
-
-    if (isPaused) {
-      setIsPlaying(true);
-      return;
-    }
-
-    setIsPlaying(true);
-    speak(activeSpeechText);
-  };
-
-  useEffect(() => {
-    if (previousSpeechKeyRef.current !== activeSpeechKey) {
-      stop();
-      previousSpeechKeyRef.current = activeSpeechKey;
-    }
-
-    if (!activeSpeechText || !isPlaying || isPaused) {
-      return;
-    }
-
-    speak(activeSpeechText);
-  }, [activeSpeechKey, activeSpeechText, isPaused, isPlaying, speak, stop]);
-
-  useEffect(() => {
-    const wasPlaying = previousPlayStateRef.current;
-
-    if (wasPlaying && !isPlaying) {
-      pause();
-    }
-
-    if (!wasPlaying && isPlaying && isPaused) {
-      resume();
-    }
-
-    previousPlayStateRef.current = isPlaying;
-  }, [isPaused, isPlaying, pause, resume]);
+    setInstructionsList({
+      0: [
+        " Step 1: Select an image from the available options or upload one using the Upload File button.",
+        " Step 2: Choose the desired order of the derivative.",
+        " Step 3: If First Order is selected, choose the filter you want to apply.",
+        " Step 4: Otherwise, select the kernel size to apply.", 
+        " Step 5: Click the Process button to continue.",
+        " Step 6: Click the Print button to print the result.",
+        " Step 7: Click the Concept button to get a detailed explanation.",
+      ],
+    });
+  }, [setInstructionsList]);
 
   // rest of the code
   const instr = () => {
@@ -600,7 +340,7 @@ export default function DerivativePage() {
     setTimeout(() => {
       setIsInputImageAnimationPlaying(false);
     }, 500);
-    setImageName(`Sample ${index + 1}`);
+    // setImageName(`Sample ${index + 1}`);
   };
 
   const handleCloseModal = () => {
@@ -1333,152 +1073,7 @@ export default function DerivativePage() {
                   </DialogContent>
                 </Dialog>
                 {/* tutor modal */}
-                {isTutorOpen && <div className="tutor-overlay" />}
-                {/* Welcome Modal */}
-                <Popper
-                  open={showWelcome}
-                  anchorEl={tutorBtnRef.current}
-                  placement="bottom"
-                  transition
-                  className="tutor-popper tutor-backdrop"
-                  modifiers={[
-                    {
-                      name: "offset",
-                      options: {
-                        offset: [-60, 12],
-                      },
-                    },
-                  ]}
-                >
-                  {({ TransitionProps }) => (
-                    <Grow
-                      {...TransitionProps}
-                      timeout={{ enter: 1500, exit: 100 }}
-                    >
-                      <Paper
-                        className="tutor-paper"
-                        role="dialog"
-                        aria-labelledby="tutor-welcome-title"
-                      >
-                        <div className="tutor-arrow" />
-                        <Typography
-                          id="tutor-welcome-title"
-                          className="tutor-title"
-                        >
-                          Welcome to Simulation
-                        </Typography>
-                        <p className="tutor-content">
-                          Would you like assistance from the Guided Tutor Mode?
-                        </p>
-                        <div className="tutor-actions">
-                          <Button
-                            size="small"
-                            onClick={() => setShowWelcome(false)}
-                            sx={{
-                              color: "#000000ff",
-                              backgroundColor: "#e5e9faff",
-                              border: "1px solid #1D2A6D",
-                            }}
-                          >
-                            No, thanks
-                          </Button>
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={() => {
-                              setShowWelcome(false);
-                              startTutor();
-                            }}
-                            sx={{ backgroundColor: "#1D2A6D" }}
-                          >
-                            Yes, please!
-                          </Button>
-                        </div>
-                      </Paper>
-                    </Grow>
-                  )}
-                </Popper>
-
-                {/* Guided Tutor Popper (Non-blocking) */}
-                <Popper
-                  open={isTutorOpen}
-                  anchorEl={
-                    isMobile
-                      ? document.body
-                      : document.getElementById(computedStep?.targetId)
-                  }
-                  placement={computedStep?.placement || "bottom"}
-                  transition
-                  className="tutor-popper"
-                  modifiers={[
-                    {
-                      name: "offset",
-                      options: {
-                        offset: computedStep?.offset || [-60, 12],
-                      },
-                    },
-                  ]}
-                >
-                  {({ TransitionProps }) => (
-                    <Grow {...TransitionProps} timeout={350}>
-                      <Paper
-                        className={`tutor-paper ${
-                          tutorStep > prevStep ? "slide-right" : "slide-left"
-                        }`}
-                        role="dialog"
-                        aria-labelledby="tutor-step-title"
-                      >
-                        <div className="tutor-arrow" />
-                        <Typography
-                          id="tutor-step-title"
-                          className="tutor-title"
-                        >
-                          {tutorSteps[tutorStep].title}
-                        </Typography>
-
-                        <p className="tutor-content">
-                          {tutorSteps[tutorStep].content}
-                        </p>
-                        <div className="tutor-actions">
-                          <Button
-                            size="small"
-                            onClick={() => {
-                              setIsTutorOpen(false);
-                              setTutorStep(0);
-                            }}
-                            sx={{
-                              color: "#666",
-                              backgroundColor: "#1px solid #1D2A6D",
-                              border: "1px solid #1D2A6D",
-                            }}
-                          >
-                            Exit
-                          </Button>
-                          <Box sx={{ flexGrow: 1 }} />
-                          {tutorStep > 0 && (
-                            <Button
-                              size="small"
-                              onClick={handleTutorBack}
-                              variant="outlined"
-                            >
-                              Back
-                            </Button>
-                          )}
-                          <Button
-                            variant="contained"
-                            size="small"
-                            onClick={handleTutorNext}
-                            sx={{ backgroundColor: "#1D2A6D" }}
-                          >
-                            {tutorStep === tutorSteps.length - 1
-                              ? "Finish"
-                              : "Next"}
-                          </Button>
-                        </div>
-                      </Paper>
-                    </Grow>
-                  )}
-                </Popper>
+                <Tutor />
               </div>
             </div>
           </TabPanel>

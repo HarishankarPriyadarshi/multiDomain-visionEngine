@@ -7,6 +7,7 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
+import { CommonContextProvider } from "./components/context/CommonContext";
 
 import DerivativePage from "./components/derivative/DerivativePage";
 
@@ -18,7 +19,7 @@ function App() {
     {
       path: "/",
       element: <DerivativePage />,
-      errorElement: <ErrorPage />,
+        errorElement: <ErrorPage />,
       
     },
     
@@ -34,7 +35,9 @@ function App() {
 
   return (
     <OpenCvProvider>
-      <RouterProvider router={router} />
+      <CommonContextProvider>
+        <RouterProvider router={router} />
+      </CommonContextProvider>
     </OpenCvProvider>
   );
 }
