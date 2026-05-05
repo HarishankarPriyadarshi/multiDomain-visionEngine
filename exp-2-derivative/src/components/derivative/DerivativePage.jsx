@@ -349,21 +349,12 @@ export default function DerivativePage() {
   const voicePause = useRef(null);
   const voicePlay = useRef(null);
 
-  var indexTabValue = tabValue;
-
-  const instr = () => {
-    setOpenInstructionsModal(true);
-  };
-
-  const exp = () => {
-    setOpenExplanationModal(true);
-  };
-
   const [isSpeaking, setIsSpeaking] = useState(false);
   const utteranceRef = useRef(null);
-
+ 
+  // Cancel any speech on reload
   useEffect(() => {
-    speechSynthesis.cancel(); // Cancel any speech on reload
+    speechSynthesis.cancel();
   }, []);
 
   const instructionsList = {
@@ -379,7 +370,7 @@ export default function DerivativePage() {
   };
 
   const getInstructionsText = () => {
-    const steps = instructionsList[indexTabValue];
+    const steps = instructionsList[tabValue];
     return steps ? steps.join("\n") : "No instructions available.";
   };
 
@@ -430,6 +421,15 @@ export default function DerivativePage() {
       voicePlay.current.style.display = "none";
       voicePause.current.style.display = "block";
     }
+  };
+
+  // rest of the code
+  const instr = () => {
+    setOpenInstructionsModal(true);
+  };
+
+  const exp = () => {
+    setOpenExplanationModal(true);
   };
 
   const handleImageChange = (event) => {
