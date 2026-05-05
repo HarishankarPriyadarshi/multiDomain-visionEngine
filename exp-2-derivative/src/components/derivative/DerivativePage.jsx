@@ -14,14 +14,13 @@ import {
   DialogContent,
   DialogTitle,
   Popper,
-  Fade,
   Paper,
   Typography,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
 import Grow from "@mui/material/Grow";
 import { useMediaQuery } from "@mui/material";
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import React from "react";
 
 import voice from "../../assets/images/voice-play.png";
@@ -51,6 +50,146 @@ function TabPanel(props) {
       {tabValue === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
   );
+}
+
+function useSpeechController() {
+  const utteranceRef = useRef(null);
+  const voicesRef = useRef([]);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Load voices
+  useEffect(() => {
+    if (!window?.speechSynthesis) return;
+
+    const loadVoices = () => {
+      voicesRef.current = window.speechSynthesis.getVoices();
+    };
+
+    loadVoices();
+
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  const stop = useCallback(() => {
+    if (!window?.speechSynthesis) return;
+
+    window.speechSynthesis.cancel();
+    utteranceRef.current = null;
+    setIsSpeaking(false);
+    setIsPaused(false);
+  }, []);
+
+  const getIndianVoice = () => {
+    const voices = voicesRef.current;
+
+    // Priority order
+    return (
+      voices.find((v) => v.lang === "en-IN") ||
+      voices.find((v) => v.lang === "hi-IN") ||
+      voices.find((v) => v.name.toLowerCase().includes("india")) ||
+      voices.find((v) => v.name.toLowerCase().includes("english")) ||
+      voices.find((v) => v.default) ||
+      voices[0]
+    );
+  };
+
+  const speak = useCallback(
+    (text) => {
+      if (!window?.speechSynthesis) return;
+
+      const normalizedText = typeof text === "string" ? text.trim() : "";
+      stop();
+      if (!normalizedText) return;
+
+      const utterance = new SpeechSynthesisUtterance(normalizedText);
+
+      // 🎤 Assign Indian voice
+      const indianVoice = getIndianVoice();
+      if (indianVoice) {
+        utterance.voice = indianVoice;
+        utterance.lang = indianVoice.lang;
+      }
+
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+        setIsPaused(false);
+      };
+
+      utterance.onpause = () => {
+        setIsSpeaking(false);
+        setIsPaused(true);
+      };
+
+      utterance.onresume = () => {
+        setIsSpeaking(true);
+        setIsPaused(false);
+      };
+
+      utterance.onend = () => {
+        utteranceRef.current = null;
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+
+      utterance.onerror = () => {
+        utteranceRef.current = null;
+        setIsSpeaking(false);
+        setIsPaused(false);
+      };
+
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
+    },
+    [stop],
+  );
+
+  const pause = useCallback(() => {
+    if (!window?.speechSynthesis?.speaking) return;
+
+    window.speechSynthesis.pause();
+    setIsSpeaking(false);
+    setIsPaused(true);
+  }, []);
+
+  const resume = useCallback(() => {
+    if (!window?.speechSynthesis?.paused) return;
+
+    window.speechSynthesis.resume();
+    setIsSpeaking(true);
+    setIsPaused(false);
+  }, []);
+
+  useEffect(() => {
+    if (!window?.speechSynthesis) return;
+
+    const handleBeforeUnload = () => {
+      window.speechSynthesis.cancel();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  return {
+    speak,
+    pause,
+    resume,
+    stop,
+    isSpeaking,
+    isPaused,
+  };
 }
 
 export default function DerivativePage() {
@@ -173,7 +312,7 @@ export default function DerivativePage() {
   const [filter1Type, setFilter1Type] = useState("Sobel 3x3");
   const [o2Kernel, setO2Kernel] = useState("3");
 
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
+  const [isInstructionOpen, setIsInstructionOpen] = useState(false);
   const [openExplanationModal, setOpenExplanationModal] = useState(false);
 
   // State to hold the images
@@ -187,9 +326,14 @@ export default function DerivativePage() {
   const [tutorStep, setTutorStep] = useState(0);
   const [prevStep, setPrevStep] = useState(0);
   const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const tutorBtnRef = useRef(null);
   const isMobile = useMediaQuery("(max-width:600px)");
+  const { speak, pause, resume, stop, isSpeaking, isPaused } =
+    useSpeechController();
+  const previousSpeechKeyRef = useRef("");
+  const previousPlayStateRef = useRef(true);
 
   // Show welcome modal on initial load
   useEffect(() => {
@@ -345,18 +489,6 @@ export default function DerivativePage() {
     }
   }, [tutorStep, isTutorOpen]);
 
-  // voice tutor logic
-  const voicePause = useRef(null);
-  const voicePlay = useRef(null);
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
- 
-  // Cancel any speech on reload
-  useEffect(() => {
-    speechSynthesis.cancel();
-  }, []);
-
   const instructionsList = {
     0: [
       "Select an image from the available options or upload one using the Upload File button.",
@@ -374,58 +506,64 @@ export default function DerivativePage() {
     return steps ? steps.join("\n") : "No instructions available.";
   };
 
-  const speak = () => {
-    if (speechSynthesis.paused) {
-      speechSynthesis.resume();
-      if (voicePlay.current.style.display == "block") {
-        voicePlay.current.style.display = "none";
-        voicePause.current.style.display = "block";
-      }
-      setIsSpeaking(true);
+  const currentTutorText = tutorSteps[tutorStep]?.content || "";
+  const instructionText = getInstructionsText();
+  const activeSpeechText = isInstructionOpen
+    ? instructionText
+    : isTutorOpen
+      ? currentTutorText
+      : "";
+  const activeSpeechKey = `${isInstructionOpen ? "instruction" : isTutorOpen ? "tutor" : "idle"}:${activeSpeechText}`;
+
+  const handleSpeechToggle = () => {
+    if (!activeSpeechText) {
       return;
     }
 
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause();
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
+    if (isSpeaking && !isPaused) {
+      setIsPlaying(false);
       return;
     }
 
-    // Clean up any lingering speech
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(getInstructionsText());
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices.find(
-      (voice) => voice.name === "Microsoft Ravi - English (India)",
-    );
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      utteranceRef.current = null;
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-    if (voicePause.current.style.display == "none") {
-      voicePlay.current.style.display = "none";
-      voicePause.current.style.display = "block";
+    if (isPaused) {
+      setIsPlaying(true);
+      return;
     }
+
+    setIsPlaying(true);
+    speak(activeSpeechText);
   };
+
+  useEffect(() => {
+    if (previousSpeechKeyRef.current !== activeSpeechKey) {
+      stop();
+      previousSpeechKeyRef.current = activeSpeechKey;
+    }
+
+    if (!activeSpeechText || !isPlaying || isPaused) {
+      return;
+    }
+
+    speak(activeSpeechText);
+  }, [activeSpeechKey, activeSpeechText, isPaused, isPlaying, speak, stop]);
+
+  useEffect(() => {
+    const wasPlaying = previousPlayStateRef.current;
+
+    if (wasPlaying && !isPlaying) {
+      pause();
+    }
+
+    if (!wasPlaying && isPlaying && isPaused) {
+      resume();
+    }
+
+    previousPlayStateRef.current = isPlaying;
+  }, [isPaused, isPlaying, pause, resume]);
 
   // rest of the code
   const instr = () => {
-    setOpenInstructionsModal(true);
+    setIsInstructionOpen(true);
   };
 
   const exp = () => {
@@ -466,7 +604,7 @@ export default function DerivativePage() {
   };
 
   const handleCloseModal = () => {
-    setOpenInstructionsModal(false); // Close the modal
+    setIsInstructionOpen(false);
   };
 
   const handleClose2Modal = () => {
@@ -487,12 +625,15 @@ export default function DerivativePage() {
           <h2 className="header-heading">Derivative Based Segmentation</h2>
 
           <div id="header_button">
-            <Button id="sound-btn" title="Play" ref={voicePlay}>
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={speak ? voice_pause : voice}
+                src={isSpeaking && !isPaused ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                onClick={speak}
               />
             </Button>
 
@@ -540,7 +681,7 @@ export default function DerivativePage() {
           </div>
 
           <Dialog
-            open={openInstructionsModal}
+            open={isInstructionOpen}
             onClose={handleCloseModal}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
