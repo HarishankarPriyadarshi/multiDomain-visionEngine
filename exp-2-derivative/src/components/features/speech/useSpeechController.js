@@ -6,6 +6,9 @@ export const useSpeechController = () => {
   const voicesRef = useRef([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  //highlight sentences
+  const [sentences, setSentences] = useState([]);
+const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
 
   // Load voices
   useEffect(() => {
@@ -31,6 +34,8 @@ export const useSpeechController = () => {
     utteranceRef.current = null;
     setIsSpeaking(false);
     setIsPaused(false);
+    setSentences([]);
+    setCurrentSentenceIndex(0);
   }, []);
 
   const getIndianVoice = () => {
@@ -47,17 +52,29 @@ export const useSpeechController = () => {
     );
   };
 
-  const speak = useCallback(
-    (text) => {
-      if (!window?.speechSynthesis) return;
+  const splitIntoSentences = (text) => {
+  return text
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => s.trim().length > 0);
+};
 
-      const normalizedText = typeof text === "string" ? text.trim() : "";
-      stop();
-      if (!normalizedText) return;
+const speak = useCallback(
+  (text) => {
+    if (!window?.speechSynthesis) return;
 
-      const utterance = new SpeechSynthesisUtterance(normalizedText);
+    const normalizedText = typeof text === "string" ? text.trim() : "";
+    stop();
+    if (!normalizedText) return;
 
-      // 🎤 Assign Indian voice
+    const split = splitIntoSentences(normalizedText);
+    setSentences(split);
+    setCurrentSentenceIndex(0);
+
+    const speakSentence = (index) => {
+      if (!split[index]) return;
+
+      const utterance = new SpeechSynthesisUtterance(split[index]);
+
       const indianVoice = getIndianVoice();
       if (indianVoice) {
         utterance.voice = indianVoice;
@@ -65,40 +82,39 @@ export const useSpeechController = () => {
       }
 
       utterance.rate = 0.8;
-      utterance.pitch = 1;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
         setIsPaused(false);
-      };
-
-      utterance.onpause = () => {
-        setIsSpeaking(false);
-        setIsPaused(true);
-      };
-
-      utterance.onresume = () => {
-        setIsSpeaking(true);
-        setIsPaused(false);
+        setCurrentSentenceIndex(index);
       };
 
       utterance.onend = () => {
-        utteranceRef.current = null;
-        setIsSpeaking(false);
-        setIsPaused(false);
+        if (index < split.length - 1) {
+          speakSentence(index + 1);
+        } else {
+          setIsSpeaking(false);
+          setIsPaused(false);
+          setSentences([]);
+          setCurrentSentenceIndex(0);
+        }
       };
 
       utterance.onerror = () => {
-        utteranceRef.current = null;
         setIsSpeaking(false);
         setIsPaused(false);
+        setSentences([]);
+        setCurrentSentenceIndex(0);
       };
 
       utteranceRef.current = utterance;
       window.speechSynthesis.speak(utterance);
-    },
-    [stop],
-  );
+    };
+
+    speakSentence(0);
+  },
+  [stop]
+);
 
   const pause = useCallback(() => {
     if (!window?.speechSynthesis?.speaking) return;
@@ -138,6 +154,8 @@ export const useSpeechController = () => {
     stop,
     isSpeaking,
     isPaused,
+    sentences,
+    currentSentenceIndex,
   };
 }
 

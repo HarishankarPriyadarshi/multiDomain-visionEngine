@@ -19,8 +19,16 @@ export const CommonContextProvider = ({ children }) => {
 
   const previousSpeechKeyRef = useRef("");
   const previousPlayStateRef = useRef(true);
-  const { speak, pause, resume, stop, isSpeaking, isPaused } =
-    useSpeechController();
+  const {
+    speak,
+    pause,
+    resume,
+    stop,
+    isSpeaking,
+    isPaused,
+    sentences,
+    currentSentenceIndex,
+  } = useSpeechController();
 
   // Show welcome modal on initial load
   useEffect(() => {
@@ -37,6 +45,7 @@ export const CommonContextProvider = ({ children }) => {
     } else {
       setIsTutorOpen(false);
       setTutorStep(0);
+      stop(); // Clear speech when tutor finished
     }
   };
 
@@ -49,6 +58,11 @@ export const CommonContextProvider = ({ children }) => {
   const startTutor = () => {
     setTutorStep(0);
     setIsTutorOpen(true);
+  };
+
+  const closeInstructions = () => {
+    setIsInstructionOpen(false);
+    stop();
   };
   const currentStep = tutorSteps[tutorStep];
 
@@ -66,6 +80,21 @@ export const CommonContextProvider = ({ children }) => {
       handleTutorNext();
     }
   }, [handleTutorNext, isImageProcessed, isTutorOpen, tutorStep]);
+
+  // Read instructions aloud once when reaching the instruction button step
+  const hasReadInstructionsRef = useRef(false);
+  useEffect(() => {
+    if (isTutorOpen && tutorStep === 1 && !hasReadInstructionsRef.current) {
+      const text = tutorSteps[1]?.content || "";
+      if (text) {
+        speak(text);
+        hasReadInstructionsRef.current = true;
+      }
+    }
+    if (!isTutorOpen) {
+      hasReadInstructionsRef.current = false;
+    }
+  }, [isTutorOpen, tutorStep, tutorSteps, speak]);
 
   const getInstructionsText = () => {
     const steps = instructionsList[0];
@@ -160,9 +189,12 @@ export const CommonContextProvider = ({ children }) => {
         pause,
         resume,
         stop,
+        sentences,
+        currentSentenceIndex,
         handleSpeechToggle,
         handleTutorNext,
         handleTutorBack,
+        closeInstructions,
         previousSpeechKeyRef,
         previousPlayStateRef,
       }}

@@ -7,7 +7,7 @@ import Popper from "@mui/material/Popper";
 import Typography from "@mui/material/Typography";
 
 import { CommonContext } from "../../context/CommonContext";
-import "./tutor.module.css";
+import "./tutor.css";
 
 export const Tutor = () => {
   const {
@@ -25,7 +25,32 @@ export const Tutor = () => {
     setTutorStep,
     prevStep,
     computedStep,
+    sentences,
+    currentSentenceIndex,
+    isSpeaking,
+    isPaused,
+    isInstructionOpen
   } = useContext(CommonContext);
+
+  // Helper to render text with sentence highlighting
+  const renderHighlightedText = (text, isCurrentContainerActive) => {
+    if (!isCurrentContainerActive || !isSpeaking || sentences.length === 0) {
+      return text;
+    }
+
+    return sentences.map((sentence, index) => (
+      <span
+        key={index}
+        className={
+          isSpeaking && !isPaused && index === currentSentenceIndex
+            ? "highlight-sentence"
+            : ""
+        }
+      >
+        {sentence}{" "}
+      </span>
+    ));
+  };
 
   // Highlight current step element
   useEffect(() => {
@@ -57,7 +82,7 @@ export const Tutor = () => {
       {isTutorOpen && <div className="tutor-overlay" />}
       {/* Welcome Modal */}
       <Popper
-        open={showWelcome}
+        open={showWelcome && !isInstructionOpen}
         anchorEl={tutorBtnRef.current}
         placement="bottom"
         transition
@@ -88,7 +113,10 @@ export const Tutor = () => {
               <div className="tutor-actions">
                 <Button
                   size="small"
-                  onClick={() => setShowWelcome(false)}
+                  onClick={() => {
+                    setShowWelcome(false);
+                    stop();
+                  }}
                   sx={{
                     color: "#000000ff",
                     backgroundColor: "#e5e9faff",
@@ -116,7 +144,7 @@ export const Tutor = () => {
 
       {/* Guided Tutor Popper (Non-blocking) */}
       <Popper
-        open={isTutorOpen}
+        open={isTutorOpen && !isInstructionOpen}
         anchorEl={
           isMobile
             ? document.body
@@ -148,13 +176,19 @@ export const Tutor = () => {
                 {tutorSteps[tutorStep].title}
               </Typography>
 
-              <p className="tutor-content">{tutorSteps[tutorStep].content}</p>
+              <p className="tutor-content">
+                {renderHighlightedText(
+                  tutorSteps[tutorStep].content,
+                  isTutorOpen && !isInstructionOpen,
+                )}
+              </p>
               <div className="tutor-actions">
                 <Button
                   size="small"
                   onClick={() => {
                     setIsTutorOpen(false);
                     setTutorStep(0);
+                    stop();
                   }}
                   sx={{
                     color: "#666",

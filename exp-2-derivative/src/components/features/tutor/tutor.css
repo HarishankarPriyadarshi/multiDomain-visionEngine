@@ -171,3 +171,12 @@
     transform: translateX(0);
   }
 }
+
+/* speaking highlight */
+.highlight-sentence {
+  background: #ffd64f63;
+  color: #1d2a6d;
+  padding: 3px 6px;
+  border-radius: 6px;
+  /* transition: all 0.3s ease; */
+}
