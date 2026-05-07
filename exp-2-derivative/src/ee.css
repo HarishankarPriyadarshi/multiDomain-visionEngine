@@ -80,7 +80,7 @@ h6 {
 
 #top-box {
   position: relative;
-  top: -10%;
+  top: -7%;
   height: 500px;
   width: 100%;
   display: flex;
@@ -125,7 +125,7 @@ h6 {
 
 #original {
   height: 100%;
-  width: 25%;
+  width: 20%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -140,12 +140,11 @@ h6 {
   align-items: center;
   display: flex;
   justify-content: center;
-  
 }
 
 #kernels {
   height: 100%;
-  width: 15%;
+  width: 25%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -243,7 +242,7 @@ h6 {
   width: 100%;
   margin-top: auto;
   position: relative;
-  top: -5%;
+  top: -2%;
 }
 
 button:disabled {
@@ -553,7 +552,7 @@ button:disabled {
     3px 3px 6px rgba(0, 0, 0, 0.2),
     inset -2px -2px 4px rgba(255, 255, 255, 0.7);
 }
-#kernelGrid{
+#kernelGrid {
   animation: dropDown 0.4s ease forwards;
 }
 
@@ -636,4 +635,57 @@ button:disabled {
 .resImage-active {
   transform: scale(1.19);
   border: 2px solid #5b31c3 !important;
+}
+
+/* convolution steps box */
+.conv-steps-box {
+  background: #ffffff2a;
+  border-radius: 5px;
+  padding: 1px;
+  margin-top: -1px;
+  width: 100%;
+  height: 10%;
+}
+
+.conv-steps-box h4 {
+  color: #292929;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.conv-steps {
+  line-height: 1.8;
+  color: #333;
+  font-weight: 500;
+  font-size:15px;
+  word-wrap: break-word;
+}
+
+.conv-final {
+  margin-top: -8px;
+  margin-bottom: 3px;
+  font-size: 1rem;
+ 
+  color: #333;
+}
+
+
+@media (max-width: 480px) {
+  .conv-steps-box {
+    min-height: 165px !important;
+    background: #c6c3b103;
+    width: 100%;
+    position: relative;
+    top: 10px;
+  }
+
+  .conv-steps {
+    font-size: 0.7rem !important;
+  }
+
+  .conv-final {
+
+    font-size: 0.7rem !important;
+    color: #333;
+  }
 }

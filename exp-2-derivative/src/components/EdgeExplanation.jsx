@@ -46,6 +46,11 @@ export default function EdgeExplanation() {
   const [imageAnimateKey, setImageAnimateKey] = useState(0);
   const [kernelAnimateKey, setKernelAnimateKey] = useState(0);
 
+  // state tracking and animation for gaussian kernel
+  const [convSteps, setConvSteps] = useState({ x: [], y: [], result: [] }); // for X,Y, and Result
+  const [currentSum, setCurrentSum] = useState({ x: 0, y: 0, result: 0 }); // for X,Y, and Result
+  const [step, setStep] = useState(0);
+
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
@@ -66,7 +71,7 @@ export default function EdgeExplanation() {
 
   function handleImage(x) {
     setImage(x);
-     setImageAnimateKey(prev => prev + 1);
+    setImageAnimateKey((prev) => prev + 1);
     const signs = [
       [
         [0, 0, 0, 1, 0, 0, 0],
@@ -116,7 +121,7 @@ export default function EdgeExplanation() {
     runIdRef.current++;
     setIsDone(false);
     setKernel(x);
-    setKernelAnimateKey(prev => prev + 1);
+    setKernelAnimateKey((prev) => prev + 1);
     let kernelX, kernelY;
     switch (x) {
       case "sobel":
@@ -272,6 +277,9 @@ export default function EdgeExplanation() {
     setActiveDX({ row: -1, col: -1 });
     setActiveDY({ row: -1, col: -1 });
     setActiveRes({ row: -1, col: -1 });
+    setStep(0);
+    setConvSteps({ x: [], y: [], result: [] });
+    setCurrentSum({ x: 0, y: 0, result: 0 });
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
@@ -284,6 +292,18 @@ export default function EdgeExplanation() {
 
         setPosX(i); // <== These trigger a re-render
         setPosY(j);
+        // reset convSteps and currentSum for each pixel
+        setConvSteps((prev) => ({
+          x: [],
+          y: [],
+          result: prev.result, // keep previous result visible
+        }));
+        setCurrentSum((prev) => ({
+          x: 0,
+          y: 0,
+          result: prev.result, // keep previous gradient displayed
+        }));
+        setStep((prev) => prev + 1);
 
         let sumX = 0;
         let sumY = 0;
@@ -299,8 +319,23 @@ export default function EdgeExplanation() {
               y >= 0 &&
               y < original[0].length
             ) {
-              sumX += original[x][y] * kernelx[ki][kj];
-              sumY += original[x][y] * kernely[ki][kj];
+              const mulX = original[x][y] * kernelx[ki][kj];
+              const mulY = original[x][y] * kernely[ki][kj];
+              sumX += mulX;
+              sumY += mulY;
+              // update convSteps and currentSum
+              setConvSteps((prev) => ({
+                x: [...prev.x, `${original[x][y]}×${kernelx[ki][kj]}`],
+                y: [...prev.y, `${original[x][y]}×${kernely[ki][kj]}`],
+                result: prev.result,
+              }));
+
+              setCurrentSum((prev) => ({
+                x: sumX,
+                y: sumY,
+                result: prev.result,
+                             }));
+              await new Promise((resolve) => setTimeout(resolve, 200));
             }
           }
         }
@@ -308,6 +343,18 @@ export default function EdgeExplanation() {
         di_dx[i][j] = sumX;
         di_dy[i][j] = sumY;
         resultant[i][j] = Math.floor(Math.sqrt(sumX * sumX + sumY * sumY));
+        // set result for display
+        const gradient = Math.sqrt(sumX * sumX + sumY * sumY);
+
+        setConvSteps((prev) => ({
+          ...prev,
+          result: [`√( ${sumX}² + ${sumY}² )`],
+        }));
+
+        setCurrentSum((prev) => ({
+          ...prev,
+          result: gradient.toFixed(2),
+        }));
 
         setCompletedDX((prev) => [...prev, { row: i, col: j }]);
         setCompletedDY((prev) => [...prev, { row: i, col: j }]);
@@ -346,6 +393,8 @@ export default function EdgeExplanation() {
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % instructions.length);
+    console.log(instructions);
+console.log(currentIndex);
   };
 
   const prevSlide = () => {
@@ -372,11 +421,11 @@ export default function EdgeExplanation() {
             >
               <div id="inst_content_edge">
                 <button onClick={prevSlide} style={{ marginRight: "10px" }}>
-                  <span className="prev-icon" aria-hidden="true"></span>
+                  <span className="prev-icon" aria-hidden="true">⮜</span>
                 </button>
                 <span>{instructions[currentIndex]}</span>
-                <button onClick={nextSlide}>
-                  <span className="next-icon" aria-hidden="true"></span>
+                <button onClick={nextSlide} style={{zIndex: 10001}}>
+                  <span className="next-icon" aria-hidden="true">⮞</span>
                 </button>
               </div>
             </div>
@@ -584,7 +633,7 @@ export default function EdgeExplanation() {
             <div id="kernel_arrow_1">
               <span>
                 <svg
-                  width="120"
+                  width="60"
                   height="40"
                   xmlns="http://www.w3.org/2000/svg"
                   style={{ transform: "rotate(-30deg)" }}
@@ -612,7 +661,7 @@ export default function EdgeExplanation() {
 
               <span>
                 <svg
-                  width="120"
+                  width="60"
                   height="40"
                   xmlns="http://www.w3.org/2000/svg"
                   style={{ transform: "rotate(30deg)" }}
@@ -701,7 +750,7 @@ export default function EdgeExplanation() {
               <div id="kernelx">
                 <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel X</h4>
                 <div
-                 className="matrix-over"
+                  className="matrix-over"
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
@@ -724,14 +773,29 @@ export default function EdgeExplanation() {
                     )}
                 </div>
                 <p id="xLabel" class="matrix_label">
-                  {label}
+                  {!isVisible && label}
                 </p>
+                {isVisible && (
+                  <div className="conv-steps-box">
+                    <h4>Kernel X Convolution Step</h4>
+
+                    <div className="conv-steps">
+                      <div className="conv-step">Step {step} :</div>
+                      {convSteps.x.map((item, index) => (
+                        <span key={index}>
+                          ({item}){index !== convSteps.x.length - 1 && " + "}
+                        </span>
+                      ))}
+                      <div className="conv-result">= {currentSum.x}</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div id="kernely">
                 <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel Y</h4>
                 <div
-                 className="matrix-over"
+                  className="matrix-over"
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
@@ -754,8 +818,23 @@ export default function EdgeExplanation() {
                     )}
                 </div>
                 <p id="yLabel" class="matrix_label">
-                  {label}
+                  {!isVisible && label}
                 </p>
+                {isVisible && (
+                  <div className="conv-steps-box">
+                    <h4>Kernel Y Convolution Step</h4>
+
+                    <div className="conv-steps">
+                      <div className="conv-step">Step {step} :</div>
+                      {convSteps.y.map((item, index) => (
+                        <span key={index}>
+                          ({item}){index !== convSteps.y.length - 1 && " + "}
+                        </span>
+                      ))}
+                      <div className="conv-result">= {currentSum.y}</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -863,6 +942,13 @@ export default function EdgeExplanation() {
                     Resultant Gradient
                   </h4>
                   <BlockMath math={equation1} />
+                  <div className="conv-final">
+                    ΔG=
+                    {convSteps.result.map((item, index) => (
+                      <span key={index}>{item}</span>
+                    ))}{" "}
+                    = {currentSum.result}
+                  </div>
                   <div
                     style={{
                       display: "grid",
@@ -874,7 +960,7 @@ export default function EdgeExplanation() {
                         row.map((cell, colIndex) => (
                           <div
                             key={`${rowIndex}-${colIndex}`}
-                            id="kernelGrid" 
+                            id="kernelGrid"
                             className={
                               activeRes.row === rowIndex &&
                               activeRes.col === colIndex
@@ -913,15 +999,14 @@ export default function EdgeExplanation() {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="result_grid"
-                                                className={        
+                            className={
                               activeRes.row === rowIndex &&
                               activeRes.col === colIndex
                                 ? "resImage-active"
-                                :  ""
+                                : ""
                             }
                             style={{
                               backgroundColor: `rgb(${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255})`,
-                              
                             }}
                           ></div>
                         )),
