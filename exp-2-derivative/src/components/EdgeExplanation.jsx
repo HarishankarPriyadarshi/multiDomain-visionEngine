@@ -50,6 +50,7 @@ export default function EdgeExplanation() {
   const [convSteps, setConvSteps] = useState({ x: [], y: [], result: [] }); // for X,Y, and Result
   const [currentSum, setCurrentSum] = useState({ x: 0, y: 0, result: 0 }); // for X,Y, and Result
   const [step, setStep] = useState(0);
+  const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
 
   useEffect(() => {
     isPausedRef.current = isPaused;
@@ -236,6 +237,7 @@ export default function EdgeExplanation() {
     setActiveRes({ row: -1, col: -1 });
     setActiveDX({ row: -1, col: -1 });
     setActiveDY({ row: -1, col: -1 });
+    setFirstKernelCalculated(false);
   }
   //   useEffect(() => {
   //   console.log("active changed", activeDX, activeDY, activeRes);
@@ -335,7 +337,7 @@ export default function EdgeExplanation() {
                 y: sumY,
                 result: prev.result,
                              }));
-              await new Promise((resolve) => setTimeout(resolve, 200));
+              await new Promise((resolve) => setTimeout(resolve, delayRef.current));
             }
           }
         }
@@ -355,6 +357,7 @@ export default function EdgeExplanation() {
           ...prev,
           result: gradient.toFixed(2),
         }));
+        setFirstKernelCalculated(true);
 
         setCompletedDX((prev) => [...prev, { row: i, col: j }]);
         setCompletedDY((prev) => [...prev, { row: i, col: j }]);
@@ -853,7 +856,7 @@ console.log(currentIndex);
               <div id="results">
                 <div id="kernelx" style={{ position: "relative" }}>
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                    Gradient X (&Delta;X)
+                   {firstKernelCalculated && <span>Gradient X (&Delta;X)</span>} 
                   </h4>
                   <div
                     style={{
@@ -886,12 +889,12 @@ console.log(currentIndex);
                         )),
                       )}
                   </div>
-                  <p className="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{firstKernelCalculated && resultLabel}</p>
                 </div>
 
                 <div id="kernely">
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                    Gradient Y (&Delta;Y)
+                   {firstKernelCalculated && <span>Gradient Y (&Delta;Y)</span>} 
                   </h4>
                   <div
                     style={{
@@ -923,7 +926,7 @@ console.log(currentIndex);
                         )),
                       )}
                   </div>
-                  <p className="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{firstKernelCalculated && resultLabel}</p>
                 </div>
               </div>
             )}
@@ -935,7 +938,7 @@ console.log(currentIndex);
               </div>
             )}
 
-            {isVisible && (
+            {isVisible && firstKernelCalculated && (
               <div id="final_result">
                 <div id="kernelx">
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
