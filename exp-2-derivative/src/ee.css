@@ -140,6 +140,7 @@ h6 {
   align-items: center;
   display: flex;
   justify-content: center;
+  
 }
 
 #kernels {
@@ -551,6 +552,9 @@ button:disabled {
   box-shadow:
     3px 3px 6px rgba(0, 0, 0, 0.2),
     inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+#kernelGrid{
+  animation: dropDown 0.4s ease forwards;
 }
 
 .kernalX {

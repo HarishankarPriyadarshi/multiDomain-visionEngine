@@ -874,7 +874,7 @@ export default function EdgeExplanation() {
                         row.map((cell, colIndex) => (
                           <div
                             key={`${rowIndex}-${colIndex}`}
-                            id="kernelGrid"
+                            id="kernelGrid" 
                             className={
                               activeRes.row === rowIndex &&
                               activeRes.col === colIndex
