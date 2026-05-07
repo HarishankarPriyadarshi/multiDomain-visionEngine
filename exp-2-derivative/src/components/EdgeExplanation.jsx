@@ -555,6 +555,7 @@ export default function EdgeExplanation() {
               <h4 style={{ margin: "0px" }}>Image Chosen</h4>
               <div
                 id="ogimage"
+                className="matrix-over"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(7, 1fr)",
@@ -577,7 +578,7 @@ export default function EdgeExplanation() {
                     )),
                   )}
               </div>
-              <p class="matrix_label">7 x 7</p>
+              <p className="matrix_label">7 x 7</p>
             </div>
 
             <div id="kernel_arrow_1">
@@ -700,6 +701,7 @@ export default function EdgeExplanation() {
               <div id="kernelx">
                 <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel X</h4>
                 <div
+                 className="matrix-over"
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
@@ -711,7 +713,7 @@ export default function EdgeExplanation() {
                         <div
                           key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
                           id="kernelGrid"
-                          className="matrix-animate"
+                          className="matrix-animate kernalX"
                           style={{
                             animationDelay: `${rowIndex * 0.15}s`,
                           }}
@@ -729,6 +731,7 @@ export default function EdgeExplanation() {
               <div id="kernely">
                 <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel Y</h4>
                 <div
+                 className="matrix-over"
                   style={{
                     display: "grid",
                     gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
@@ -740,7 +743,7 @@ export default function EdgeExplanation() {
                         <div
                           key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
                           id="kernelGrid"
-                          className="matrix-animate"
+                          className="matrix-animate kernalY"
                           style={{
                             animationDelay: `${rowIndex * 0.15}s`,
                           }}
@@ -804,7 +807,7 @@ export default function EdgeExplanation() {
                         )),
                       )}
                   </div>
-                  <p class="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{resultLabel}</p>
                 </div>
 
                 <div id="kernely">
@@ -841,7 +844,7 @@ export default function EdgeExplanation() {
                         )),
                       )}
                   </div>
-                  <p class="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{resultLabel}</p>
                 </div>
               </div>
             )}
@@ -849,7 +852,7 @@ export default function EdgeExplanation() {
             {isVisible && (
               <div id="operation">
                 <div id="equals-to">=</div>
-                <div id="equals-to">=</div>
+                {/* <div id="equals-to">=</div> */}
               </div>
             )}
 
@@ -890,7 +893,7 @@ export default function EdgeExplanation() {
                         )),
                       )}
                   </div>
-                  <p class="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{resultLabel}</p>
                 </div>
                 <span id="arrow2">&darr;</span>
                 <div id="kernely">
@@ -924,7 +927,7 @@ export default function EdgeExplanation() {
                         )),
                       )}
                   </div>
-                  <p class="matrix_label">{resultLabel}</p>
+                  <p className="matrix_label">{resultLabel}</p>
                 </div>
               </div>
             )}
