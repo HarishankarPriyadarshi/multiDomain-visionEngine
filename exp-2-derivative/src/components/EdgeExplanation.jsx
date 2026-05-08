@@ -1,18 +1,23 @@
 import "../ee.css";
 import React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import Box from "@mui/material/Box";
 import divide from "../assets/images/divide_sign.png";
 import multiply from "../assets/images/x_sign.png";
 import minus from "../assets/images/minus_sign.png";
 import plus from "../assets/images/plus_sign.png";
-import { Select, Button } from "@mui/material";
+import { Select, Button, DialogTitle } from "@mui/material";
 
 import { OpenCvProvider } from "opencv-react";
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import { SimContext } from "./context/SimContext";
 
-export default function EdgeExplanation() {
+import voice from "../assets/images/voice-play.png";
+import voice_pause from "../assets/images/voice-pause.png";
+import TutorSim from "./features/tutor/TutorSim";
+
+export default function EdgeExplanation({ handleClose2Modal }) {
   const [image, setImage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [kernel, setKernel] = useState("sobel");
@@ -25,9 +30,9 @@ export default function EdgeExplanation() {
 
   const [label, setLabel] = useState("3 x 3");
   const [resultLabel, setResultLabel] = useState("5 x 5");
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPausedSimulation, setIsPausedSimulation] = useState(false);
   const delayRef = useRef(300);
-  const isPausedRef = useRef(false);
+  const isPausedSimulationRef = useRef(false);
   const myPlayButton = useRef(null);
   const myPauseButton = useRef(null);
   const mySpeedUpButton = useRef(null);
@@ -52,9 +57,161 @@ export default function EdgeExplanation() {
   const [step, setStep] = useState(0);
   const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
 
+  // from SimContext
+  const {
+    startTutorSim,
+    handleSpeechToggleSim,
+    tutorBtnRefSim,
+    isSpeaking,
+    isPaused,
+    setTutorStepsSim,
+    isSimPlaying,
+    setIsSimPlaying,
+  } = useContext(SimContext);
+
   useEffect(() => {
-    isPausedRef.current = isPaused;
-  }, [isPaused]);
+    setTutorStepsSim([
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Gradient Convolution Visualization experiment. In this simulation, you will observe how edge detection works step-by-step using convolution with Kernel X and Kernel Y operators.",
+        targetId: "guided-tutor-btn-sim",
+        placement: "top",
+      },
+      {
+        title: "Instruction Panel",
+        content:
+          "Use the navigation arrows here to read step-by-step instructions for performing the experiment correctly.",
+        targetId: "inst_content_container",
+        placement: "bottom",
+      },
+      {
+        title: "Choose Input Image",
+        content:
+          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing.",
+        targetId: "image-box",
+        placement: "right",
+      },
+      {
+        title: "Image Chosen",
+        content: "You can see the selected image in the image box.",
+        targetId: "ogimage",
+        placement: "right",
+      },
+      {
+        title: "Select Edge Detection Kernel",
+        content:
+          "Choose the gradient operator such as Sobel, Prewitt, Roberts, Scharr, or Laplacian. Each operator calculates intensity change differently.",
+        targetId: "tool-box",
+        placement: "right",
+      },
+      {
+        title: "Kernel X and Kernel Y",
+        content:
+          "Observe Kernel X and Kernel Y matrices. Kernel X detects horizontal intensity changes, while Kernel Y detects vertical intensity changes.",
+        targetId: "kernels",
+        placement: "top",
+      },
+      {
+        title: "Speed Down",
+        content:
+          "Click the Speed Down button to slow the convolution animation. This increases the delay between kernel movements so you can observe each computation step more clearly.",
+        targetId: "speed-down-btn",
+        placement: "bottom",
+      },
+      {
+        title: "Speed Up",
+        content:
+          "Click the Speed Up button to increase the convolution speed. This decreases the delay between kernel movements and completes the process faster.",
+        targetId: "speed-up-btn",
+        placement: "bottom",
+      },
+      {
+        title: "Reset",
+        content:
+          "Click the Reset button to stop the simulation and return everything to the initial state. The image, kernel position, and computed values will be cleared.",
+        targetId: "reset-btn",
+        placement: "bottom",
+      },
+
+      isSimPlaying
+        ? {
+            title: "Pause",
+            content:
+              "Click the Pause button to temporarily stop the simulation. You can resume from the same position by clicking Play again.",
+            targetId: "sim-pause-btn",
+            placement: "bottom",
+          }
+        : {
+            title: "Play",
+            content:
+              "Click the Play button to start the convolution process. The kernel will slide over the image and compute gradient values pixel by pixel.",
+            targetId: "sim-play-btn",
+            placement: "bottom",
+          },
+
+      // {
+      //   title: "Sliding Window Operation",
+      //   content:
+      //     "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+      //   targetId: "original",
+      //   placement: "right",
+      // },
+      // {
+      //   title: "Observe Convolution Steps",
+      //   content:
+      //     "Here you can see the detailed multiplication steps and running sum for Kernel X and Kernel Y during convolution.",
+      //   targetId: "kernels",
+      //   placement: "left",
+      // },
+      // {
+      //   title: "Gradient X and Gradient Y",
+      //   content:
+      //     "After each window operation, ΔX and ΔY values are generated and stored in their respective result matrices.",
+      //   targetId: "results",
+      //   placement: "top",
+      // },
+      // {
+      //   title: "Resultant Gradient",
+      //   content:
+      //     "The final edge strength is computed using ΔG = √((ΔX)² + (ΔY)²). This gives the overall magnitude of intensity change.",
+      //   targetId: "final_result",
+      //   placement: "top",
+      // },
+      // {
+      //   title: "Resultant Image",
+      //   content:
+      //     "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
+      //   targetId: "result_grid",
+      //   placement: "top",
+      // },
+      // {
+      //   title: "Speed Controls",
+      //   content:
+      //     "Use Speed Up and Speed Down buttons to control animation speed. Pause anytime to examine convolution steps carefully.",
+      //   targetId: "footer_buttons",
+      //   placement: "top",
+      // },
+      // {
+      //   title: "Reset Experiment",
+      //   content:
+      //     "Click Reset to stop the current simulation and restart with default image and kernel settings.",
+      //   targetId: "footer_buttons",
+      //   placement: "top",
+      // },
+      // {
+      //   title: "Experiment Completed",
+      //   content:
+      //     "You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
+      //   targetId: "main-box-edge",
+      //   placement: "center",
+      // },
+    ]);
+  }, [isSimPlaying]);
+
+  useEffect(() => {
+    isPausedSimulationRef.current = isPausedSimulation;
+  }, [isPausedSimulation]);
 
   useEffect(() => {
     changeKernel("sobel");
@@ -115,7 +272,7 @@ export default function EdgeExplanation() {
   }
 
   function pauseFun() {
-    setIsPaused((prev) => !prev);
+    setIsPausedSimulation((prev) => !prev);
   }
 
   function changeKernel(x) {
@@ -207,6 +364,7 @@ export default function EdgeExplanation() {
     mySpeedDownButton.current.disabled = false;
     setImagesDisabled(true);
     calculateDerivatives();
+    setIsSimPlaying(true);
   }
 
   function handleReset() {
@@ -216,7 +374,7 @@ export default function EdgeExplanation() {
     setRes([]);
     setPosX(0);
     setPosY(0);
-    setIsPaused(false);
+    setIsPausedSimulation(false);
     delayRef.current = 300; // reset delay to default
     setIsDone(false); // if you use this to track completion
     setIsVisible(false); // if your result is conditionally shown
@@ -287,7 +445,7 @@ export default function EdgeExplanation() {
       for (let j = 0; j < cols; j++) {
         if (currentRunId !== runIdRef.current) return; // ❗Exit early if reset or kernel changed
 
-        while (isPausedRef.current) {
+        while (isPausedSimulationRef.current) {
           await new Promise((resolve) => setTimeout(resolve, 100));
           if (currentRunId !== runIdRef.current) return; // ❗Exit early if reset or kernel changed
         }
@@ -336,8 +494,10 @@ export default function EdgeExplanation() {
                 x: sumX,
                 y: sumY,
                 result: prev.result,
-                             }));
-              await new Promise((resolve) => setTimeout(resolve, delayRef.current));
+              }));
+              await new Promise((resolve) =>
+                setTimeout(resolve, delayRef.current),
+              );
             }
           }
         }
@@ -396,8 +556,8 @@ export default function EdgeExplanation() {
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % instructions.length);
-    console.log(instructions);
-console.log(currentIndex);
+    // console.log(instructions);
+    // console.log(currentIndex);
   };
 
   const prevSlide = () => {
@@ -411,8 +571,65 @@ console.log(currentIndex);
     <OpenCvProvider>
       <div id="main-box-edge">
         <div id="box-2">
+          <DialogTitle id="instructions-dialog-title">
+            <div
+              style={{
+                width: "50%",
+                justifyContent: "flex-start",
+                display: "flex",
+              }}
+            >
+              Derivative Concept
+            </div>
+            <div
+              style={{
+                width: "50%",
+
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <Button
+                id="guided-tutor-btn-sim"
+                ref={tutorBtnRefSim}
+                style={{
+                  color: "#1D2A6D",
+                  backgroundColor: "#FFD700",
+                  fontWeight: "bold",
+                  margin: "auto auto",
+                  marginLeft: "10px",
+                  borderRadius: "20px",
+                  padding: "5px 15px",
+                  height: "40px",
+                }}
+                onClick={startTutorSim}
+              >
+                Guided Tutor
+              </Button>
+              <Button
+                id="sound-btn"
+                title={isSpeaking && !isPaused ? "Pause" : "Play"}
+                onClick={handleSpeechToggleSim}
+              >
+                <img
+                  src={isSpeaking && !isPaused ? voice_pause : voice}
+                  alt="voice"
+                  style={{ width: "40px", height: "auto" }}
+                />
+              </Button>
+              <Button
+                onClick={() => handleClose2Modal()}
+                color="primary"
+                style={{ backgroundColor: "beige" }}
+              >
+                Close
+              </Button>
+            </div>
+          </DialogTitle>
           <div id="inst_div_edge">
             <div
+              id="inst_content_container"
               style={{
                 padding: "2px",
                 border: "1px solid #ccc",
@@ -424,11 +641,15 @@ console.log(currentIndex);
             >
               <div id="inst_content_edge">
                 <button onClick={prevSlide} style={{ marginRight: "10px" }}>
-                  <span className="prev-icon" aria-hidden="true">⮜</span>
+                  <span className="prev-icon" aria-hidden="true">
+                    ⮜
+                  </span>
                 </button>
                 <span>{instructions[currentIndex]}</span>
-                <button onClick={nextSlide} style={{zIndex: 10001}}>
-                  <span className="next-icon" aria-hidden="true">⮞</span>
+                <button onClick={nextSlide} style={{ zIndex: 10001 }}>
+                  <span className="next-icon" aria-hidden="true">
+                    ⮞
+                  </span>
                 </button>
               </div>
             </div>
@@ -856,7 +1077,9 @@ console.log(currentIndex);
               <div id="results">
                 <div id="kernelx" style={{ position: "relative" }}>
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                   {firstKernelCalculated && <span>Gradient X (&Delta;X)</span>} 
+                    {firstKernelCalculated && (
+                      <span>Gradient X (&Delta;X)</span>
+                    )}
                   </h4>
                   <div
                     style={{
@@ -889,12 +1112,16 @@ console.log(currentIndex);
                         )),
                       )}
                   </div>
-                  <p className="matrix_label">{firstKernelCalculated && resultLabel}</p>
+                  <p className="matrix_label">
+                    {firstKernelCalculated && resultLabel}
+                  </p>
                 </div>
 
                 <div id="kernely">
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                   {firstKernelCalculated && <span>Gradient Y (&Delta;Y)</span>} 
+                    {firstKernelCalculated && (
+                      <span>Gradient Y (&Delta;Y)</span>
+                    )}
                   </h4>
                   <div
                     style={{
@@ -926,7 +1153,9 @@ console.log(currentIndex);
                         )),
                       )}
                   </div>
-                  <p className="matrix_label">{firstKernelCalculated && resultLabel}</p>
+                  <p className="matrix_label">
+                    {firstKernelCalculated && resultLabel}
+                  </p>
                 </div>
               </div>
             )}
@@ -1027,6 +1256,7 @@ console.log(currentIndex);
               style={{ height: "fit-content" }}
             >
               <button
+                id="speed-down-btn"
                 onClick={() => (delayRef.current += 100)}
                 ref={mySpeedDownButton}
                 title="speed down"
@@ -1046,6 +1276,7 @@ console.log(currentIndex);
               </button>
 
               <button
+                id="sim-play-btn"
                 ref={myPlayButton}
                 onClick={() => play()}
                 title="Play"
@@ -1068,13 +1299,14 @@ console.log(currentIndex);
               </button>
 
               <button
+                id="sim-pause-btn"
                 ref={myPauseButton}
                 onClick={() => pauseFun()}
-                title={isPaused ? "Play" : "Pause"}
+                title={isPausedSimulation ? "Play" : "Pause"}
                 className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
                 style={{ display: "none" }}
               >
-                {isPaused ? (
+                {isPausedSimulation ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -1107,6 +1339,7 @@ console.log(currentIndex);
               </button>
 
               <button
+                id="speed-up-btn"
                 onClick={() =>
                   (delayRef.current = Math.max(50, delayRef.current - 100))
                 }
@@ -1128,6 +1361,7 @@ console.log(currentIndex);
               </button>
 
               <button
+                id="reset-btn"
                 title="reset"
                 onClick={() => handleReset()}
                 className="px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100"
@@ -1157,6 +1391,8 @@ console.log(currentIndex);
               </button>
             </div>
           </div>
+          {/* tutor modal */}
+          <TutorSim />
         </div>
       </div>
     </OpenCvProvider>

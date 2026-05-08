@@ -6,31 +6,30 @@ import Paper from "@mui/material/Paper";
 import Popper from "@mui/material/Popper";
 import Typography from "@mui/material/Typography";
 
-import { HomeContext } from "../../context/HomeContext";
-import "./tutor.css";
+import { SimContext } from "../../context/SimContext";
+import "./tutorSim.css";
 
-export const Tutor = () => {
+export const TutorSim = () => {
   const {
     isMobile,
-    isTutorOpen,
-    setIsTutorOpen,
-    showWelcome,
-    setShowWelcome,
-    tutorBtnRef,
-    startTutor,
-    handleTutorNext,
-    handleTutorBack,
-    tutorSteps,
-    tutorStep,
-    setTutorStep,
-    prevStep,
-    computedStep,
+    isTutorOpenSim,
+    setIsTutorOpenSim,
+    showWelcomeSim,
+    setShowWelcomeSim,
+    tutorBtnRefSim,
+    startTutorSim,
+    handleTutorNextSim,
+    handleTutorBackSim,
+    tutorStepsSim,
+    tutorStepSim,
+    setTutorStepSim,
+    prevStepSim,
+    computedStepSim,
     sentences,
     currentSentenceIndex,
     isSpeaking,
     isPaused,
-    isInstructionOpen
-  } = useContext(HomeContext);
+  } = useContext(SimContext);
 
   // Helper to render text with sentence highlighting
   const renderHighlightedText = (text, isCurrentContainerActive) => {
@@ -51,15 +50,19 @@ export const Tutor = () => {
       </span>
     ));
   };
+  // tutorStepSim
+  useEffect(() => {
+
+  }, [tutorStepSim,handleTutorNextSim]);
 
   // Highlight current step element
   useEffect(() => {
-    if (!isTutorOpen || !tutorSteps[tutorStep]?.targetId) {
+    if (!isTutorOpenSim || !tutorStepsSim[tutorStepSim]?.targetId) {
       return undefined;
     }
 
     const targetElement = document.getElementById(
-      tutorSteps[tutorStep].targetId,
+      tutorStepsSim[tutorStepSim].targetId,
     );
 
     if (!targetElement) {
@@ -75,18 +78,17 @@ export const Tutor = () => {
     return () => {
       targetElement.classList.remove("tutor-highlight");
     };
-  }, [isTutorOpen, tutorStep, tutorSteps]);
+  }, [isTutorOpenSim, tutorStepSim, tutorStepsSim]);
 
   return (
     <div>
-      {isTutorOpen && <div className="tutor-overlay" />}
       {/* Welcome Modal */}
       <Popper
-        open={showWelcome && !isInstructionOpen}
-        anchorEl={tutorBtnRef.current}
+        open={showWelcomeSim}
+        anchorEl={tutorBtnRefSim.current}
         placement="bottom"
         transition
-        className="tutor-popper tutor-backdrop"
+        className="tutor-popper-sim tutor-backdrop"
         modifiers={[
           {
             name: "offset",
@@ -108,13 +110,16 @@ export const Tutor = () => {
                 Welcome to Simulation
               </Typography>
               <p className="tutor-content">
-                Would you like assistance from the Guided Tutor Mode?
+                {renderHighlightedText(
+                 "Would you like assistance from the Guided Tutor Mode In Simulation?",
+                  showWelcomeSim,
+                )}
               </p>
               <div className="tutor-actions">
                 <Button
                   size="small"
                   onClick={() => {
-                    setShowWelcome(false);
+                    setShowWelcomeSim(false);
                     stop();
                   }}
                   sx={{
@@ -129,8 +134,8 @@ export const Tutor = () => {
                   variant="contained"
                   size="small"
                   onClick={() => {
-                    setShowWelcome(false);
-                    startTutor();
+                    setShowWelcomeSim(false);
+                    startTutorSim();
                   }}
                   sx={{ backgroundColor: "#1D2A6D" }}
                 >
@@ -144,20 +149,20 @@ export const Tutor = () => {
 
       {/* Guided Tutor Popper (Non-blocking) */}
       <Popper
-        open={isTutorOpen && !isInstructionOpen}
+        open={isTutorOpenSim}
         anchorEl={
           isMobile
             ? document.body
-            : document.getElementById(computedStep?.targetId)
+            : document.getElementById(computedStepSim?.targetId)
         }
-        placement={computedStep?.placement || "bottom"}
+        placement={computedStepSim?.placement || "bottom"}
         transition
-        className="tutor-popper"
+        className="tutor-popper-sim"
         modifiers={[
           {
             name: "offset",
             options: {
-              offset: computedStep?.offset || [-60, 12],
+              offset: computedStepSim?.offset || [-60, 12],
             },
           },
         ]}
@@ -166,28 +171,28 @@ export const Tutor = () => {
           <Grow {...TransitionProps} timeout={350}>
             <Paper
               className={`tutor-paper ${
-                tutorStep > prevStep ? "slide-right" : "slide-left"
+                tutorStepSim > prevStepSim ? "slide-right" : "slide-left"
               }`}
               role="dialog"
               aria-labelledby="tutor-step-title"
             >
               <div className="tutor-arrow" />
               <Typography id="tutor-step-title" className="tutor-title">
-                {tutorSteps[tutorStep].title}
+               {tutorStepsSim[tutorStepSim]?.title}
               </Typography>
 
               <p className="tutor-content">
                 {renderHighlightedText(
-                  tutorSteps[tutorStep].content,
-                  isTutorOpen && !isInstructionOpen,
+                  tutorStepsSim[tutorStepSim]?.content,
+                  isTutorOpenSim,
                 )}
               </p>
               <div className="tutor-actions">
                 <Button
                   size="small"
                   onClick={() => {
-                    setIsTutorOpen(false);
-                    setTutorStep(0);
+                    setIsTutorOpenSim(false);
+                    setTutorStepSim(0);
                     stop();
                   }}
                   sx={{
@@ -199,10 +204,10 @@ export const Tutor = () => {
                   Exit
                 </Button>
                 <Box sx={{ flexGrow: 1 }} />
-                {tutorStep > 0 && (
+                {tutorStepSim > 0 && (
                   <Button
                     size="small"
-                    onClick={handleTutorBack}
+                    onClick={handleTutorBackSim}
                     variant="outlined"
                   >
                     Back
@@ -211,10 +216,10 @@ export const Tutor = () => {
                 <Button
                   variant="contained"
                   size="small"
-                  onClick={handleTutorNext}
+                  onClick={handleTutorNextSim}
                   sx={{ backgroundColor: "#1D2A6D" }}
                 >
-                  {tutorStep === tutorSteps.length - 1 ? "Finish" : "Next"}
+                  {tutorStepSim === tutorStepsSim.length - 1 ? "Finish" : "Next"}
                 </Button>
               </div>
             </Paper>
@@ -225,4 +230,4 @@ export const Tutor = () => {
   );
 };
 
-export default Tutor;
+export default TutorSim;

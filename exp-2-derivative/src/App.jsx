@@ -7,7 +7,8 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-import { CommonContextProvider } from "./components/context/CommonContext";
+import { HomeContextProvider } from "./components/context/HomeContext";
+import { SimContextProvider } from "./components/context/SimContext";
 
 import DerivativePage from "./components/derivative/DerivativePage";
 
@@ -35,9 +36,11 @@ function App() {
 
   return (
     <OpenCvProvider>
-      <CommonContextProvider>
-        <RouterProvider router={router} />
-      </CommonContextProvider>
+      <HomeContextProvider>
+        <SimContextProvider>
+          <RouterProvider router={router} />
+        </SimContextProvider>
+      </HomeContextProvider>
     </OpenCvProvider>
   );
 }

@@ -21,7 +21,7 @@ import Tab from "@mui/material/Tab";
 import Grow from "@mui/material/Grow";
 
 import { useContext, useEffect, useRef, useState } from "react";
-import { CommonContext } from "../context/CommonContext";
+import { HomeContext } from "../context/HomeContext";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
@@ -70,7 +70,11 @@ export default function DerivativePage() {
     currentSentenceIndex,
     instructionsList,
     closeInstructions,
-  } = useContext(CommonContext);
+    setIsTutorOpen,
+    setTutorStep,
+    setShowWelcome,
+    
+  } = useContext(HomeContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
@@ -200,104 +204,104 @@ export default function DerivativePage() {
 
   // Tutor steps
   useEffect(() => {
-  setTutorSteps([
-    {
-      title: "Welcome",
-      content:
-        "Welcome to the Derivative-Based Edge Detection simulation. In this experiment, you will explore how first and second order derivatives help detect edges in digital images. Click Next to begin the guided walkthrough.",
-      targetId: "guided-tutor-btn",
-      placement: "bottom",
-    },
-    {
-      title: "Read Instructions",
-      content:
-        "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
-      targetId: "instruction-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Sound Mute or Unmute",
-      content:
-        "Use this button to play or pause the guided audio explanation at any time during the experiment.",
-      targetId: "sound-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Select Image",
-      content:
-        "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing.",
-      targetId: "image-selection-zone",
-      placement: "right-start",
-      offset: [-70, 12],
-    },
-    {
-      title: "Upload Image",
-      content:
-        "Alternatively, you may upload your own image to analyze custom edge patterns and observe derivative behavior.",
-      targetId: "upload-btn-zone",
-      placement: "right-start",
-      offset: [-35, 22],
-    },
-    {
-      title: "Choose Order of Derivative",
-      content:
-        "Select the order of derivative to apply. First Order detects edges using intensity gradients, while Second Order detects edges using Laplacian-based zero-crossings.",
-      targetId: "derivative-order-zone",
-      placement: "right",
-      offset: [0, 12],
-    },
-    {
-      title:
-        derivativeMethod === "First Order"
-          ? "First Order – Gradient Based Detection"
-          : "Second Order – Laplacian Based Detection",
-      content:
-        derivativeMethod === "First Order"
-          ? "Choose a gradient filter such as Sobel, Prewitt, or Scharr. These operators compute intensity changes in horizontal and vertical directions."
-          : "Select the kernel size for the Laplacian operator. Larger kernels provide smoother results but may reduce edge sharpness.",
-      targetId:
-        derivativeMethod === "First Order"
-          ? "filter-type-zone"
-          : "kernel-size-zone",
-      placement: "right",
-      offset: [0, 12],
-    },
-    {
-      title: "Processing",
-      content:
-        "Click the Process button to convert the image into grayscale and apply the selected derivative operator for edge detection.",
-      targetId: "process-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Observe Output",
-      content:
-        "Observe the resulting edge-detected image. Brighter pixels represent stronger intensity changes, indicating sharper edges.",
-      targetId: "output-image-zone",
-      placement: "top",
-      offset: [0, 12],
-    },
-    {
-      title: "Print Results",
-      content:
-        "Click the Print button if you wish to save or document your experimental results for further analysis.",
-      targetId: "print-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Final Step",
-      content:
-        "You have successfully completed the experiment. Click the Concept button to understand the mathematical formulation of gradient operators and Laplacian masks in detail.",
-      targetId: "concept-button",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-  ]);
-}, [derivativeMethod, setTutorSteps]);
+    setTutorSteps([
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Derivative-Based Edge Detection simulation. In this experiment, you will explore how first and second order derivatives help detect edges in digital images. Click Next to begin the guided walkthrough.",
+        targetId: "guided-tutor-btn",
+        placement: "bottom",
+      },
+      {
+        title: "Read Instructions",
+        content:
+          "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Mute or Unmute",
+        content:
+          "Use this button to play or pause the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content:
+          "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content:
+          "Alternatively, you may upload your own image to analyze custom edge patterns and observe derivative behavior.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+      {
+        title: "Choose Order of Derivative",
+        content:
+          "Select the order of derivative to apply. First Order detects edges using intensity gradients, while Second Order detects edges using Laplacian-based zero-crossings.",
+        targetId: "derivative-order-zone",
+        placement: "right",
+        offset: [0, 12],
+      },
+      {
+        title:
+          derivativeMethod === "First Order"
+            ? "First Order – Gradient Based Detection"
+            : "Second Order – Laplacian Based Detection",
+        content:
+          derivativeMethod === "First Order"
+            ? "Choose a gradient filter such as Sobel, Prewitt, or Scharr. These operators compute intensity changes in horizontal and vertical directions."
+            : "Select the kernel size for the Laplacian operator. Larger kernels provide smoother results but may reduce edge sharpness.",
+        targetId:
+          derivativeMethod === "First Order"
+            ? "filter-type-zone"
+            : "kernel-size-zone",
+        placement: "right",
+        offset: [0, 12],
+      },
+      {
+        title: "Processing",
+        content:
+          "Click the Process button to convert the image into grayscale and apply the selected derivative operator for edge detection.",
+        targetId: "process-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Observe Output",
+        content:
+          "Observe the resulting edge-detected image. Brighter pixels represent stronger intensity changes, indicating sharper edges.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+      {
+        title: "Print Results",
+        content:
+          "Click the Print button if you wish to save or document your experimental results for further analysis.",
+        targetId: "print-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Final Step",
+        content:
+          "You have successfully completed the experiment. Click the Concept button to understand the mathematical formulation of gradient operators and Laplacian masks in detail.",
+        targetId: "concept-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    ]);
+  }, [derivativeMethod, setTutorSteps]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -305,7 +309,7 @@ export default function DerivativePage() {
         " Step 1: Select an image from the available options or upload one using the Upload File button.",
         " Step 2: Choose the desired order of the derivative.",
         " Step 3: If First Order is selected, choose the filter you want to apply.",
-        " Step 4: Otherwise, select the kernel size to apply.", 
+        " Step 4: Otherwise, select the kernel size to apply.",
         " Step 5: Click the Process button to continue.",
         " Step 6: Click the Print button to print the result.",
         " Step 7: Click the Concept button to get a detailed explanation.",
@@ -313,20 +317,20 @@ export default function DerivativePage() {
     });
   }, [setInstructionsList]);
   const boldKeywords = [
-  "Upload File",
-  "Process",
-  "Print",
-  "Concept",
-  "First Order",
-  "Step",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7"
-];
+    "Upload File",
+    "Process",
+    "Print",
+    "Concept",
+    "First Order",
+    "Step",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+  ];
 
   // rest of the code
   const instr = () => {
@@ -335,6 +339,10 @@ export default function DerivativePage() {
 
   const exp = () => {
     setOpenExplanationModal(true);
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    stop();
   };
 
   const handleImageChange = (event) => {
@@ -458,8 +466,6 @@ export default function DerivativePage() {
               Instructions – Derivative Based Segmentation
             </DialogTitle>
             <DialogContent style={{ paddingTop: "10px" }}>
-              
-
               <ul style={{ lineHeight: "1.8" }}>
                 {instructionsList[0]?.map((step, index) => {
                   // Find if this step contains the currently spoken sentence
@@ -476,21 +482,24 @@ export default function DerivativePage() {
                   return (
                     <li
                       key={index}
-                      className={isCurrentStepSpeaking ? "highlight-sentence" : ""}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
                       style={{
                         transition: "background-color 0.3s ease",
                         borderRadius: "4px",
                         padding: "2px 4px",
                       }}
                     >
-                      {step.split(new RegExp(`(${boldKeywords.join("|")})`, "g")).map(
-  (part, i) =>
-    boldKeywords.includes(part) ? (
-      <strong key={i}>{part}</strong>
-    ) : (
-      part
-    )
-)}
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
                     </li>
                   );
                 })}
@@ -498,7 +507,15 @@ export default function DerivativePage() {
             </DialogContent>
 
             <DialogActions>
-              <Button style={{ borderRadius: "20px", backgroundColor: "#082c98ff", color: "#fff" }} onClick={closeInstructions} color="primary">
+              <Button
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#082c98ff",
+                  color: "#fff",
+                }}
+                onClick={closeInstructions}
+                color="primary"
+              >
                 Close
               </Button>
             </DialogActions>
@@ -1058,7 +1075,7 @@ export default function DerivativePage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle id="instructions-dialog-title">
+                  {/* <DialogTitle id="instructions-dialog-title">
                     <div
                       style={{
                         width: "50%",
@@ -1071,10 +1088,29 @@ export default function DerivativePage() {
                     <div
                       style={{
                         width: "50%",
-                        justifyContent: "flex-end",
+
                         display: "flex",
+                        justifyContent: "flex-end",
+                        alignItems: "center",
                       }}
                     >
+                      <Button
+                        id="guided-tutor-btn"
+                        ref={tutorBtnRef}
+                        style={{
+                          color: "#1D2A6D",
+                          backgroundColor: "#FFD700",
+                          fontWeight: "bold",
+                          margin: "auto auto",
+                          marginLeft: "10px",
+                          borderRadius: "20px",
+                          padding: "5px 15px",
+                          height: "40px",
+                        }}
+                        onClick={startTutor}
+                      >
+                        Guided Tutor
+                      </Button>
                       <Button
                         onClick={handleClose2Modal}
                         color="primary"
@@ -1083,13 +1119,15 @@ export default function DerivativePage() {
                         Close
                       </Button>
                     </div>
-                  </DialogTitle>
+                  </DialogTitle> */}
 
                   <DialogContent
                     sx={{ padding: "0px", height: "1200px", overflow: "clip" }}
                   >
                     {/* {EdgeExplanation()} */}
-                    {openExplanationModal && <EdgeExplanation />}
+                    {openExplanationModal && (
+                      <EdgeExplanation handleClose2Modal={handleClose2Modal} />
+                    )}
                   </DialogContent>
                 </Dialog>
                 {/* tutor modal */}

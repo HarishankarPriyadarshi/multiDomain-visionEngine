@@ -564,7 +564,7 @@ h4 {
     left: 100%;
   }
 }
-
+/* 
 #instructions-dialog-title {
   background-color: #1d2a6d;
   color: #fff5ee;
@@ -572,7 +572,7 @@ h4 {
   padding: 10px;
   font-size: 1.4rem;
   font-weight: bold;
-}
+} */
 
 [role="tabpanel"] > div {
   padding: 0px;

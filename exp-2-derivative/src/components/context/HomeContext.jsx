@@ -1,9 +1,9 @@
 import { createContext, useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useSpeechController } from "../features/speech/useSpeechController";
-export const CommonContext = createContext(null);
+export const HomeContext = createContext(null);
 
-export const CommonContextProvider = ({ children }) => {
+export const HomeContextProvider = ({ children }) => {
   // Guided Tutor State
   const isMobile = useMediaQuery("(max-width:600px)");
   const [tutorSteps, setTutorSteps] = useState([]); //Tutor steps list
@@ -16,9 +16,17 @@ export const CommonContextProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
   const tutorBtnRef = useRef(null);
-
   const previousSpeechKeyRef = useRef("");
   const previousPlayStateRef = useRef(true);
+  // Sim State
+  const [tutorStepsSim, setTutorStepsSim] = useState([]); //Tutor steps list
+  const [tutorStepSim, setTutorStepSim] = useState(0);
+  const [isSimPlaying, setIsSimPlaying] = useState(false);
+  const [prevStepSim, setPrevStepSim] = useState(0);
+  const [isTutorOpenSim, setIsTutorOpenSim] = useState(false);
+  const tutorBtnRefSim = useRef(null);
+  const [showWelcomeSim, setShowWelcomeSim] = useState(false);
+
   const {
     speak,
     pause,
@@ -37,6 +45,13 @@ export const CommonContextProvider = ({ children }) => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
+  // Show welcome modal on initial load for sim
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWelcomeSim(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleTutorNext = () => {
     if (tutorStep < tutorSteps.length - 1) {
@@ -48,16 +63,38 @@ export const CommonContextProvider = ({ children }) => {
       stop(); // Clear speech when tutor finished
     }
   };
+  const handleTutorNextSim = () => {
+    console.log("length", tutorStepsSim.length);
+    if (tutorStepSim < tutorStepsSim.length - 1) {
+      setPrevStepSim(tutorStepSim);
+      setTutorStepSim(tutorStepSim + 1);
+    } else {
+      setIsTutorOpenSim(false);
+      setTutorStepSim(0);
+      stop(); // Clear speech when tutor finished
+    }
+  };
 
   const handleTutorBack = () => {
     if (tutorStep > 0) {
       setTutorStep(tutorStep - 1);
     }
   };
+  const handleTutorBackSim = () => {
+    if (tutorStepSim > 0) {
+      setTutorStepSim(tutorStepSim - 1);
+    }
+  };
 
   const startTutor = () => {
     setTutorStep(0);
     setIsTutorOpen(true);
+  
+  };
+  const startTutorSim = () => {
+    console.log("tutorStepsSim", tutorStepsSim, tutorStepSim,);
+    setTutorStepSim(0);
+    setIsTutorOpenSim(true);
   };
 
   const closeInstructions = () => {
@@ -65,6 +102,7 @@ export const CommonContextProvider = ({ children }) => {
     stop();
   };
   const currentStep = tutorSteps[tutorStep];
+  const currentStepSim = tutorStepsSim[tutorStepSim];
 
   const computedStep = isMobile
     ? {
@@ -128,6 +166,24 @@ export const CommonContextProvider = ({ children }) => {
     setIsPlaying(true);
     speak(activeSpeechText);
   };
+  const handleSpeechToggleSim = () => {
+    if (!activeSpeechText) {
+      return;
+    }
+
+    if (isSpeaking && !isPaused) {
+      setIsPlaying(false);
+      return;
+    }
+
+    if (isPaused) {
+      setIsPlaying(true);
+      return;
+    }
+
+    setIsPlaying(true);
+    speak(activeSpeechText);
+  };
 
   useEffect(() => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {
@@ -157,7 +213,7 @@ export const CommonContextProvider = ({ children }) => {
   }, [isPaused, isPlaying, pause, resume]);
 
   return (
-    <CommonContext.Provider
+    <HomeContext.Provider
       value={{
         isMobile,
         isImageProcessed,
@@ -168,7 +224,6 @@ export const CommonContextProvider = ({ children }) => {
         setInstructionsList,
         tutorSteps,
         setTutorSteps,
-
         tutorStep,
         setTutorStep,
         startTutor,
@@ -197,9 +252,29 @@ export const CommonContextProvider = ({ children }) => {
         closeInstructions,
         previousSpeechKeyRef,
         previousPlayStateRef,
+
+        // Sim State
+        tutorStepsSim,
+        setTutorStepsSim,
+
+        handleSpeechToggleSim,
+        tutorBtnRefSim,
+        isSimPlaying,
+        setIsSimPlaying,
+        prevStepSim,
+        setPrevStepSim,
+        isTutorOpenSim,
+        setIsTutorOpenSim,
+        showWelcomeSim,
+        setShowWelcomeSim,
+        startTutorSim,
+        handleTutorNextSim,
+        handleTutorBackSim,
+        currentStepSim,
+
       }}
     >
       {children}
-    </CommonContext.Provider>
+    </HomeContext.Provider>
   );
 };
