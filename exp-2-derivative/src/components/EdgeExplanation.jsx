@@ -68,6 +68,8 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     setTutorStepsSim,
     isSimPlaying,
     setIsSimPlaying,
+    resetTutorSim,
+    
   } = useContext(SimContext);
 
   useEffect(() => {
@@ -645,7 +647,11 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 />
               </Button>
               <Button
-                onClick={() => handleClose2Modal()}
+                onClick={()=>{
+                  resetTutorSim();
+                  handleClose2Modal();
+                  
+                }}
                 color="primary"
                 style={{ backgroundColor: "beige", marginRight: "10px" }}
               >

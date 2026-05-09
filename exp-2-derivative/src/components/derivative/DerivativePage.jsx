@@ -74,6 +74,7 @@ export default function DerivativePage() {
     setIsTutorOpen,
     setTutorStep,
     setShowWelcome,
+    stop,
     
   } = useContext(HomeContext);
   const myProcess1Button = useRef(null);
@@ -224,7 +225,7 @@ export default function DerivativePage() {
       {
         title: "Sound Mute or Unmute",
         content:
-          "Use this button to play or pause the guided audio explanation at any time during the experiment.",
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
         targetId: "sound-btn",
         placement: "bottom",
         offset: [-60, 12],
@@ -294,9 +295,9 @@ export default function DerivativePage() {
         offset: [-60, 12],
       },
       {
-        title: "Final Step",
+        title: "Proceed to Concept – Perform Derivative Convolution",
         content:
-          "You have successfully completed the experiment. Click the Concept button to understand the mathematical formulation of gradient operators and Laplacian masks in detail.",
+          "To continue the experiment and perform derivative-based convolution step-by-step, you must click the Concept button. This section explains the mathematical formulation of gradient operators and Laplacian masks before starting the detailed convolution process.",
         targetId: "concept-button",
         placement: "bottom",
         offset: [-60, 12],
@@ -385,6 +386,13 @@ export default function DerivativePage() {
 
   const handleClose2Modal = () => {
     setOpenExplanationModal(false);
+      // Reset tutor state
+  setIsTutorOpen(false);
+  setTutorStep(0);
+  setShowWelcome(false);
+
+  // Stop speech completely
+  stop();
   };
 
   return (

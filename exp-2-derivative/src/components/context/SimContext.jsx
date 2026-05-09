@@ -62,6 +62,11 @@ export const SimContextProvider = ({ children }) => {
       setTutorStepSim(tutorStepSim - 1);
     }
   };
+  const resetTutorSim = () => {
+  setTutorStepSim(0);
+  setIsTutorOpenSim(false);
+  stop();
+};
 
   const currentStepSim = tutorStepsSim[tutorStepSim];
 
@@ -109,7 +114,7 @@ export const SimContextProvider = ({ children }) => {
       previousSpeechKeyRef.current = activeSpeechKey;
     }
 
-    if (!activeSpeechText || !isSimPlaying || isPaused) {
+    if (!activeSpeechText || (!isTutorOpenSim && !isSimPlaying)  || isPaused) {
       return;
     }
 
@@ -162,6 +167,8 @@ export const SimContextProvider = ({ children }) => {
         currentStepSim,
         computedStepSim,
         tutorStepSim,
+        setTutorStepSim,
+        resetTutorSim,
       }}
     >
       {children}
