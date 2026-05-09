@@ -148,7 +148,7 @@ export const SimContextProvider = ({ children }) => {
         isSpeaking,
         isPaused,
 
-        // Sim State
+        // Simulation State
         tutorStepsSim,
         setTutorStepsSim,
         handleSpeechToggleSim,
