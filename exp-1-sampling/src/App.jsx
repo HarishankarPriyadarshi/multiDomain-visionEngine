@@ -12,6 +12,7 @@ import Sampling from "./components/Sampling";
 // import Region from "./components/Region";
 
 import ErrorPage from "./components/ErrorPage";
+import { HomeContextProvider } from "./components/context/HomeContext";
 
 function App() {
   const router = createBrowserRouter([
@@ -20,58 +21,15 @@ function App() {
       element: <Sampling />,
         errorElement: <ErrorPage />,  
     },
-    // {
-    //   path: "/sampling",
-    //   element: <Sampling />,
-    // },
-    // {
-    //   path: "/edge/derivative",
-    //   element: <DerivativePage />,
-      
-    // },
-    // {
-    //   path: "/edge/canny",
-    //   element: <CannyPage />,
-    // },
-    // {
-    //   path: "/edge/morphological",
-    //   element: <MorphologyPage />,
-    // },
-    // {
-    //   path: "/region/growing",
-    //   element: <GrowingPage />,
-    // },
-    // {
-    //   path: "/region/splittingAndMerging",
-    //   element: <SplittingAndMergingPage />,
-    // },
-    // {
-    //   path: "/region/watershed",
-    //   element: <WatershedPage />,
-    // },
-    // {
-    //   path: "/compression/runlength",
-    //   element: <RunLengthPage />,
-    // },
-    // {
-    //   path: "/compression/huffman",
-    //   element: <HuffmanPage />,
-    // },
-    // {
-    //   path: "/compression/sinecosine",
-    //   element: <SineCosinePage />,
-    // },
-    // {
-    //   path: "/compression/jpeg",
-    //   element: <JpegPage />,
-    // },
-    
+
     
   ]);
 
   return (
     <OpenCvProvider>
-      <RouterProvider router={router} />
+      <HomeContextProvider>
+        <RouterProvider router={router} />
+      </HomeContextProvider>
     </OpenCvProvider>
   );
 }

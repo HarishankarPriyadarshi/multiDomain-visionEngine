@@ -652,10 +652,15 @@ ol {
 }
 
 #instruction-btn {
-  border-radius: 10px;
+  background-color: #fdfdfd;
+  color: #1d2a6d !important;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 20px;
   border: 2px solid #e7e7e7;
   padding: 5px 10px;
   height: 40px;
+  min-width: 120px;
   margin: auto auto;
 }
 /* process message container */

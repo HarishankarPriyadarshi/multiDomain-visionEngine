@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 
 import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
@@ -26,6 +26,8 @@ import sample4 from "../assets/images/sample4.jpg";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
+import { HomeContext } from "./context/HomeContext";
+import Tutor from "./features/tutor/Tutor";
 
 //returns a tab panel
 function TabPanel(props) {
@@ -45,9 +47,161 @@ function TabPanel(props) {
 }
 
 export default function Sampling() {
+  const {
+    isMobile,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
+    isSpeaking,
+    isPaused,
+    sentences,
+    currentSentenceIndex,
+    instructionsList,
+    closeInstructions,
+
+    setTutorStep,
+
+    stop,
+    setIsImageProcessed: setTutorImageProcessed,
+  } = useContext(HomeContext);
+
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
   const [isImageProcessed, setIsImageProcessed] = useState([0, 0]);
+
+  useEffect(() => {
+    setTutorImageProcessed(isImageProcessed);
+  }, [isImageProcessed, setTutorImageProcessed]);
+
+  //tutor steps
+  const samplingTutorSteps = [
+    {
+      title: "Image Selection",
+      content:
+        "Start by selecting an image from the grid. This image will be used for the sampling experiment.",
+      targetId: "sampling-image-selection",
+      placement: "right",
+    },
+    {
+      title: "Scale Factor",
+      content:
+        "Adjust the scale factor to control the sampling density. A lower value reduces resolution.",
+      targetId: "sampling-scale-slider",
+      placement: "bottom",
+    },
+    {
+      title: "Sampling Method",
+      content:
+        "Choose the interpolation method for sampling: Nearest, Linear, or Cubic.",
+      targetId: "sampling-method-select",
+      placement: "bottom",
+    },
+    {
+      title: "Process Image",
+      content: "Click the Process button to apply the sampling operation.",
+      targetId: "sampling-process-btn",
+      placement: "bottom",
+    },
+    {
+      title: "Result",
+      content:
+        "Observe the output image. You can see how different sampling methods and factors affect the quality.",
+      targetId: "sampling-output-box",
+      placement: "left",
+    },
+    {
+      title: "Experiment Completed",
+      content: "You have successfully completed the sampling tutorial.",
+      targetId: "mainbox",
+      placement: "center",
+    },
+  ];
+
+  const quantizationTutorSteps = [
+    {
+      title: "Image Selection",
+      content: "Select an image from the grid for the quantization experiment.",
+      targetId: "quantization-image-selection",
+      placement: "right",
+    },
+    {
+      title: "Bit Depth",
+      content:
+        "Select the number of bits for quantization. Fewer bits result in more visible gray-level steps (contouring).",
+      targetId: "quantization-bit-select",
+      placement: "bottom",
+    },
+    {
+      title: "Process Image",
+      content: "Click the Process button to apply quantization.",
+      targetId: "quantization-process-btn",
+      placement: "bottom",
+    },
+    {
+      title: "Result",
+      content:
+        "Observe the quantized output image. Notice the effect of bit depth reduction.",
+      targetId: "quantization-output-box",
+      placement: "left",
+    },
+    {
+      title: "Experiment Completed",
+      content: "You have successfully completed the quantization tutorial.",
+      targetId: "mainbox",
+      placement: "center",
+    },
+  ];
+
+  useEffect(() => {
+    stop();
+    setTutorStep(0);
+    if (tabValue === 0) {
+      setTutorSteps(samplingTutorSteps);
+    } else {
+      setTutorSteps(quantizationTutorSteps);
+    }
+  }, [setTutorSteps, setTutorStep, stop]);
+
+  // Instructions list
+  useEffect(() => {
+    setInstructionsList({
+      0: [
+        " Step 1: Select an image from the available options or upload one using the Upload File button.",
+        " Step 2: Set the scale factor.",
+        " Step 3: Select the sampling method.",
+        " Step 4: Click the Process button to continue.",
+        " Step 5: Click the Print button to print the result.",
+      ],
+      1: [
+        " Step 1: Select an image from the available options or upload one using the Upload File button.",
+        " Step 2: Select the quantization mode.",
+        " Step 3: Click the Process button to continue.",
+        " Step 4: Click the Print button to print the result.",
+      ],
+    });
+  }, [setInstructionsList]);
+  const boldKeywords = [
+    "Upload File",
+    "Process",
+    "Print",
+
+    "Step",
+    "scale factor",
+    "sampling method",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+  ];
+
+  //rest code
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyE = (msg) => {
@@ -156,8 +310,6 @@ export default function Sampling() {
   //sets variable which defines which tab is active
   const [tabValue, setTabValue] = useState(0);
   const [bitValue, setBitVale] = useState("8");
-
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false); // State for opening/closing the drawer
   const [uploadedImageName, setUploadedImageName] = useState(null);
 
@@ -172,11 +324,11 @@ export default function Sampling() {
   };
 
   const instr = () => {
-    setOpenInstructionsModal(true);
+    setIsInstructionOpen(true);
   };
 
   const handleCloseModal = () => {
-    setOpenInstructionsModal(false); // Close the modal
+    setIsInstructionOpen(false); // Close the modal
   };
 
   const initialImages = [sample1, sample2, sample3, sample4];
@@ -208,125 +360,9 @@ export default function Sampling() {
   };
 
   const handleImageClick = (index) => {
-    console.log("clickeddd");
+    // console.log("clickeddd");
     setSelectedImage(index);
     setImageName(`Sample ${index + 1}`);
-  };
-
-  const voicePause = useRef(null);
-  const voicePlay = useRef(null);
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
-
-  useEffect(() => {
-    speechSynthesis.cancel(); // Cancel any speech on reload
-  }, []);
-
-  const instructionsList = {
-    0: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Set the scale factor.",
-      "Select the sampling method.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-    ],
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Select the quantization mode.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-    ],
-  };
-
-  const getInstructionsText = () => {
-    const steps = instructionsList[indexTabValue];
-    return steps ? steps.join("\n") : "No instructions available.";
-  };
-
-  const getInstructions = () => {
-    const steps = instructionsList[indexTabValue];
-    if (!steps) return <p>No instructions available.</p>;
-
-    const normalSteps = [];
-    const notes = [];
-
-    steps.forEach((step) => {
-      if (step.trim().startsWith("Note:")) {
-        const noteHtml = step
-          .replace(/(Concept)/g, "<b>$1</b>")
-          .replace(/^Note:/, '<b style="color:blue">Note:</b>');
-        notes.push(noteHtml);
-      } else {
-        const stepHtml = step.replace(
-          /(Upload File|Process|Print)/g,
-          "<b>$1</b>",
-        );
-        normalSteps.push(stepHtml);
-      }
-    });
-
-    return (
-      <div>
-        <ol>
-          {normalSteps.map((html, idx) => (
-            <li key={idx} dangerouslySetInnerHTML={{ __html: html }} />
-          ))}
-        </ol>
-        {notes.map((note, idx) => (
-          <p key={`note-${idx}`} dangerouslySetInnerHTML={{ __html: note }} />
-        ))}
-      </div>
-    );
-  };
-
-  const speak = () => {
-    if (speechSynthesis.paused) {
-      speechSynthesis.resume();
-      if (voicePlay.current.style.display == "block") {
-        voicePlay.current.style.display = "none";
-        voicePause.current.style.display = "block";
-      }
-      setIsSpeaking(true);
-      return;
-    }
-
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause();
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      return;
-    }
-
-    // Clean up any lingering speech
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(getInstructionsText());
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices.find(
-      (voice) => voice.name === "Microsoft Ravi - English (India)",
-    );
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      utteranceRef.current = null;
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-    if (voicePause.current.style.display == "none") {
-      voicePlay.current.style.display = "none";
-      voicePause.current.style.display = "block";
-    }
   };
 
   return (
@@ -405,21 +441,15 @@ export default function Sampling() {
           </Box>
 
           <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={voice}
+                src={isSpeaking && !isPaused ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                onClick={speak}
-              />
-            </Button>
-
-            <Button ref={voicePause} title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                onClick={speak}
               />
             </Button>
 
@@ -430,10 +460,94 @@ export default function Sampling() {
             >
               Instructions
             </Button>
+
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+
+                margin: "auto auto",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+                height: "40px",
+              }}
+              onClick={startTutor}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
+            </Button>
           </div>
 
           {/* Instructions Modal */}
           <Dialog
+            open={isInstructionOpen}
+            onClose={closeInstructions}
+            aria-labelledby="instructions-dialog-title"
+            aria-describedby="instructions-dialog-description"
+            style={{ height: "80%" }}
+          >
+            <DialogTitle id="instructions-dialog-title">
+              Instructions – Derivative Based Segmentation
+            </DialogTitle>
+            <DialogContent style={{ paddingTop: "10px" }}>
+              <ul style={{ lineHeight: "1.8", listStyleType: "none" }}>
+                {instructionsList[0]?.map((step, index) => {
+                  // Find if this step contains the currently spoken sentence
+                  // This is a bit tricky because useSpeechController splits by sentences
+                  // but each step in instructionsList might be one or more sentences.
+                  // For simplicity, we'll check if the current sentence is part of this step.
+                  const isCurrentStepSpeaking =
+                    isSpeaking &&
+                    !isPaused &&
+                    isInstructionOpen &&
+                    sentences[currentSentenceIndex] &&
+                    step.includes(sentences[currentSentenceIndex]);
+
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
+                      style={{
+                        transition: "background-color 0.3s ease",
+                        borderRadius: "4px",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </DialogContent>
+
+            <DialogActions>
+              <Button
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#082c98ff",
+                  color: "#fff",
+                }}
+                onClick={closeInstructions}
+                color="primary"
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+          {/* <Dialog
             open={openInstructionsModal}
             onClose={handleCloseModal}
             aria-labelledby="instructions-dialog-title"
@@ -454,7 +568,7 @@ export default function Sampling() {
                 Close
               </Button>
             </DialogActions>
-          </Dialog>
+          </Dialog> */}
         </div>
 
         <div id="mainbox">
@@ -535,6 +649,7 @@ export default function Sampling() {
                           Choose an Image
                         </h4>
                         <div
+                          id="sampling-image-selection"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -654,6 +769,7 @@ export default function Sampling() {
                         <span style={{ color: "#FF2929" }}>{scaleFactor}</span>
                       </h4>
                       <Slider
+                        id="sampling-scale-slider"
                         sx={{ color: "#1D2A6D" }}
                         value={scaleFactor}
                         min={0}
@@ -676,6 +792,7 @@ export default function Sampling() {
                         </span>
                       </h4>
                       <Select
+                        id="sampling-method-select"
                         value={samplingMethod}
                         sx={{
                           color: "#1D2A6D",
@@ -705,6 +822,7 @@ export default function Sampling() {
                         }}
                       >
                         <Button
+                          id="sampling-process-btn"
                           ref={myProcess1Button}
                           class="tool_btn"
                           onClick={processImage}
@@ -816,6 +934,7 @@ export default function Sampling() {
                       </Box>
                     </Box>
                     <Box
+                      id="sampling-output-box"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -992,6 +1111,7 @@ export default function Sampling() {
                           Choose an Image
                         </h4>
                         <div
+                          id="quantization-image-selection"
                           className="image-grid "
                           sx={{
                             width: "100%",
@@ -1105,6 +1225,7 @@ export default function Sampling() {
                         <span style={{ color: "#FF2929" }}>{bitValue} Bit</span>
                       </h4>
                       <Select
+                        id="quantization-bit-select"
                         value={bitValue}
                         onChange={(e) => setBitVale(e.target.value)}
                         sx={{
@@ -1133,6 +1254,7 @@ export default function Sampling() {
                         }}
                       >
                         <Button
+                          id="quantization-process-btn"
                           class="tool_btn"
                           ref={myProcess2Button}
                           onClick={quantize}
@@ -1245,6 +1367,7 @@ export default function Sampling() {
                       </Box>
                     </Box>
                     <Box
+                      id="quantization-output-box"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -1349,6 +1472,7 @@ export default function Sampling() {
             </div>
           </TabPanel>
         </div>
+        <Tutor />
       </div>
     </OpenCvProvider>
   );
