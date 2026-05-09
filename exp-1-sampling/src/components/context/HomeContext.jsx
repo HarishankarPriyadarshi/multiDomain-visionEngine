@@ -37,7 +37,6 @@ export const HomeContextProvider = ({ children }) => {
     }, 100);
     return () => clearTimeout(timer);
   }, []);
-  
 
   const handleTutorNext = () => {
     if (tutorStep < tutorSteps.length - 1) {
@@ -76,14 +75,18 @@ export const HomeContextProvider = ({ children }) => {
     : currentStep;
 
   // Auto-advance tutor for processing
-  useEffect(() => {
-    if (isTutorOpen && tutorStep === 4 && isImageProcessed[0]) {
-      handleTutorNext();
-    }
-    if (isTutorOpen && tutorStep === 3 && isImageProcessed[1]) {
-      handleTutorNext();
-    }
-  }, [handleTutorNext, isImageProcessed, isTutorOpen, tutorStep]);
+useEffect(() => {
+  if (!isTutorOpen) return;
+
+  if (isImageProcessed[0] && tutorStep === 7) {
+    handleTutorNext();
+  }
+
+  if (isImageProcessed[1] && tutorStep === 6) {
+    handleTutorNext();
+  }
+
+}, [isImageProcessed]);  // ❗ remove tutorStep from dependency
 
   // Read instructions aloud once when reaching the instruction button step
   const hasReadInstructionsRef = useRef(false);
@@ -132,7 +135,6 @@ export const HomeContextProvider = ({ children }) => {
     setIsPlaying(true);
     speak(activeSpeechText);
   };
-
 
   useEffect(() => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {

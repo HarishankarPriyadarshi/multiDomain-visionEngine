@@ -72,6 +72,10 @@ export default function Sampling() {
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
   const [isImageProcessed, setIsImageProcessed] = useState([0, 0]);
+  const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
+    useState(false);
+     //sets variable which defines which tab is active
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     setTutorImageProcessed(isImageProcessed);
@@ -80,11 +84,40 @@ export default function Sampling() {
   //tutor steps
   const samplingTutorSteps = [
     {
+      title: "Welcome to Sampling",
+      content:"In this experiment, you will study how image resolution changes when the sampling rate is modified. By adjusting the scale factor and choosing different interpolation methods such as Nearest, Linear, and Cubic, you will observe how pixel spacing affects image sharpness and detail preservation. Click Next to begin the sampling experiment.",
+ targetId: "guided-tutor-btn",
+      placement: "bottom",
+    },
+    {
+      title: "Read Instructions",
+      content:
+        "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+      targetId: "instruction-btn",
+      placement: "bottom",
+      offset: [-60, 12],
+    },
+    {
+      title: "Sound Mute or Unmute",
+      content:
+        "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+      targetId: "sound-btn",
+      placement: "bottom",
+      offset: [-60, 12],
+    },
+    {
       title: "Image Selection",
       content:
         "Start by selecting an image from the grid. This image will be used for the sampling experiment.",
       targetId: "sampling-image-selection",
       placement: "right",
+    },
+    {
+      title: "Upload Image",
+      content:
+        "Alternatively, you may upload your own image to analyze sampling effects.",
+      targetId: "upload-btn-zone",
+      placement: "right-start",
     },
     {
       title: "Scale Factor",
@@ -111,22 +144,60 @@ export default function Sampling() {
       content:
         "Observe the output image. You can see how different sampling methods and factors affect the quality.",
       targetId: "sampling-output-box",
-      placement: "left",
+      placement: "top",
     },
     {
-      title: "Experiment Completed",
-      content: "You have successfully completed the sampling tutorial.",
-      targetId: "mainbox",
-      placement: "center",
+      title: "Print Results",
+      content:
+        "Click the Print button if you wish to save or document your experimental results for further analysis.",
+      targetId: "print-button-zone",
+      placement: "bottom",
+    },
+    {
+      title: "Simulation Completed",
+      content:
+        "Congratulations!  You have successfully completed the sampling simulation.",
+      targetId: "print-button-zone",
+      placement: "right",
     },
   ];
 
   const quantizationTutorSteps = [
     {
+      title: "Welcome to Quantization",
+      content:
+        "In this experiment, you will analyze how reducing the number of intensity levels affects image quality. By changing the bit depth or quantization levels, you will observe the appearance of banding effects and loss of smooth gradients. This helps you understand how amplitude discretization impacts digital image representation. Click Next to begin the quantization experiment.",
+      targetId: "guided-tutor-btn",
+      placement: "bottom",
+    },
+    {
+      title: "Read Instructions",
+      content:
+        "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+      targetId: "instruction-btn",
+      placement: "bottom",
+      offset: [-60, 12],
+    },
+    {
+      title: "Sound Mute or Unmute",
+      content:
+        "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+      targetId: "sound-btn",
+      placement: "bottom",
+      offset: [-60, 12],
+    },
+    {
       title: "Image Selection",
       content: "Select an image from the grid for the quantization experiment.",
       targetId: "quantization-image-selection",
       placement: "right",
+    },
+    {
+      title: "Upload Image",
+      content:
+        "Alternatively, you may upload your own image to analyze sampling effects.",
+      targetId: "upload-btn-zone",
+      placement: "right-start",
     },
     {
       title: "Bit Depth",
@@ -149,10 +220,19 @@ export default function Sampling() {
       placement: "left",
     },
     {
-      title: "Experiment Completed",
-      content: "You have successfully completed the quantization tutorial.",
-      targetId: "mainbox",
-      placement: "center",
+      title: "Print Results",
+      content:
+        "Click the Print button if you wish to save or document your experimental results for further analysis.",
+      targetId: "print-button-zone",
+      placement: "bottom",
+    },
+    {
+      title: "Simulation Completed",
+      content:
+        "Congratulations!  You have successfully completed the quantization simulation.",
+      targetId: "print-button-zone",
+      placement: "right",
+      offset: [0, 12],
     },
   ];
 
@@ -164,7 +244,7 @@ export default function Sampling() {
     } else {
       setTutorSteps(quantizationTutorSteps);
     }
-  }, [setTutorSteps, setTutorStep, stop]);
+  }, [setTutorSteps, setTutorStep, stop, tabValue]);
 
   // Instructions list
   useEffect(() => {
@@ -238,7 +318,7 @@ export default function Sampling() {
     let imgElement = document.getElementById("inputImage");
     let src = window.cv.imread(imgElement);
     let dst = new window.cv.Mat();
-    if (scaleFactor == 0) {
+    if (scaleFactor === 0) {
       notifyE("Scale Factor can't be zero!!");
       return;
     }
@@ -307,8 +387,7 @@ export default function Sampling() {
 
   const [scaleFactor, setScaleFactor] = useState(1);
   const [samplingMethod, setSamplingMethod] = useState("Nearest");
-  //sets variable which defines which tab is active
-  const [tabValue, setTabValue] = useState(0);
+ 
   const [bitValue, setBitVale] = useState("8");
   const [drawerOpen, setDrawerOpen] = useState(false); // State for opening/closing the drawer
   const [uploadedImageName, setUploadedImageName] = useState(null);
@@ -342,6 +421,10 @@ export default function Sampling() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
+      setIsInputImageAnimationPlaying(true);
+      setTimeout(() => {
+        setIsInputImageAnimationPlaying(false);
+      }, 1200);
       // Create a URL for the image file
       const imageUrl = URL.createObjectURL(file);
 
@@ -363,6 +446,10 @@ export default function Sampling() {
     // console.log("clickeddd");
     setSelectedImage(index);
     setImageName(`Sample ${index + 1}`);
+    setIsInputImageAnimationPlaying(true);
+    setTimeout(() => {
+      setIsInputImageAnimationPlaying(false);
+    }, 500);
   };
 
   return (
@@ -474,10 +561,11 @@ export default function Sampling() {
                 borderRadius: "20px",
                 padding: "5px 15px",
                 height: "40px",
+                width: "142px",
               }}
               onClick={startTutor}
             >
-              {isMobile ? "Tutor" : "Guided Tutor"}
+              {isMobile ? "Guided Tutor" : "Guided Tutor"}
             </Button>
           </div>
 
@@ -572,7 +660,7 @@ export default function Sampling() {
         </div>
 
         <div id="mainbox">
-          <TabPanel tabValue={tabValue} index={0}>
+          <TabPanel tabValue={tabValue} index={0} id="tabpanelZero">
             <div class="flex-container">
               <div class="flex-item-left">
                 <div id="left_bar">
@@ -729,7 +817,11 @@ export default function Sampling() {
                         </div>
 
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label htmlFor="file-upload" className="upload-btn">
+                          <label
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                            id="upload-btn-zone"
+                          >
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -841,6 +933,7 @@ export default function Sampling() {
                         {/* ToastContainer must be placed somewhere in the component tree */}
                         <ToastContainer />
                         <Button
+                          id="print-button-zone"
                           class="tool_btn print_btn"
                           onClick={handlePrint}
                           variant="outlined"
@@ -878,23 +971,34 @@ export default function Sampling() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
-                        borderColor: "#9e9e9ec6",
+                        borderColor: isInputImageAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
-                        marginRight: "5%",
-                        backgroundColor: "#ffffffff",
-                        boxShadow: `
-    0 4px 8px rgba(0,0,0,0.15),
-    0 8px 16px rgba(0,0,0,0.10),
-    0 16px 24px rgba(0,0,0,0.05)
-  `,
-                        transition: "all 0.3s ease-in-out",
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isInputImageAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isInputImageAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isInputImageAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
                         "&:hover": {
                           transform: "translateY(-4px)",
-                          boxShadow: `
-      0 6px 12px rgba(0,0,0,0.2),
-      0 12px 24px rgba(0,0,0,0.15),
-      0 20px 40px rgba(0,0,0,0.1)
-    `,
                         },
                       }}
                     >
@@ -1185,7 +1289,11 @@ export default function Sampling() {
                         </div>
 
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label htmlFor="file-upload" className="upload-btn">
+                          <label
+                            id="upload-btn-zone"
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                          >
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -1274,6 +1382,7 @@ export default function Sampling() {
                         <ToastContainer />
 
                         <Button
+                          id="print-button-zone"
                           class="tool_btn print_btn"
                           onClick={handlePrint}
                           variant="outlined"
@@ -1311,23 +1420,34 @@ export default function Sampling() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
-                        borderColor: "#9e9e9ec6",
+                        borderColor: isInputImageAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
-                        marginRight: "5%",
-                        backgroundColor: "#ffffffff",
-                        boxShadow: `
-    0 4px 8px rgba(0,0,0,0.15),
-    0 8px 16px rgba(0,0,0,0.10),
-    0 16px 24px rgba(0,0,0,0.05)
-  `,
-                        transition: "all 0.3s ease-in-out",
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isInputImageAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isInputImageAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isInputImageAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
                         "&:hover": {
                           transform: "translateY(-4px)",
-                          boxShadow: `
-      0 6px 12px rgba(0,0,0,0.2),
-      0 12px 24px rgba(0,0,0,0.15),
-      0 20px 40px rgba(0,0,0,0.1)
-    `,
                         },
                       }}
                     >
