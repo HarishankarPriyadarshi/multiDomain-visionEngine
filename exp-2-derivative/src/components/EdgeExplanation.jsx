@@ -59,6 +59,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
   // from SimContext
   const {
+    isMobile,
     startTutorSim,
     handleSpeechToggleSim,
     tutorBtnRefSim,
@@ -70,7 +71,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   } = useContext(SimContext);
 
   useEffect(() => {
-    setTutorStepsSim([
+    const baseSteps = [
       {
         title: "Welcome",
         content:
@@ -115,98 +116,122 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       {
         title: "Speed Down",
         content:
-          "Click the Speed Down button to slow the convolution animation. This increases the delay between kernel movements so you can observe each computation step more clearly.",
+          "You can click the Speed Down button to slow the convolution animation.",
         targetId: "speed-down-btn",
         placement: "bottom",
       },
       {
         title: "Speed Up",
         content:
-          "Click the Speed Up button to increase the convolution speed. This decreases the delay between kernel movements and completes the process faster.",
+          "You can click the Speed Up button to increase the convolution speed. ",
         targetId: "speed-up-btn",
         placement: "bottom",
       },
       {
         title: "Reset",
         content:
-          "Click the Reset button to stop the simulation and return everything to the initial state. The image, kernel position, and computed values will be cleared.",
+          "You can click the Reset button to stop the simulation and return everything to the initial state. ",
         targetId: "reset-btn",
         placement: "bottom",
       },
+      {
+        title: "Play / Pause",
+        content:
+          "Now, Click the Play button to start the convolution process. The kernel will slide over the image and compute gradient values pixel by pixel. You can pause the simulation at any time by clicking the Pause button.",
+        targetId: "sim-play-pause-btn",
+        placement: "bottom",
+      },
+    ];
 
-      isSimPlaying
-        ? {
-            title: "Pause",
-            content:
-              "Click the Pause button to temporarily stop the simulation. You can resume from the same position by clicking Play again.",
-            targetId: "sim-pause-btn",
-            placement: "bottom",
-          }
-        : {
-            title: "Play",
-            content:
-              "Click the Play button to start the convolution process. The kernel will slide over the image and compute gradient values pixel by pixel.",
-            targetId: "sim-play-btn",
-            placement: "bottom",
-          },
+    // 👇 If simulation NOT started
+    if (!isSimPlaying) {
+      baseSteps.push({
+        title: "Simulation Not Started",
+        content:
+          "Please click the Play button to begin the sliding window convolution process.",
+        targetId: "sim-play-pause-btn",
+        placement: "bottom",
+      });
+    }
+    if (isSimPlaying) {
+      baseSteps.push(
+        {
+          title: "Sliding Window Operation",
+          content:
+            "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+          targetId: "kernel-sliding-box",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Observe Kernel X Convolution Steps",
+          content:
+            "Here you can see the detailed multiplication steps and running sum for Kernel X  during convolution.",
+          targetId: "convStepsX",
+          placement: "left",
+          offset: [1, 12],
+        },
+        {
+          title: "Gradient X",
+          content:
+            "After each window operation, ΔX values are generated and stored in their respective result matrices.",
+          targetId: "tutorDXGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Observe Kernel Y Convolution Steps",
+          content:
+            "Here you can see the detailed multiplication steps and running sum for Kernel Y during convolution.",
+          targetId: "convStepsY",
+          placement: "left",
+          offset: [1, 12],
+        },
+        {
+          title: "Gradient Y",
+          content:
+            "After each window operation, ΔY values are generated and stored in their respective result matrices.",
+          targetId: "tutorDYGrid",
+          placement: "bottom",
+          offset: [-10, 32],
+        },
 
-      // {
-      //   title: "Sliding Window Operation",
-      //   content:
-      //     "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
-      //   targetId: "original",
-      //   placement: "right",
-      // },
-      // {
-      //   title: "Observe Convolution Steps",
-      //   content:
-      //     "Here you can see the detailed multiplication steps and running sum for Kernel X and Kernel Y during convolution.",
-      //   targetId: "kernels",
-      //   placement: "left",
-      // },
-      // {
-      //   title: "Gradient X and Gradient Y",
-      //   content:
-      //     "After each window operation, ΔX and ΔY values are generated and stored in their respective result matrices.",
-      //   targetId: "results",
-      //   placement: "top",
-      // },
-      // {
-      //   title: "Resultant Gradient",
-      //   content:
-      //     "The final edge strength is computed using ΔG = √((ΔX)² + (ΔY)²). This gives the overall magnitude of intensity change.",
-      //   targetId: "final_result",
-      //   placement: "top",
-      // },
-      // {
-      //   title: "Resultant Image",
-      //   content:
-      //     "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
-      //   targetId: "result_grid",
-      //   placement: "top",
-      // },
-      // {
-      //   title: "Speed Controls",
-      //   content:
-      //     "Use Speed Up and Speed Down buttons to control animation speed. Pause anytime to examine convolution steps carefully.",
-      //   targetId: "footer_buttons",
-      //   placement: "top",
-      // },
-      // {
-      //   title: "Reset Experiment",
-      //   content:
-      //     "Click Reset to stop the current simulation and restart with default image and kernel settings.",
-      //   targetId: "footer_buttons",
-      //   placement: "top",
-      // },
-      // {
-      //   title: "Experiment Completed",
-      //   content:
-      //     "You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
-      //   targetId: "main-box-edge",
-      //   placement: "center",
-      // },
-    ]);
+        {
+          title: "Resultant  ΔG Calculation",
+          content:
+            "The final edge strength is computed using ΔG = √((ΔX)² + (ΔY)²). This gives the overall magnitude of intensity change.",
+          targetId: "tutorResCalculationGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Resultant Gradient",
+          content:
+            "after each window operation, ΔG values are computed and stored in their respective result Gradient matrices.",
+          targetId: "tutorResGrid",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Resultant Image",
+          content:
+            "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
+          targetId: "tutorResImageGrid",
+          placement: "top",
+          offset: [-10, 12],
+        },
+
+        {
+          title: "Experiment Completed",
+          content:
+            "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
+          targetId: "tutorResImageGrid",
+          placement: "top",
+        },
+      );
+    }
+
+    setTutorStepsSim(baseSteps);
   }, [isSimPlaying]);
 
   useEffect(() => {
@@ -396,6 +421,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     setActiveDX({ row: -1, col: -1 });
     setActiveDY({ row: -1, col: -1 });
     setFirstKernelCalculated(false);
+    setIsSimPlaying(false);
   }
   //   useEffect(() => {
   //   console.log("active changed", activeDX, activeDY, activeRes);
@@ -598,14 +624,14 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                   backgroundColor: "#FFD700",
                   fontWeight: "bold",
                   margin: "auto auto",
-                  marginLeft: "10px",
+                  marginRight: "10px",
                   borderRadius: "20px",
                   padding: "5px 15px",
                   height: "40px",
                 }}
                 onClick={startTutorSim}
               >
-                Guided Tutor
+                {isMobile ? "Tutor" : "Guided Tutor"}
               </Button>
               <Button
                 id="sound-btn"
@@ -615,13 +641,13 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 <img
                   src={isSpeaking && !isPaused ? voice_pause : voice}
                   alt="voice"
-                  style={{ width: "40px", height: "auto" }}
+                  style={{ width: "40px", height: "auto", marginRight: "10px" }}
                 />
               </Button>
               <Button
                 onClick={() => handleClose2Modal()}
                 color="primary"
-                style={{ backgroundColor: "beige" }}
+                style={{ backgroundColor: "beige", marginRight: "10px" }}
               >
                 Close
               </Button>
@@ -791,6 +817,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
             <div id="original">
               {isVisible && (
                 <div
+                  id="kernel-sliding-box"
                   style={{
                     position: "absolute",
                     top: `${posx * ((document.getElementById("originalGrid")?.offsetWidth || 0) - 0.5) + document.getElementById("ogimage")?.offsetTop || 0}px`,
@@ -1000,7 +1027,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                   {!isVisible && label}
                 </p>
                 {isVisible && (
-                  <div className="conv-steps-box">
+                  <div id="convStepsX" className="conv-steps-box">
                     <h4>Kernel X Convolution Step</h4>
 
                     <div className="conv-steps">
@@ -1045,7 +1072,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                   {!isVisible && label}
                 </p>
                 {isVisible && (
-                  <div className="conv-steps-box">
+                  <div id="convStepsY" className="conv-steps-box">
                     <h4>Kernel Y Convolution Step</h4>
 
                     <div className="conv-steps">
@@ -1082,6 +1109,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                     )}
                   </h4>
                   <div
+                    id="tutorDXGrid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: `repeat(${dx && dx[0] ? dx[0].length : 0}, 1fr)`,
@@ -1124,6 +1152,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                     )}
                   </h4>
                   <div
+                    id="tutorDYGrid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: `repeat(${dy && dy[0] ? dy[0].length : 0}, 1fr)`,
@@ -1174,7 +1203,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                     Resultant Gradient
                   </h4>
                   <BlockMath math={equation1} />
-                  <div className="conv-final">
+                  <div id="tutorResCalculationGrid" className="conv-final">
                     ΔG=
                     {convSteps.result.map((item, index) => (
                       <span key={index}>{item}</span>
@@ -1182,6 +1211,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                     = {currentSum.result}
                   </div>
                   <div
+                    id="tutorResGrid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: `repeat(${res && res[0] ? res[0].length : 0}, 1fr)`,
@@ -1220,6 +1250,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                   </h4>
                   <BlockMath math={equation2} />
                   <div
+                    id="tutorResImageGrid"
                     style={{
                       display: "grid",
                       gridTemplateColumns: `repeat(${res && res[0] ? res[0].length : 0}, 1fr)`,
@@ -1275,38 +1306,15 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 </svg>
               </button>
 
-              <button
-                id="sim-play-btn"
-                ref={myPlayButton}
-                onClick={() => play()}
-                title="Play"
-                className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
-                style={{ display: "block" }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              <div id="sim-play-pause-btn">
+                <button
+                  id="sim-play-btn"
+                  ref={myPlayButton}
+                  onClick={() => play()}
+                  title="Play"
+                  className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
+                  style={{ display: "block" }}
                 >
-                  <polygon points="5,3 19,12 5,21"></polygon>
-                </svg>
-              </button>
-
-              <button
-                id="sim-pause-btn"
-                ref={myPauseButton}
-                onClick={() => pauseFun()}
-                title={isPausedSimulation ? "Play" : "Pause"}
-                className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
-                style={{ display: "none" }}
-              >
-                {isPausedSimulation ? (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -1320,23 +1328,48 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                   >
                     <polygon points="5,3 19,12 5,21"></polygon>
                   </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                  </svg>
-                )}
-              </button>
+                </button>
+
+                <button
+                  id="sim-pause-btn"
+                  ref={myPauseButton}
+                  onClick={() => pauseFun()}
+                  title={isPausedSimulation ? "Play" : "Pause"}
+                  className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
+                  style={{ display: "none" }}
+                >
+                  {isPausedSimulation ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect x="6" y="4" width="4" height="16"></rect>
+                      <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                  )}
+                </button>
+              </div>
 
               <button
                 id="speed-up-btn"

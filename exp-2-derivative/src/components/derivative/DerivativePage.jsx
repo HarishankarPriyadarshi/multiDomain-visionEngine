@@ -55,6 +55,7 @@ function TabPanel(props) {
 
 export default function DerivativePage() {
   const {
+    isMobile,
     isImageProcessed,
     setIsImageProcessed,
     isInstructionOpen,
@@ -451,7 +452,7 @@ export default function DerivativePage() {
               }}
               onClick={startTutor}
             >
-              Guided Tutor
+               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
           </div>
 

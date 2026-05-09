@@ -89,11 +89,11 @@ export const TutorSim = () => {
         placement="bottom"
         transition
         className="tutor-popper-sim tutor-backdrop"
-        modifiers={[
+modifiers={[
           {
             name: "offset",
             options: {
-              offset: [-60, 12],
+              offset: computedStepSim?.offset || [-60, 12],
             },
           },
         ]}
