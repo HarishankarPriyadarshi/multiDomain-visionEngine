@@ -15,21 +15,21 @@ import {
   DialogTitle,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import React from "react";
-
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
 import sample1 from "../../assets/images/sample1.jpg";
 import sample2 from "../../assets/images/sample2.jpg";
 import sample3 from "../../assets/images/sample3.jpg";
 import sample4 from "../../assets/images/sample4.jpg";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
 import CannyExplanation from "../CannyExplanation";
+import Tutor from "../features/tutor/Tutor";
+import { HomeContext } from "../context/HomeContext";
 
 //returns a tab panel
 function TabPanel(props) {
@@ -49,27 +49,199 @@ function TabPanel(props) {
 }
 
 export default function CannyPage() {
-  const myProcess1Button = useRef(null);
+  const {
+    isMobile,
+    setIsImageProcessed: setTutorImageProcessed,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
+    isSpeaking,
+    isPaused,
+    sentences,
+    currentSentenceIndex,
+    instructionsList,
+    closeInstructions,
+    setIsTutorOpen,
+    setTutorStep,
+    setShowWelcome,
+    stop,
+    isGaussOnTutor,
+    setIsGaussOnTutor,
+  } = useContext(HomeContext);
   const myProcess2Button = useRef(null);
-  const myProcess3Button = useRef(null);
+  const [gaussOn, setGaussOn] = useState("Gauss Off");
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
   const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
-  const notifyE = (msg) => {
-    toast.error(msg, {
-      theme: "dark",
-      position: "bottom-left", // Set toast position
-      autoClose: 5000, // Toast auto-closes after 5 seconds
-      hideProgressBar: false, // Show progress bar
-      closeOnClick: true, // Close toast when clicked
-      pauseOnHover: true, // Pause when hovered
-      draggable: true, // Enable dragging
-    });
-  };
+  // Tutor related
+  useEffect(() => {
+    setTutorImageProcessed(isImageProcessed);
+  }, [isImageProcessed, setTutorImageProcessed]);
 
+  // Tutor steps
+  useEffect(() => {
+    const steps = [
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Canny Based Segmentation experiment. In this simulation, you will learn how the Canny Edge Detection algorithm identifies edges using Gaussian smoothing, gradient detection, non-maximum suppression, and double thresholding. Click Next to begin the guided walkthrough.",
+        targetId: "guided-tutor-btn",
+        placement: "bottom",
+      },
+
+      {
+        title: "Read Instructions",
+        content:
+          "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Mute or Unmute",
+        content:
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content:
+          "Start by selecting a sample image from the available options. The chosen image will be used as input for Canny edge detection.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content:
+          "Alternatively, you may upload your own image to observe how Canny segmentation works on different patterns.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+      {
+        title: "Gaussian Blur",
+        content:
+          "Before edge detection, Gaussian smoothing helps reduce noise. Choose 'Gauss On' to apply smoothing before Canny processing, or 'Gauss Off' to skip smoothing.",
+        targetId: "gaussian-select-zone", // add id to Select if needed
+        placement: "right",
+        offset: [0, 10],
+      },
+    ];
+
+    // ✅ Only push this step if Gauss On is selected
+    if (gaussOn === "Gauss On") {
+      steps.push({
+        title: "Kernel Size Selection",
+        content:
+          "If Gaussian Blur is enabled, select the kernel size. Larger kernels provide stronger smoothing but may slightly blur fine edges.",
+        targetId: "kernel-select-zone",
+        placement: "right",
+        offset: [0, 12],
+      });
+    }
+    steps.push(
+      {
+        title: "Set Low Threshold",
+        content:
+          "Adjust the Canny Low Threshold. This value determines the minimum gradient intensity required to consider a pixel as a potential edge.",
+        targetId: "canny-low-threshold-zone", // add id to Slider
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Set High Threshold",
+        content:
+          "Adjust the Canny High Threshold. Pixels with gradient intensity above this value are considered strong edges. Proper tuning improves segmentation quality.",
+        targetId: "canny-high-threshold-zone", // add id to Slider
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Processing",
+        content:
+          "Click the Process button to convert the image into grayscale and apply the selected derivative operator for edge detection.",
+        targetId: "process-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Observe Output",
+        content:
+          "The Output Image displays the segmented edges. White pixels represent detected edges, while black regions represent non-edge areas.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+      {
+        title: "Print Results",
+        content:
+          "Click the Print button if you wish to save or document your experimental results for further analysis.",
+        targetId: "print-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Explore Concept",
+        content:
+          "Click the Concept button to understand the theory behind the Canny algorithm, including Gaussian filtering, gradient calculation, non-maximum suppression, and hysteresis thresholding.",
+        targetId: "concept-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    );
+    setTutorSteps(steps);
+  }, [setTutorSteps, gaussOn]);
+  // Instructions list
+  useEffect(() => {
+    setInstructionsList({
+      0: [
+        "Step 1: Select an image from the available options or upload one using the Upload File button.",
+        "Step 2: Choose whether to turn Gauss On or Off.",
+        "Step 3: If Gauss On is selected, choose the kernel size.",
+        "Step 4: Set the Canny Low Threshold.",
+        "Step 5: Set the Canny High Threshold.",
+        "Step 6: Click the Process button to continue.",
+        "Step 7: Click the Print button to print the result.",
+        "Note: Click the Concept button to get a detailed explanation.",
+      ],
+    });
+  }, [setInstructionsList]);
+  const boldKeywords = [
+    "Upload File",
+    "Process",
+    "Print",
+    "Concept",
+    "Gauss On",
+    "Gauss Off",
+    "Kernel Size",
+    "Canny Low Threshold",
+    "Canny High Threshold",
+    "Step",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "Note",
+  ];
+  useEffect(() => {
+    setIsGaussOnTutor("Gauss Off");
+  }, [gaussOn]);
+
+  // reset code
   const notifyS = (msg) => {
     toast.success(msg, {
       theme: "dark",
@@ -99,68 +271,6 @@ export default function CannyPage() {
     let absGradX = new cv.Mat();
     let absGradY = new cv.Mat();
     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
-    if (tabValue == 0) {
-      if (derivativeMethod == "First Order") {
-        if (filter1Type.startsWith("Sobel")) {
-          let kernelSize = parseInt(filter1Type.split(" ")[1]);
-          cv.Sobel(gray, gradX, cv.CV_64F, 1, 0, kernelSize);
-          cv.Sobel(gray, gradY, cv.CV_64F, 0, 1, kernelSize);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Scharr") {
-          cv.Scharr(gray, gradX, cv.CV_64F, 1, 0);
-          cv.Scharr(gray, gradY, cv.CV_64F, 0, 1);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Prewitt") {
-          let prewittKernelX = cv.matFromArray(
-            3,
-            3,
-            cv.CV_32F,
-            [-1, 0, 1, -1, 0, 1, -1, 0, 1],
-          );
-          let prewittKernelY = cv.matFromArray(
-            3,
-            3,
-            cv.CV_32F,
-            [-1, -1, -1, 0, 0, 0, 1, 1, 1],
-          );
-          cv.filter2D(gray, gradX, cv.CV_64F, prewittKernelX);
-          cv.filter2D(gray, gradY, cv.CV_64F, prewittKernelY);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-        if (filter1Type == "Roberts") {
-          let prewittKernelX = cv.matFromArray(2, 2, cv.CV_32F, [1, 0, 0, -1]);
-          let prewittKernelY = cv.matFromArray(2, 2, cv.CV_32F, [0, 1, -1, 0]);
-          cv.filter2D(gray, gradX, cv.CV_64F, prewittKernelX);
-          cv.filter2D(gray, gradY, cv.CV_64F, prewittKernelY);
-          cv.convertScaleAbs(gradX, absGradX);
-          cv.convertScaleAbs(gradY, absGradY);
-          cv.addWeighted(absGradX, 0.5, absGradY, 0.5, 0, edgeDetected);
-        }
-      }
-
-      if (derivativeMethod == "Second Order") {
-        let ksize = parseInt(o2Kernel);
-        cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0); // Convert to grayscale
-        cv.Laplacian(
-          src,
-          edgeDetected,
-          cv.CV_8U,
-          ksize,
-          1,
-          0,
-          cv.BORDER_DEFAULT,
-        );
-      }
-      // myProcess1Button.current.disabled=true
-    }
 
     if (tabValue == 1) {
       if (gaussOn == "Gauss Off") {
@@ -189,66 +299,6 @@ export default function CannyPage() {
       // myProcess2Button.current.disabled=true
     }
 
-    if (tabValue == 2) {
-      let shape = {
-        rectangle: cv.MORPH_RECT,
-        ellipse: cv.MORPH_ELLIPSE,
-        cross: cv.MORPH_CROSS,
-      };
-      let kernelSize = parseInt(gaussKernelSize);
-      if (morphologicalOperation == "dilation") {
-        let kernel = cv.getStructuringElement(
-          shape[kernelShape],
-          new cv.Size(kernelSize, kernelSize),
-        );
-        cv.dilate(
-          gray,
-          edgeDetected,
-          kernel,
-          new cv.Point(-1, -1),
-          1,
-          cv.BORDER_CONSTANT,
-          cv.morphologyDefaultBorderValue(),
-        );
-      }
-      if (morphologicalOperation == "erosion") {
-        let kernel = cv.getStructuringElement(
-          shape[kernelShape],
-          new cv.Size(kernelSize, kernelSize),
-        );
-        cv.erode(
-          gray,
-          edgeDetected,
-          kernel,
-          new cv.Point(-1, -1),
-          1,
-          cv.BORDER_CONSTANT,
-          cv.morphologyDefaultBorderValue(),
-        );
-      }
-      if (
-        morphologicalOperation == "opening" ||
-        morphologicalOperation == "closing"
-      ) {
-        let kernel = cv.getStructuringElement(
-          shape[kernelShape],
-          new cv.Size(kernelSize, kernelSize),
-        );
-        cv.morphologyEx(
-          gray,
-          edgeDetected,
-          morphologicalOperation == "opening" ? cv.MORPH_OPEN : cv.MORPH_CLOSE,
-          kernel,
-          new cv.Point(-1, -1),
-          1,
-          cv.BORDER_CONSTANT,
-          cv.morphologyDefaultBorderValue(),
-        );
-      }
-
-      // myProcess3Button.current.disabled=true
-    }
-
     window.cv.imshow("finalImage", edgeDetected);
     setIsImageProcessed(true);
     setIsAnimationPlaying(true);
@@ -264,176 +314,29 @@ export default function CannyPage() {
     window.print(); // Triggers the print dialog
   };
 
-  const [derivativeMethod, setDerivativeMethod] = useState("First Order");
   const [tabValue, setTabValue] = useState(1);
-  const [filter1Type, setFilter1Type] = useState("Sobel 3x3");
-  const [o2Kernel, setO2Kernel] = useState("3");
-  const [gaussOn, setGaussOn] = useState("Gauss Off");
+
   const [gaussKernelSize, setGaussKernelSize] = useState("3");
   const [cannyLow, setCannyLow] = useState(50);
   const [cannyHigh, setCannyHigh] = useState(150);
-  const [morphologicalOperation, setMorphologicalOperation] =
-    useState("dilation");
-  const [kernelShape, setKernelShape] = useState("rectangle");
 
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
-  const [openExplanationModal, setOpenExplanationModal] = useState(false);
   const [openCannyModal, setOpenCannyModal] = useState(false);
-  const [openMorphModal, setOpenMorphModal] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false); // State for opening/closing the drawer
-
-  const voicePause = useRef(null);
-  const voicePlay = useRef(null);
-
-  var indexTabValue = tabValue;
-  const handleTabChange = (event, newValue) => {
-    indexTabValue = newValue;
-    setTabValue(newValue);
-  };
 
   const instr = () => {
-    setOpenInstructionsModal(true);
+    setIsInstructionOpen(true);
   };
-
-
 
   const exp2 = () => {
     setOpenCannyModal(true);
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    stop();
   };
-
-  
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
 
   useEffect(() => {
     speechSynthesis.cancel(); // Cancel any speech on reload
   }, []);
-
-  const instructionsList = {
-    0: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose the desired order of the derivative.",
-      "If First Order is selected, choose the filter you want to apply.",
-      "Otherwise, select the kernel size to apply.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Choose whether to turn Gauss On or Off.",
-      "If Gauss On is selected, choose the kernel size.",
-      "Set the Canny Low Threshold.",
-      "Set the Canny High Threshold.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    2: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Select the Morphological Operation.",
-      "Select the Kernel Size.",
-      "Select the Kernel Shape.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-  };
-
-  const getInstructionsText = () => {
-    const steps = instructionsList[indexTabValue];
-    return steps ? steps.join("\n") : "No instructions available.";
-  };
-
-  const getInstructions = () => {
-    const steps = instructionsList[indexTabValue];
-    if (!steps) return <p>No instructions available.</p>;
-
-    const normalSteps = [];
-    const notes = [];
-
-    steps.forEach((step) => {
-      if (step.trim().startsWith("Note:")) {
-        const noteHtml = step
-          .replace(/(Concept)/g, "<b>$1</b>")
-          .replace(/^Note:/, '<b style="color:blue">Note:</b>');
-        notes.push(noteHtml);
-      } else {
-        const stepHtml = step.replace(
-          /(Upload File|First Order|Process|Print|Gauss On|On|Off|Low|High|Kernel Size|Morphological Operation|Kernel Shape)/g,
-          "<b>$1</b>",
-        );
-        normalSteps.push(stepHtml);
-      }
-    });
-
-    return (
-      <div>
-        <ol>
-          {normalSteps.map((html, idx) => (
-            <li key={idx} dangerouslySetInnerHTML={{ __html: html }} />
-          ))}
-        </ol>
-        {notes.map((note, idx) => (
-          <p key={`note-${idx}`} dangerouslySetInnerHTML={{ __html: note }} />
-        ))}
-      </div>
-    );
-  };
-
-  const speak = () => {
-    if (speechSynthesis.paused) {
-      speechSynthesis.resume();
-      if (voicePlay.current.style.display == "block") {
-        voicePlay.current.style.display = "none";
-        voicePause.current.style.display = "block";
-      }
-      setIsSpeaking(true);
-      return;
-    }
-
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause();
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      return;
-    }
-
-    // Clean up any lingering speech
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(getInstructionsText());
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices.find(
-      (voice) => voice.name === "Microsoft Ravi - English (India)",
-    );
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      utteranceRef.current = null;
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-    if (voicePause.current.style.display == "none") {
-      voicePlay.current.style.display = "none";
-      voicePause.current.style.display = "block";
-    }
-  };
-
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen); // Toggle drawer state (open or close)
-  };
 
   const initialImages = [sample1, sample2, sample3, sample4];
 
@@ -476,19 +379,17 @@ export default function CannyPage() {
   };
 
   const handleCloseModal = () => {
-    setOpenInstructionsModal(false); // Close the modal
-  };
-
-  const handleClose2Modal = () => {
-    setOpenExplanationModal(false);
+    setIsInstructionOpen(false); // Close the modal
   };
 
   const handleClose3Modal = () => {
     setOpenCannyModal(false);
-  };
-
-  const handleClose4Modal = () => {
-    setOpenMorphModal(false);
+    // Reset tutor state
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    // Stop speech completely
+    stop();
   };
 
   return (
@@ -505,52 +406,55 @@ export default function CannyPage() {
           <h2 className="header-heading">Canny Based Segmentation</h2>
 
           <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={voice}
+                src={isSpeaking && !isPaused ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                onClick={speak}
               />
             </Button>
 
-            <Button ref={voicePause} title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                onClick={speak}
-              />
-            </Button>
-
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#ffffffff",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={instr}
+            >
               Instructions
+            </Button>
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+
+                margin: "auto auto",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+                height: "40px",
+              }}
+              onClick={startTutor}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
           </div>
 
-          {/* Instructions Modal */}
-          {/* <Dialog
-        open={openInstructionsModal}
-        onClose={handleCloseModal}
-        aria-labelledby="instructions-dialog-title"
-        aria-describedby="instructions-dialog-description"
-        style={{height:'80%'}}
-      >
-        <DialogTitle id="instructions-dialog-title">Instructions</DialogTitle>
-        <DialogContent style={{paddingTop:'10px'}}>
-          <p style={{color:'#1D2A6D', fontWeight:'bold'}}>
-            {tabValue === 0 ? 'Derivative Based' : tabValue === 1 ? 'Canny Based' : 'Morphological Operation'}:</p>
-            {getInstructions()}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog> */}
           <Dialog
-            open={openInstructionsModal}
-            onClose={handleCloseModal}
+            open={isInstructionOpen}
+            onClose={closeInstructions}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
             style={{ height: "80%" }}
@@ -560,56 +464,56 @@ export default function CannyPage() {
             </DialogTitle>
 
             <DialogContent style={{ paddingTop: "10px" }}>
-              <p style={{ color: "#1D2A6D", fontWeight: "bold" }}>
-                Canny Edge Detection:
-              </p>
+              <ul style={{ lineHeight: "1.8", listStyleType: "none" }}>
+                {instructionsList[0]?.map((step, index) => {
+                  // Find if this step contains the currently spoken sentence
+                  // This is a bit tricky because useSpeechController splits by sentences
+                  // but each step in instructionsList might be one or more sentences.
+                  // For simplicity, we'll check if the current sentence is part of this step.
+                  const isCurrentStepSpeaking =
+                    isSpeaking &&
+                    !isPaused &&
+                    isInstructionOpen &&
+                    sentences[currentSentenceIndex] &&
+                    step.includes(sentences[currentSentenceIndex]);
 
-              <ol style={{ lineHeight: "1.8" }}>
-                <li>
-                  Select an image from the available options or upload one using
-                  the
-                  <b> Upload File </b> button.
-                </li>
-
-                <li>
-                  Choose whether to turn <b>Gaussian Blur</b> On or Off.
-                </li>
-
-                <li>
-                  If <b>Gaussian Blur</b> is turned On, select the kernel size
-                  (e.g., 3×3, 5×5, 7×7).
-                </li>
-
-                <li>
-                  Set the <b>Low Threshold</b> value for edge detection.
-                </li>
-
-                <li>
-                  Set the <b>High Threshold</b> value for edge detection.
-                </li>
-
-                <li>
-                  Click the <b>Process</b> button to apply the Canny edge
-                  detection algorithm.
-                </li>
-
-                <li>
-                  Observe the output image and analyze the detected edges.
-                </li>
-
-                <li>
-                  Click the <b>Print</b> button to print the result.
-                </li>
-
-                <li>
-                  <b>Note:</b> Click the <b>Concept</b> button to get a detailed
-                  explanation of the Canny Edge Detection algorithm.
-                </li>
-              </ol>
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
+                      style={{
+                        transition: "background-color 0.3s ease",
+                        borderRadius: "4px",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
+                    </li>
+                  );
+                })}
+              </ul>
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button
+                onClick={closeInstructions}
+                color="primary"
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#162882ff",
+                  color: "#ffffffff",
+                }}
+              >
                 Close
               </Button>
             </DialogActions>
@@ -696,6 +600,7 @@ export default function CannyPage() {
                         </h4>
                         <div
                           className="image-grid"
+                          id="image-selection-zone"
                           sx={{
                             width: "100%",
                             position: "relative",
@@ -767,7 +672,11 @@ export default function CannyPage() {
                           </div>
                         </div>
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label htmlFor="file-upload" className="upload-btn">
+                          <label
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                            id="upload-btn-zone"
+                          >
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -806,6 +715,7 @@ export default function CannyPage() {
                         Gaussian Blur:
                       </h4>
                       <Select
+                        id="gaussian-select-zone"
                         value={gaussOn}
                         className="derivative-btn"
                         onChange={(e) => setGaussOn(e.target.value)}
@@ -838,6 +748,7 @@ export default function CannyPage() {
                             Kernel Size:
                           </h4>
                           <Select
+                            id="kernel-select-zone"
                             value={gaussKernelSize}
                             className="derivative-btn"
                             onChange={(e) => setGaussKernelSize(e.target.value)}
@@ -874,6 +785,7 @@ export default function CannyPage() {
                         Set Canny Low Threshold:
                       </h4>
                       <Slider
+                        id="canny-low-threshold-zone"
                         sx={{ color: "#1D2A6D" }}
                         value={cannyLow}
                         min={0}
@@ -893,6 +805,7 @@ export default function CannyPage() {
                         Set Canny High Threshold:
                       </h4>
                       <Slider
+                        id="canny-high-threshold-zone"
                         sx={{ color: "#1D2A6D" }}
                         value={cannyHigh}
                         min={0}
@@ -987,6 +900,7 @@ export default function CannyPage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -1075,7 +989,6 @@ export default function CannyPage() {
                             </div>
                           </div>
                         )}
-
                       </Box>
                     </Box>
                   </div>
@@ -1091,6 +1004,7 @@ export default function CannyPage() {
                   }}
                 >
                   <Button
+                    id="process-button-zone"
                     ref={myProcess2Button}
                     class="tool_btn"
                     onClick={processImage}
@@ -1104,6 +1018,7 @@ export default function CannyPage() {
                   </Button>
 
                   <Button
+                    id="print-button-zone"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -1116,6 +1031,7 @@ export default function CannyPage() {
                   </Button>
 
                   <Button
+                    id="concept-button-zone"
                     class="tool_btn"
                     onClick={exp2}
                     variant="outlined"
@@ -1147,8 +1063,11 @@ export default function CannyPage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle id="instructions-dialog-title" className="dialog-title">
-                    <div style={{ }}>Canny Concept</div>
+                  <DialogTitle
+                    id="instructions-dialog-title"
+                    className="dialog-title"
+                  >
+                    <div style={{}}>Canny Concept</div>
                     <div
                       style={{
                         width: "50%",
@@ -1171,6 +1090,8 @@ export default function CannyPage() {
                     {/* {CannyExplanation()} */}
                   </DialogContent>
                 </Dialog>
+                {/* tutor modal */}
+                <Tutor />
               </div>
             </div>
           </TabPanel>
