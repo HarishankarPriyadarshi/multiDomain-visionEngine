@@ -1075,9 +1075,7 @@ export default function CannyPage() {
                             </div>
                           </div>
                         )}
-                        {isImageProcessed && gaussOn === "Gauss On" && (
-                          <p>Gaussian Blur Output | Canny Output</p>
-                        )}
+
                       </Box>
                     </Box>
                   </div>
