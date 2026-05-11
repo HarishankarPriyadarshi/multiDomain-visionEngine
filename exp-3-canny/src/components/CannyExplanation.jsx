@@ -1,5 +1,5 @@
 import "../canny.css";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState, useContext } from "react";
 import divide from "../assets/images/divide_sign.png";
 import multiply from "../assets/images/x_sign.png";
 import minus from "../assets/images/minus_sign.png";
@@ -8,7 +8,7 @@ import plus from "../assets/images/plus_sign.png";
 import { OpenCvProvider } from "opencv-react";
 import { MathJax, MathJaxContext } from "better-react-mathjax";
 import { Slider, Select } from "@mui/material";
-
+import { DialogTitle, Button as TutorBtn } from "@mui/material";
 import { Modal, Form, Alert, Button } from "react-bootstrap";
 
 import { ToastContainer, toast } from "react-toastify";
@@ -18,6 +18,11 @@ import Carousel from "react-bootstrap/Carousel";
 // import ExampleCarouselImage from 'components/ExampleCarouselImage';
 import { BlockMath, InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import { SimContext } from "./context/SimContext";
+
+import voice from "../assets/images/voice-play.png";
+import voice_pause from "../assets/images/voice-pause.png";
+import TutorSim from "./features/tutor/TutorSim";
 
 const notifyS = (msg) => {
   toast.success(msg, {
@@ -31,7 +36,7 @@ const notifyS = (msg) => {
   });
 };
 
-export default function CannyExplanation() {
+export default function CannyExplanation({ handleClose3Modal }) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [sigma, setSigma] = useState(0);
@@ -94,7 +99,7 @@ export default function CannyExplanation() {
 
   const equation1 = "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
 
-  console.log("index value:", index);
+  //console.log("index value:", index);
 
   useEffect(() => {
     const sobelXKernel = [
@@ -200,29 +205,6 @@ export default function CannyExplanation() {
     setShowButtons(true);
   }
 
-  // function padding() {
-  //   let rows = [];
-  //   for (let i = 0; i < original.length + 2; i++) {
-  //     let col = [];
-  //     for (let j = 0; j < original[0].length + 2; j++) {
-  //       if (
-  //         i == 0 ||
-  //         i == original.length + 1 ||
-  //         j == 0 ||
-  //         j == original[0].length + 1
-  //       ) {
-  //         col.push(0);
-  //       } else {
-  //         col.push(original[i - 1][j - 1]);
-  //       }
-  //     }
-  //     rows.push(col);
-  //   }
-  //   setPadded(rows);
-  //   console.log(rows);
-  //   myPadButton.current.disabled = true;
-  //   enabledNext();
-  // }
   function padding() {
     const totalRows = original.length + 2;
     const totalCols = original[0].length + 2;
@@ -358,7 +340,6 @@ export default function CannyExplanation() {
     setCompletedSobelDXSteps([]);
     setCompletedSobelDYSteps([]);
     setCompletedSobelResSteps([]);
-    
 
     let convolutedX = Array(7)
       .fill(0)
@@ -377,8 +358,6 @@ export default function CannyExplanation() {
         setSobelPosX(i);
         setSobelPosY(j);
         setImageAnimateKey((prev) => prev + 1);
-      
-
 
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
@@ -390,9 +369,18 @@ export default function CannyExplanation() {
         setActiveSobelDX({ row: i - 1, col: j - 1 });
         setActiveSobelDY({ row: i - 1, col: j - 1 });
         setActiveSobelRes({ row: i - 1, col: j - 1 });
-        setCompletedSobelDXSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
-        setCompletedSobelDYSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
-        setCompletedSobelResSteps((prev) => [...prev, { row: i - 1, col: j - 1 }]);
+        setCompletedSobelDXSteps((prev) => [
+          ...prev,
+          { row: i - 1, col: j - 1 },
+        ]);
+        setCompletedSobelDYSteps((prev) => [
+          ...prev,
+          { row: i - 1, col: j - 1 },
+        ]);
+        setCompletedSobelResSteps((prev) => [
+          ...prev,
+          { row: i - 1, col: j - 1 },
+        ]);
 
         convolutedX[i - 1][j - 1] = sumX.toFixed(2);
         convolutedY[i - 1][j - 1] = sumY.toFixed(2);
@@ -409,34 +397,6 @@ export default function CannyExplanation() {
     enabledNext();
   }
 
-  // function quantiseGrad() {
-  //   if (!gradient) return;
-  //   myQuantButton.current.disabled = true;
-  //   let quantised = Array(7)
-  //     .fill(0)
-  //     .map(() => Array(7).fill(0));
-
-  //   if (!gradient || !Array.isArray(gradient) || gradient.length === 0) return;
-
-  //   for (let i = 0; i < gradient.length; i++) {
-  //     for (let j = 0; j < gradient[0].length; j++) {
-  //       let angle = gradient[i][j] ? gradient[i][j] % 180 : 0; // Normalize angle to [0, 180)
-  //       if (angle < 22.5 || angle >= 157.5) {
-  //         quantised[i][j] = 0; // Closest to 0 degrees
-  //       } else if (angle >= 22.5 && angle < 67.5) {
-  //         quantised[i][j] = 45; // Closest to 45 degrees
-  //       } else if (angle >= 67.5 && angle < 112.5) {
-  //         quantised[i][j] = 90; // Closest to 90 degrees
-  //       } else {
-  //         quantised[i][j] = 135; // Closest to 135 degrees
-  //       }
-  //     }
-  //   }
-
-  //   setQuantize(quantised);
-  //   console.log(quantised);
-  //   enabledNext();
-  // }
   function quantiseGrad() {
     if (!gradient) return;
     myQuantButton.current.disabled = true;
@@ -648,10 +608,395 @@ export default function CannyExplanation() {
     myNextButton.current.style.animation = "pulse 1.5s infinite";
   }
 
+  // tutor implementation
+  const {
+    isMobile,
+    startTutorSim,
+    handleSpeechToggleSim,
+    tutorBtnRefSim,
+    isSpeaking,
+    isPaused,
+    setTutorStepsSim,
+    isSimPlaying,
+    setIsSimPlaying,
+    resetTutorSim,
+  } = useContext(SimContext);
+  // Update isSimPlaying when any variable changes
+  useEffect(() => {
+    const variableMap = {
+      original,
+      gKernel,
+      myBlurButton,
+      myPadButton,
+      myPadBlurButton,
+      mySobelButton,
+      myQuantButton,
+      myNonMaxButton,
+      myThresButton,
+      myNextButton,
+      padded,
+      blurred,
+      sobelx,
+      sobely,
+      convolutedx,
+      convolutedy,
+      gradient,
+      quantize,
+      supressed,
+      finalGrid,
+    };
+
+    setIsSimPlaying((prev) => {
+      const updatedState = { ...prev };
+
+      Object.keys(variableMap).forEach((key) => {
+        if (variableMap[key]) {
+          updatedState[key] = true;
+        }
+      });
+
+      return updatedState;
+    });
+  }, [
+    original,
+    gKernel,
+    myBlurButton,
+    myPadButton,
+    myPadBlurButton,
+    mySobelButton,
+    myQuantButton,
+    myNonMaxButton,
+    myThresButton,
+    myNextButton,
+    padded,
+    blurred,
+    sobelx,
+    sobely,
+    convolutedx,
+    convolutedy,
+    gradient,
+    quantize,
+    supressed,
+    finalGrid,
+    setIsSimPlaying,
+  ]);
+  // Update tutor steps when isSimPlaying changes
+  useEffect(() => {
+    const baseSteps = [
+      {
+        title: "Welcome to Canny Edge Detection Simulation",
+        content:
+          "This guided walkthrough demonstrates every mathematical stage of the Canny Edge Detection algorithm on a 7×7 matrix image. Follow the highlighted steps carefully.",
+        targetId: "guided-tutor-btn-sim",
+        placement: "bottom",
+      },
+      {
+        title: "Instruction Panel",
+        content:
+          "This panel updates automatically after every completed stage. Follow it sequentially.",
+        targetId: "inst_div_canny",
+        placement: "bottom",
+      },
+      {
+        title: "Step 1: Select an Image",
+        content:
+          "Choose one of the 7×7 binary sample images. This will act as the input signal for edge detection.",
+        targetId: "main-image-box-canny",
+        placement: "right",
+      },
+    ];
+    // step 1: Select an Image
+    if (original === null || original === undefined) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Please select any image to initialize the simulation.",
+        targetId: "main-image-box-canny",
+        placement: "right",
+      });
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    baseSteps.push(
+      {
+        title: "Original Image Matrix",
+        content:
+          "This is the selected 7×7 image displayed in both graphical (black/white) and numerical (0/1) form. Edge detection begins from this input.",
+        targetId: "graphical-numerical",
+        placement: "right",
+        offset: [0, 20],
+      },
+
+      {
+        title: "Gaussian Kernel Equation",
+        content:
+          "The Gaussian function smooths the image to reduce noise before computing gradients. The kernel values are derived from this equation.",
+        targetId: "gaussian_equation",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Adjust Sigma",
+        content:
+          "Use the Sigma slider to generate the Gaussian kernel matrix. Sigma controls the amount of smoothing. Higher σ → stronger blur → less noise but softer edges. Lower σ → sharper but more noise-sensitive.",
+        targetId: "sigma_slider",
+        placement: "right",
+        offset: [0, 10],
+      },
+    );
+
+    if (!gKernel) {
+      baseSteps.push({
+        title: "Action Required",
+        content:
+          "Please adjust the Sigma slider to generate the Gaussian kernel matrix.",
+        targetId: "sigma_slider",
+        placement: "right",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    baseSteps.push({
+      title: "Generated Gaussian Kernel (3×3)",
+      content:
+        "This 3×3 kernel is computed using the selected sigma (σ) value. It will be used for convolution in the next step.",
+      targetId: "gaussian_kernel_matrix",
+      placement: "right",
+      offset: [10, 10],
+    });
+
+    //      STEP 2 — PADDING ORIGINAL IMAGE
+    baseSteps.push({
+      title: "Padding Before Convolution",
+      content:
+        "Before applying a 3×3 kernel, we pad the 7×7 image to 9×9 so that spatial dimensions are preserved.",
+      targetId: "padding-canny",
+      placement: "top",
+    });
+    if (!padded) {
+      baseSteps.push({
+        title: "Apply Padding",
+        content: "Click the 'Pad' button to perform zero-padding.",
+        targetId: myPadButton?.current?.id || "padding-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    //  STEP 3 — GAUSSIAN BLUR
+    baseSteps.push({
+      title: "Gaussian Blur",
+      content:
+        "After padding-padding, we apply the Gaussian kernel to smooth the image. This step reduces noise and enhances edge detection.",
+      targetId: "gaussian-blur-canny",
+      placement: "left",
+    });
+    baseSteps.push({
+      title: "Gaussian Convolution",
+      content:
+        "Now we slide the Gaussian kernel across the padded image to compute weighted averages for smoothing.",
+      targetId: "gaussian-blur-canny",
+      placement: "top",
+    });
+
+    if (!startBlur) {
+      baseSteps.push({
+        title: "Start Blurring",
+        content: "Click 'Blur' to begin animated convolution.",
+        targetId: myBlurButton?.current?.id || "gaussian-blur-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    //     STEP 4 — PADDING BLURRED IMAGE
+    baseSteps.push({
+      title: "Padding Blurred Image",
+      content: "We pad again because Sobel also uses a 3×3 kernel.",
+      targetId: "pad-after-canny",
+      placement: "top",
+    });
+
+    if (!padBlur) {
+      baseSteps.push({
+        title: "Apply Padding",
+        content: "Click 'Pad' to prepare for Sobel convolution.",
+        targetId: myPadBlurButton?.current?.id || "pad-after-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    // STEP 5 — SOBEL CONVOLUTION
+    baseSteps.push({
+      title: "Sobel Edge Detection",
+      content:
+        "Sobel X and Sobel Y detect horizontal and vertical intensity changes.",
+      targetId: "sobel-application-canny",
+      placement: "left",
+    });
+
+    if (!convolutedx) {
+      baseSteps.push({
+        title: "Apply Sobel",
+        content: "Click 'Apply Sobel' to compute gradient components.",
+        targetId: mySobelButton?.current?.id || "sobel-application-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    // STEP 6 — GRADIENT MAGNITUDE
+    if (!gradient) {
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    baseSteps.push({
+      title: "Gradient Magnitude",
+      content:
+        "Gradient magnitude is computed as √(Gx² + Gy²). This represents edge strength.",
+      targetId: "gradient-canny",
+      placement: "top",
+    });
+    // STEP 7 — Quantization
+    if (!quantize) {
+      baseSteps.push({
+        title: "Quantize Directions",
+        content:
+          "Click 'Quantise' to map gradient angles to 0°, 45°, 90°, 135°.",
+        targetId: myQuantButton?.current?.id || "quantised-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    //  STEP 8 — NON-MAX SUPPRESSION
+
+    if (!supressed) {
+      baseSteps.push({
+        title: "Non-Maximum Suppression",
+        content:
+          "Click 'Process' to thin edges by removing non-maximal gradient pixels.",
+        targetId: myNonMaxButton?.current?.id || "non-max-supression-canny",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    // STEP 9 — DOUBLE THRESHOLD
+
+    if (!finalGrid) {
+      baseSteps.push({
+        title: "Double Threshold & Hysteresis",
+        content:
+          "Set T_low and T_high, then click 'Process' to finalize edge detection.",
+        targetId: myThresButton?.current?.id || "final-grid-canny",
+        placement: "bottom",
+      });
+
+      // FINAL STEP
+
+      baseSteps.push({
+        title: "Edge Detection Complete",
+        content:
+          "You have successfully completed all stages of the Canny Edge Detection algorithm.",
+        targetId: "final-grid-canny",
+        placement: "top",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    setTutorStepsSim(baseSteps);
+  }, [
+    original,
+    isSimPlaying,
+    image,
+    gKernel,
+    padded,
+    startBlur,
+    padBlur,
+    convolutedx,
+    gradient,
+    quantize,
+    supressed,
+    finalGrid,
+    setTutorStepsSim,
+  ]);
+
   return (
     <MathJaxContext>
       <OpenCvProvider>
         <div id="main-box-canny">
+          <DialogTitle id="instructions-dialog-title">
+            <div
+              style={{
+                width: "50%",
+                justifyContent: "flex-start",
+                display: "flex",
+              }}
+            >
+              Derivative Concept
+            </div>
+            <div
+              style={{
+                width: "50%",
+
+                display: "flex",
+                justifyContent: "flex-end",
+                alignItems: "center",
+              }}
+            >
+              <TutorBtn
+                id="guided-tutor-btn-sim"
+                ref={tutorBtnRefSim}
+                style={{
+                  color: "#1D2A6D",
+                  backgroundColor: "#FFD700",
+                  fontWeight: "bold",
+                  margin: "auto auto",
+                  marginRight: "10px",
+                  borderRadius: "20px",
+                  padding: "5px 15px",
+                  height: "40px",
+                }}
+                onClick={startTutorSim}
+              >
+                {isMobile ? "Tutor" : "Guided Tutor"}
+              </TutorBtn>
+              <TutorBtn
+                id="sound-btn"
+                title={isSpeaking && !isPaused ? "Pause" : "Play"}
+                onClick={handleSpeechToggleSim}
+              >
+                <img
+                  src={isSpeaking && !isPaused ? voice_pause : voice}
+                  alt="voice"
+                  style={{ width: "40px", height: "auto", marginRight: "10px" }}
+                />
+              </TutorBtn>
+              <TutorBtn
+                onClick={() => {
+                  resetTutorSim();
+                  handleClose3Modal();
+                }}
+                color="primary"
+                style={{ backgroundColor: "beige", marginRight: "10px" }}
+              >
+                Close
+              </TutorBtn>
+            </div>
+          </DialogTitle>
           <div id="inst_div_canny">
             <div
               style={{
@@ -684,6 +1029,7 @@ export default function CannyExplanation() {
                     Choose:
                   </label>
                   <Box
+                    id="main-image-box-canny"
                     sx={{
                       width: "100%",
                       height: "85%",
@@ -858,6 +1204,7 @@ export default function CannyExplanation() {
                   )}
 
                   <div
+                    id="gaussian_kernel_matrix"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(3,1fr)",
@@ -1272,7 +1619,13 @@ export default function CannyExplanation() {
             <Carousel.Item>
               {padBlur && (
                 <div id="sobel-application-canny">
-                  <div style={{ display: "flex", flexDirection: "column" ,position:"relative"}}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      position: "relative",
+                    }}
+                  >
                     {padBlur && (
                       <div className="padded-blurred-image">
                         Padded Blurred Image (9x9)
@@ -1307,10 +1660,10 @@ export default function CannyExplanation() {
                       <div
                         style={{
                           position: "absolute",
-                          top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetTop || 0)-37) }px`,
-                          left: `${sobelPosY * ((document.getElementById("sobel-cell")?.offsetHeight || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetLeft || 0)-37) }px`,
-                          width: `${(document.getElementById("sobel-cell")?.offsetWidth || 0)*3+2.5}px`,
-                          height: `${(document.getElementById("sobel-cell")?.offsetHeight || 0)*3+2.5}px`,
+                          top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetTop || 0) - 37)}px`,
+                          left: `${sobelPosY * ((document.getElementById("sobel-cell")?.offsetHeight || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetLeft || 0) - 37)}px`,
+                          width: `${(document.getElementById("sobel-cell")?.offsetWidth || 0) * 3 + 2.5}px`,
+                          height: `${(document.getElementById("sobel-cell")?.offsetHeight || 0) * 3 + 2.5}px`,
                           border: "3px solid #ff4d4d",
                           backgroundColor: "rgba(255, 77, 77, 0.12)",
                           boxShadow: "inset 0 0 10px rgba(255, 77, 77, 0.5)",
@@ -1318,9 +1671,7 @@ export default function CannyExplanation() {
                           transition: "top 0.25s ease, left 0.25s ease",
                           zIndex: 1000,
                         }}
-                      >
-                        
-                      </div>
+                      ></div>
                     )}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
@@ -1354,7 +1705,6 @@ export default function CannyExplanation() {
                                   <div
                                     key={`${rowIndex}-${colIndex}-${imageAnimateKey}`}
                                     className="kernel-matrix"
-                                    
                                   >
                                     {cell}
                                   </div>
@@ -1454,18 +1804,17 @@ export default function CannyExplanation() {
                                   key={`${rowIndex}-${colIndex}`}
                                   id="sobel-matrix"
                                   className={
-                                activeSobelDX.row === rowIndex &&
-                                activeSobelDX.col === colIndex
-                                  ? "dx-active"
-                                  : completedSobelDXSteps.some(
-                                        (item) =>
-                                          item.row === rowIndex &&
-                                          item.col === colIndex,
-                                      )
-                                    ? "dx-completed"
-                                    : ""
-                              }
-
+                                    activeSobelDX.row === rowIndex &&
+                                    activeSobelDX.col === colIndex
+                                      ? "dx-active"
+                                      : completedSobelDXSteps.some(
+                                            (item) =>
+                                              item.row === rowIndex &&
+                                              item.col === colIndex,
+                                          )
+                                        ? "dx-completed"
+                                        : ""
+                                  }
                                 >
                                   {cell}
                                 </div>
@@ -1492,17 +1841,17 @@ export default function CannyExplanation() {
                                   id="sobel-matrix"
                                   style={{}}
                                   className={
-                                activeSobelDY.row === rowIndex &&
-                                activeSobelDY.col === colIndex
-                                  ? "dy-active"
-                                  : completedSobelDYSteps.some(
-                                        (item) =>
-                                          item.row === rowIndex &&
-                                          item.col === colIndex,
-                                      )
-                                    ? "dy-completed"
-                                    : ""
-                              }
+                                    activeSobelDY.row === rowIndex &&
+                                    activeSobelDY.col === colIndex
+                                      ? "dy-active"
+                                      : completedSobelDYSteps.some(
+                                            (item) =>
+                                              item.row === rowIndex &&
+                                              item.col === colIndex,
+                                          )
+                                        ? "dy-completed"
+                                        : ""
+                                  }
                                 >
                                   {cell}
                                 </div>
@@ -1539,14 +1888,14 @@ export default function CannyExplanation() {
                                 className={
                                   activeSobelRes.row === rowIndex &&
                                   activeSobelRes.col === colIndex
-                                  ? "res-active"
-                                  : completedSobelResSteps.some(
-                                        (item) =>
-                                          item.row === rowIndex &&
-                                          item.col === colIndex,
-                                      )
-                                    ? "res-completed"
-                                    : ""
+                                    ? "res-active"
+                                    : completedSobelResSteps.some(
+                                          (item) =>
+                                            item.row === rowIndex &&
+                                            item.col === colIndex,
+                                        )
+                                      ? "res-completed"
+                                      : ""
                                 }
                               >
                                 {cell}
@@ -1866,6 +2215,8 @@ export default function CannyExplanation() {
               </div>
             </div>
           )}
+          {/* tutor modal */}
+          <TutorSim />
         </div>
       </OpenCvProvider>
     </MathJaxContext>

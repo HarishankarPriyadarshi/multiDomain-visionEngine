@@ -4,12 +4,35 @@ import { useSpeechController } from "../features/speech/useSpeechController";
 export const SimContext = createContext(null);
 
 export const SimContextProvider = ({ children }) => {
-  
   const isMobile = useMediaQuery("(max-width:600px)");
   // Sim State
   const [tutorStepsSim, setTutorStepsSim] = useState([]); //Tutor steps list
   const [tutorStepSim, setTutorStepSim] = useState(0);
-  const [isSimPlaying, setIsSimPlaying] = useState(false);
+  const [isSimPlaying, setIsSimPlaying] = useState({
+    original: false,
+    image: false,
+    gKernel: false,
+    myBlurButton: false,
+    myPadButton: false,
+    myPadBlurButton: false,
+    mySobelButton: false,
+    myQuantButton: false,
+    myNonMaxButton: false,
+    myThresButton: false,
+    myNextButton: false,
+    padded: false,
+    startBlur: false,
+    padBlur: false,
+    blurred: false,
+    sobelx: false,
+    sobely: false,
+    convolutedx: false,
+    convolutedy: false,
+    gradient: false,
+    quantize: false,
+    supressed: false,
+    finalGrid: false,
+  });
   const [prevStepSim, setPrevStepSim] = useState(0);
   const [isTutorOpenSim, setIsTutorOpenSim] = useState(false);
   const tutorBtnRefSim = useRef(null);
@@ -33,7 +56,7 @@ export const SimContextProvider = ({ children }) => {
     const timer = setTimeout(() => {
       setShowWelcomeSim(true);
       speak(
-        "Welcome to the Gradient Convolution Visualization experiment. In this simulation, you will observe how edge detection works step-by-step using convolution with Kernel X and Kernel Y operators.",
+        "",
       );
     }, 500);
 
@@ -47,7 +70,6 @@ export const SimContextProvider = ({ children }) => {
 
   const handleTutorNextSim = () => {
     if (tutorStepSim < tutorStepsSim.length - 1) {
-     
       setPrevStepSim(tutorStepSim);
       setTutorStepSim(tutorStepSim + 1);
     } else {
@@ -63,10 +85,10 @@ export const SimContextProvider = ({ children }) => {
     }
   };
   const resetTutorSim = () => {
-  setTutorStepSim(0);
-  setIsTutorOpenSim(false);
-  stop();
-};
+    setTutorStepSim(0);
+    setIsTutorOpenSim(false);
+    stop();
+  };
 
   const currentStepSim = tutorStepsSim[tutorStepSim];
 
@@ -79,7 +101,7 @@ export const SimContextProvider = ({ children }) => {
     : currentStepSim;
 
   const welcomeText =
-    "Welcome to the Gradient Convolution Visualization experiment. In this simulation, you will observe how edge detection works step-by-step using convolution with Kernel X and Kernel Y operators.";
+    "";
   const currentTutorText = tutorStepsSim[tutorStepSim]?.content || "";
 
   const activeSpeechText = isTutorOpenSim
@@ -114,7 +136,7 @@ export const SimContextProvider = ({ children }) => {
       previousSpeechKeyRef.current = activeSpeechKey;
     }
 
-    if (!activeSpeechText || (!isTutorOpenSim && !isSimPlaying)  || isPaused) {
+    if (!activeSpeechText || (!isTutorOpenSim && !isSimPlaying) || isPaused) {
       return;
     }
 

@@ -1017,3 +1017,23 @@ h6 {
   color: #065f46;
   border-radius: 4px;
 }
+
+
+/* new instruction box and tutor button */
+
+#instructions-dialog-title {
+  padding: 8px 16px;
+  display: flex;
+  background-color: #1d2a6d;
+  color: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  #instructions-dialog-title {
+    font-size: 16px;
+      padding: 5px 10px;
+  }
+}

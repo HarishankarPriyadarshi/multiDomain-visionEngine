@@ -69,7 +69,6 @@ export default function CannyPage() {
     setTutorStep,
     setShowWelcome,
     stop,
-    isGaussOnTutor,
     setIsGaussOnTutor,
   } = useContext(HomeContext);
   const myProcess2Button = useRef(null);
@@ -1063,7 +1062,7 @@ export default function CannyPage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle
+                  {/* <DialogTitle
                     id="instructions-dialog-title"
                     className="dialog-title"
                   >
@@ -1083,10 +1082,10 @@ export default function CannyPage() {
                         Close
                       </Button>
                     </div>
-                  </DialogTitle>
+                  </DialogTitle> */}
 
                   <DialogContent sx={{ padding: "0px", height: "1200px" }}>
-                    {openCannyModal && <CannyExplanation />}
+                    {openCannyModal && <CannyExplanation handleClose3Modal={handleClose3Modal} />}
                     {/* {CannyExplanation()} */}
                   </DialogContent>
                 </Dialog>
