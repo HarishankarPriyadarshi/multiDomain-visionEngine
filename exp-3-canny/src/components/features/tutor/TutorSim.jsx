@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grow from "@mui/material/Grow";
@@ -51,9 +51,7 @@ export const TutorSim = () => {
     ));
   };
   // tutorStepSim
-  useEffect(() => {
-
-  }, [tutorStepSim,handleTutorNextSim]);
+  useEffect(() => {}, [tutorStepSim, handleTutorNextSim]);
 
   // Highlight current step element
   useEffect(() => {
@@ -80,6 +78,18 @@ export const TutorSim = () => {
     };
   }, [isTutorOpenSim, tutorStepSim, tutorStepsSim]);
 
+  // if action required then no next bt
+  const [isActionRequired, setIsActionRequired] = useState(false);
+  useEffect(() => {
+    if (tutorStepsSim[tutorStepSim]?.title === "Action Required") {
+      setIsActionRequired(true);
+    } else {
+      setIsActionRequired(false);
+    }
+  }, [tutorStepSim, tutorStepsSim]);
+
+
+
   return (
     <div>
       {/* Welcome Modal */}
@@ -89,7 +99,7 @@ export const TutorSim = () => {
         placement="bottom"
         transition
         className="tutor-popper-sim tutor-backdrop"
-modifiers={[
+        modifiers={[
           {
             name: "offset",
             options: {
@@ -111,7 +121,7 @@ modifiers={[
               </Typography>
               <p className="tutor-content">
                 {renderHighlightedText(
-                 "Would you like assistance from the Guided Tutor Mode In Simulation?",
+                  "Would you like assistance from the Guided Tutor Mode In Simulation?",
                   showWelcomeSim,
                 )}
               </p>
@@ -177,8 +187,9 @@ modifiers={[
               aria-labelledby="tutor-step-title"
             >
               <div className="tutor-arrow" />
-              <Typography id="tutor-step-title" className="tutor-title">
-               {tutorStepsSim[tutorStepSim]?.title}
+              <Typography id="tutor-step-title" className={isActionRequired ? "tutor-title-action" : "tutor-title"}>
+                
+                {tutorStepsSim[tutorStepSim]?.title}
               </Typography>
 
               <p className="tutor-content">
@@ -213,14 +224,18 @@ modifiers={[
                     Back
                   </Button>
                 )}
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleTutorNextSim}
-                  sx={{ backgroundColor: "#1D2A6D" }}
-                >
-                  {tutorStepSim === tutorStepsSim.length - 1 ? "Finish" : "Next"}
-                </Button>
+                {!isActionRequired && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleTutorNextSim}
+                    sx={{ backgroundColor: "#1D2A6D" }}
+                  >
+                    {tutorStepSim === tutorStepsSim.length - 1
+                      ? "Finish"
+                      : "Next"}
+                  </Button>
+                )}
               </div>
             </Paper>
           </Grow>

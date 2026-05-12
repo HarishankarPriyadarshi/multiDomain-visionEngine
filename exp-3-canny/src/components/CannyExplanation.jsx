@@ -702,7 +702,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
         content:
           "Choose one of the 7×7 binary sample images. This will act as the input signal for edge detection.",
         targetId: "main-image-box-canny",
-        placement: "right",
+        placement: "bottom",
+        offset: [0, 10],
       },
     ];
     // step 1: Select an Image
@@ -711,7 +712,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
         title: "Action Required",
         content: "Please select any image to initialize the simulation.",
         targetId: "main-image-box-canny",
-        placement: "right",
+        placement: "bottom",
+        offset: [0, 10],
       });
       setTutorStepsSim(baseSteps);
       return;
@@ -757,56 +759,163 @@ export default function CannyExplanation({ handleClose3Modal }) {
       setTutorStepsSim(baseSteps);
       return;
     }
-    baseSteps.push({
-      title: "Generated Gaussian Kernel (3×3)",
-      content:
-        "This 3×3 kernel is computed using the selected sigma (σ) value. It will be used for convolution in the next step.",
-      targetId: "gaussian_kernel_matrix",
-      placement: "right",
-      offset: [10, 10],
-    });
+    baseSteps.push(
+      {
+        title: "Generated Gaussian Kernel (3×3)",
+        content:
+          "This 3×3 kernel is computed using the selected sigma (σ) value. It will be used for convolution in the next step.",
+        targetId: "gaussian_kernel_matrix",
+        placement: "right",
+        offset: [10, 10],
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+    if (index === 0) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
 
     //      STEP 2 — PADDING ORIGINAL IMAGE
-    baseSteps.push({
-      title: "Padding Before Convolution",
-      content:
-        "Before applying a 3×3 kernel, we pad the 7×7 image to 9×9 so that spatial dimensions are preserved.",
-      targetId: "padding-canny",
-      placement: "top",
-    });
-    if (!padded) {
-      baseSteps.push({
+    baseSteps.push(
+      {
+        title: "Padding Before Convolution",
+        content:
+          "Before applying a 3×3 kernel, we pad the 7×7 image to 9×9 so that spatial dimensions are preserved.",
+        targetId: "padding-canny-zone",
+        placement: "left",
+        offset: [10, 10],
+      },
+      {
         title: "Apply Padding",
         content: "Click the 'Pad' button to perform zero-padding.",
-        targetId: myPadButton?.current?.id || "padding-canny",
+        targetId: "pad-btn-zone",
+        placement: "bottom",
+      },
+    );
+    if (!padded) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Please click the 'Pad' button to perform padding.",
+        targetId: "pad-btn-zone",
         placement: "bottom",
       });
 
       setTutorStepsSim(baseSteps);
       return;
     }
-    //  STEP 3 — GAUSSIAN BLUR
-    baseSteps.push({
-      title: "Gaussian Blur",
-      content:
-        "After padding-padding, we apply the Gaussian kernel to smooth the image. This step reduces noise and enhances edge detection.",
-      targetId: "gaussian-blur-canny",
-      placement: "left",
-    });
-    baseSteps.push({
-      title: "Gaussian Convolution",
-      content:
-        "Now we slide the Gaussian kernel across the padded image to compute weighted averages for smoothing.",
-      targetId: "gaussian-blur-canny",
-      placement: "top",
-    });
+    baseSteps.push(
+      {
+        title: "Padded Matrix",
+        content: "This is the padded 9×9 image after zero-padding.",
+        targetId: "padded-matrix-canny-zone",
+        placement: "right",
+        offset: [10, 10],
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
 
-    if (!startBlur) {
+    if (index === 1) {
       baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    //  STEP 3 — GAUSSIAN BLUR
+    baseSteps.push(
+      {
+        title: " Padded Image",
+        content:
+          "This is the padded 9×9 image. Padding ensures that convolution can be applied at border pixels without losing information.",
+        targetId: "gaussian-blur-matrix-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+      {
+        title: "Gaussian Kernel",
+        content:
+          "This 3×3 Gaussian kernel assigns higher weight to the center pixel and smaller weights to surrounding pixels. It smooths the image by weighted averaging.",
+        targetId: "gaussian-kernel-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+      {
         title: "Start Blurring",
         content: "Click 'Blur' to begin animated convolution.",
-        targetId: myBlurButton?.current?.id || "gaussian-blur-canny",
+        targetId: "gussian-blur-btn-zone",
         placement: "bottom",
+      },
+    );
+    if (!startBlur) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Please click the 'Pad' button to perform padding.",
+        targetId: "gussian-blur-btn-zone",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    baseSteps.push(
+      {
+        title: "Current Gaussian Convolution Step ",
+        content:
+          "For the current 3×3 region, each pixel value is multiplied by its corresponding Gaussian kernel weight. The 9 resulting products are then summed together to compute a single output pixel value. This process performs a weighted averaging operation, where the center pixel has greater influence than its neighbors, resulting in a smoother image.",
+        targetId: "gaussian-blur-conv-steps-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Gaussian Blurred Matrix (Numerical Output)",
+        content:
+          "The matrix represents the mathematical result of convolution, where each output pixel is computed independently using weighted averaging.",
+        targetId: "gaussian-blurred-matrix-zone",
+        placement: "top",
+      },
+      {
+        title: "Gaussian Blurred Image (Visual Representation)",
+        content:
+          "This visualization converts numerical intensities into grayscale values, allowing us to observe the smoothing effect spatially.",
+        targetId: "gaussian-blurred-image-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+    );
+
+    if (index === 2) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
       });
 
       setTutorStepsSim(baseSteps);
@@ -932,6 +1041,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     supressed,
     finalGrid,
     setTutorStepsSim,
+    index,
   ]);
 
   return (
@@ -1247,6 +1357,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     <div style={{ textAlign: "center" }}>
                       {gKernel && <h4>Non-Padded</h4>}
                       <div
+                        id="padding-canny-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -1274,6 +1385,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     <div style={{ textAlign: "center" }}>
                       {padded && <h4>Padded</h4>}
                       <div
+                        id="padded-matrix-canny-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(9, 1fr)",
@@ -1315,7 +1427,12 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   </div>
                   {gKernel && (
-                    <Button ref={myPadButton} className="btn" onClick={padding}>
+                    <Button
+                      id="pad-btn-zone"
+                      ref={myPadButton}
+                      className="btn"
+                      onClick={padding}
+                    >
                       Pad
                     </Button>
                   )}
@@ -1330,6 +1447,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                 <div id="conv-mult-canny">
                   <div className="common-flex">
                     <div
+                      id="gaussian-blur-matrix-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(9, 1fr)",
@@ -1378,6 +1496,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   <div class="blur_oper">*</div>
                   <div className="common-flex">
                     <div
+                      id="gaussian-kernel-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(3, 1fr)",
@@ -1404,6 +1523,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   <div class="blur_oper">=</div>
                   <div className="common-flex">
                     <div
+                      id="gaussian-blurred-matrix-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
@@ -1441,6 +1561,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   <div id="blurred-out-canny">
                     <div className="common-flex">
                       <div
+                        id="gaussian-blurred-image-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -1474,7 +1595,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   <div className="conv-steps-box">
                     <h4>Current Gaussian Convolution Step</h4>
 
-                    <div className="conv-steps">
+                    <div
+                      id="gaussian-blur-conv-steps-zone"
+                      className="conv-steps"
+                    >
                       <div className="gussian-step">Step {gussianStep} :</div>
                       {gussianConvSteps.map((step, index) => (
                         <div key={index}>
@@ -1489,6 +1613,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                 {padded && (
                   <Button
+                    id="gussian-blur-btn-zone"
                     ref={myBlurButton}
                     className="btn"
                     style={{ zIndex: "1000" }}
@@ -2202,6 +2327,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   <div className="button-base" />
                 </button>
                 <button
+                  id="next-btn-zone"
                   className="button-3d"
                   ref={myNextButton}
                   onClick={() => NEXT()}
