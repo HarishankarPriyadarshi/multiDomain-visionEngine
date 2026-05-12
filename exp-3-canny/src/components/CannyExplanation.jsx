@@ -980,7 +980,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       },
     );
-  
+
     if (index === 3) {
       baseSteps.push({
         title: "Action Required",
@@ -1004,42 +1004,125 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     if (!convolutedx) {
       baseSteps.push({
+        title: "Action Required",
+        content:
+          "Please click the 'Pad' button to generate the padded blurred image.",
+        targetId: "step-four-pad-blurred-button",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+    baseSteps.push(
+      {
         title: "Apply Sobel",
         content: "Click 'Apply Sobel' to compute gradient components.",
         targetId: mySobelButton?.current?.id || "sobel-application-canny",
         placement: "bottom",
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+
+    if (index === 4) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
       });
 
       setTutorStepsSim(baseSteps);
       return;
     }
-    // STEP 6 — GRADIENT MAGNITUDE
-    if (!gradient) {
-      setTutorStepsSim(baseSteps);
-      return;
-    }
 
-    baseSteps.push({
-      title: "Gradient Magnitude",
-      content:
-        "Gradient magnitude is computed as √(Gx² + Gy²). This represents edge strength.",
-      targetId: "gradient-canny",
-      placement: "top",
-    });
-    // STEP 7 — Quantization
+    // STEP 6 — GRADIENT QUANTISATION
+
+    baseSteps.push(
+      {
+        title: "Gradient Direction Matrix",
+        content:
+          "This matrix contains the computed gradient directions for each pixel. The angle represents the direction of maximum intensity change at that pixel.",
+        targetId: "step-six-gradient-matrix",
+        placement: "left",
+        offset: [0, 10],
+      },
+      {
+        title: "Why Quantisation Is Needed?",
+        content:
+          "For Non-Maximum Suppression, we only need four principal directions: 0°, 45°, 90°, and 135°. Therefore, each gradient angle is approximated to the nearest of these four directions.",
+        targetId: "step-six-quantise-button",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Start Quantisation",
+        content:
+          "Click 'Quantise' to map each gradient angle to its nearest principal direction (0°, 45°, 90°, or 135°).",
+        targetId: "step-six-quantise-button",
+        placement: "bottom",
+      },
+    );
+
     if (!quantize) {
       baseSteps.push({
-        title: "Quantize Directions",
+        title: "Action Required",
         content:
-          "Click 'Quantise' to map gradient angles to 0°, 45°, 90°, 135°.",
-        targetId: myQuantButton?.current?.id || "quantised-canny",
+          "Please click the 'Quantise' button to perform gradient direction quantisation.",
+        targetId: "step-six-quantise-button",
         placement: "bottom",
       });
 
       setTutorStepsSim(baseSteps);
       return;
     }
-    //  STEP 8 — NON-MAX SUPPRESSION
+
+    baseSteps.push(
+      {
+        title: "Quantised Direction Matrix",
+        content:
+          "Each gradient angle has now been replaced with its nearest principal direction. This simplifies edge direction analysis and prepares the image for Non-Maximum Suppression.",
+        targetId: "step-six-quantise-matrix",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Directional Meaning",
+        content:
+          "• 0° means Horizontal edge comparison\n• 90° means Vertical edge comparison\n•  45° and 135° means Diagonal edge comparison\n\nThese directions determine which neighboring pixels will be compared in the next step.",
+        targetId: "quantised-canny-div",
+        placement: "top",
+        offset: [0, 10],
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+    if (index === 5) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    //  STEP 7 — NON-MAX SUPPRESSION
 
     if (!supressed) {
       baseSteps.push({
@@ -1054,7 +1137,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       return;
     }
 
-    // STEP 9 — DOUBLE THRESHOLD
+    // STEP 8 — DOUBLE THRESHOLD
 
     if (!finalGrid) {
       baseSteps.push({
@@ -2109,6 +2192,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   >
                     {gradient && <h4>Gradient</h4>}
                     <div
+                      id="step-six-gradient-matrix"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
@@ -2149,6 +2233,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   >
                     {quantize && <h4>Quantise</h4>}
                     <div
+                      id="step-six-quantise-matrix"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
@@ -2179,6 +2264,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                 </div>
 
                 <Button
+                  id="step-six-quantise-button"
                   className="btn"
                   ref={myQuantButton}
                   onClick={quantiseGrad}
