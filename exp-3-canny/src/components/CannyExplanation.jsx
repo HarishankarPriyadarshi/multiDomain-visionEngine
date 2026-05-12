@@ -922,19 +922,72 @@ export default function CannyExplanation({ handleClose3Modal }) {
       return;
     }
     //     STEP 4 — PADDING BLURRED IMAGE
-    baseSteps.push({
-      title: "Padding Blurred Image",
-      content: "We pad again because Sobel also uses a 3×3 kernel.",
-      targetId: "pad-after-canny",
-      placement: "top",
-    });
+    // STEP 4 — PADDING AFTER GAUSSIAN BLUR
 
+    baseSteps.push(
+      {
+        title: "Gaussian Blurred Image (7×7)",
+        content:
+          "This is the 7×7 Gaussian blurred image obtained after smoothing. Before applying edge detection filters, we need to prepare this image for another convolution operation.",
+        targetId: "step-four-blurred-image-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Why Padding Is Required Again?",
+        content:
+          "Since Sobel operators use a 3×3 kernel, padding is required to ensure that convolution can be applied at the border pixels. Without padding, edge pixels would be ignored.",
+        targetId: "step-four-pad-blurred-button",
+        placement: "bottom",
+      },
+      {
+        title: "Start Padding",
+        content:
+          "Click 'Pad' to add a one-pixel border around the blurred image.",
+        targetId: "step-four-pad-blurred-button",
+        placement: "bottom",
+      },
+    );
+
+    // Action gating
     if (!padBlur) {
       baseSteps.push({
-        title: "Apply Padding",
-        content: "Click 'Pad' to prepare for Sobel convolution.",
-        targetId: myPadBlurButton?.current?.id || "pad-after-canny",
+        title: "Action Required",
+        content:
+          "Please click the 'Pad' button to generate the padded blurred image.",
+        targetId: "step-four-pad-blurred-button",
         placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    baseSteps.push(
+      {
+        title: "Padded Blurred Image (9×9)",
+        content:
+          "The animated border highlights the newly added zero-intensity pixels..This is the padded blurred image. A border of zeros has been added around the 7×7 image, increasing its size to 9×9. This ensures that edge detection filters can process every pixel properly.",
+        targetId: "step-four-padded-blurred-image-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+  
+    if (index === 3) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
       });
 
       setTutorStepsSim(baseSteps);
@@ -1647,6 +1700,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     >
                       <div>Gaussian Blurred Image (7x7) </div>
                       <div
+                        id="step-four-blurred-image-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -1683,6 +1737,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   >
                     {padBlur && <div>Padded Blurred Image (9x9)</div>}
                     <div
+                      id="step-four-padded-blurred-image-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(9, 1fr)",
@@ -1730,6 +1785,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                 {blurred && (
                   <Button
+                    id="step-four-pad-blurred-button"
                     ref={myPadBlurButton}
                     className="btn"
                     onClick={padblurred}
