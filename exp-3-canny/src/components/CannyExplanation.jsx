@@ -97,7 +97,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [completedSobelDYSteps, setCompletedSobelDYSteps] = useState([]);
   const [completedSobelResSteps, setCompletedSobelResSteps] = useState([]);
 
-  const equation1 = "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
+  // state tracking for the Non maximum suppression
+
+  const equation1 = "\\theta = \\tan^{-1}\\left(\\frac{G_y}{G_x}\\right)";
 
   //console.log("index value:", index);
 
@@ -387,11 +389,12 @@ export default function CannyExplanation({ handleClose3Modal }) {
         grad[i - 1][j - 1] = (Math.atan2(sumY, sumX) * (180 / Math.PI)).toFixed(
           0,
         );
+        console.log("grad:", grad[i - 1][j - 1]);
 
         setConvolutedx([...convolutedX]);
         setConvolutedy([...convolutedY]);
         setGradient(grad);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2));
       }
     }
     enabledNext();
@@ -415,7 +418,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        let angle = gradient[i][j] ? gradient[i][j] % 180 : 0;
+        let angle = Number(gradient[i][j]) || 0;
+         console.log("quantiseGradBefore:", "angle:", angle, i, j);
+        angle = (angle + 180) % 180; // Normalize to 0–180
+        console.log("quantiseGradAfter:", "angle:", angle, i, j);
 
         let value;
 
@@ -464,6 +470,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     for (let i = 1; i < gradient.length - 1; i++) {
       for (let j = 1; j < gradient[0].length - 1; j++) {
         let angle = gradient[i][j];
+        console.log("nonmax:", "angle:", angle, i, j);
         let current = totalGradient[i][j];
         let neighbor1 = 0,
           neighbor2 = 0;
