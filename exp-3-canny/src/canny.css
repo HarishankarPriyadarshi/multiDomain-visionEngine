@@ -125,8 +125,8 @@ h6 {
 }
 
 #original_matrix {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ccc;
 }
 
@@ -188,8 +188,8 @@ h6 {
 
 #nonpadded_matrix,
 #padded_matrix {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ccc;
 }
 
@@ -228,15 +228,15 @@ h6 {
 }
 
 #padded-canny {
-  width: 20px;
-  height: 20px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ccc;
 }
 
 #gaussian_blur_matrix,
 #result_gaussian_blur_matrix {
-  width: 30px;
-  height: 30px;
+  width: 33px;
+  height: 33px;
   background-color: white;
   border: 1px solid #ccc;
   display: flex;
@@ -258,8 +258,8 @@ h6 {
 }
 
 #blurred-out-canny-matrix {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ccc;
   display: flex;
   align-items: center;
@@ -268,8 +268,8 @@ h6 {
 }
 
 #padded-blurred-out-canny-matrix {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ccc;
 }
 
@@ -375,13 +375,21 @@ h6 {
 }
 
 .quantised-canny-matrix {
-  width: 35px;
-  height: 35px;
+  width: 37px;
+  height: 37px;
   border: 1px solid #ccc;
   background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+
+  border-radius: 3px;
+
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
 }
 
 #non-max-supression-canny {
@@ -917,7 +925,7 @@ h6 {
 }
 
 .res-active {
-  border: 2px solid #711ede !important;
+  border: 2px solid #ff0000 !important;
   background-color: #6f46d845 !important;
   color: #ff0000;
   z-index: 2222;
@@ -933,7 +941,7 @@ h6 {
 }
 .resImage-active {
   transform: scale(1.19);
-  border: 2px solid #5b31c3 !important;
+  border: 2px solid #ff0000 !important;
 }
 
 /* Sobel Matrix */
@@ -943,45 +951,33 @@ h6 {
   color: #0b0b0b;
   margin-bottom: 10px;
 }
-/* .padded-sobel-matrix {
+
+.padded-sobel-matrix {
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
   width: 37px;
   height: 37px;
-  border: 1px solid #ccc;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fcf6da81;
-} */
-.padded-sobel-matrix {
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid #1f4ba9;
-  background-color: #ffffff;
-  color: #344055;
-  transition: 0.2s ease;
+  background-color: #d4e4fb;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
 }
 
-.padded-sobel-matrix:hover {
-  background-color: #eef3ff;
+.sobelX {
+  background-color: #eee9c4;
+}
+.sobelY {
+  background-color: #cfecc7;
 }
 
 .matrix-card {
-  background: white;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  margin-bottom: 25px;
-  transition: 0.3s ease;
-}
-
-.matrix-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  padding-left: 12px;
 }
 
 .kernel-matrix {
@@ -996,28 +992,57 @@ h6 {
   color: #1e3a8a;
   border-radius: 6px;
 }
-#sobel-matrix {
+#sobel-matrix-x {
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
   width: 37px;
   height: 37px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   font-size: 13px;
-  border: 1px solid #e5e7eb;
-  background-color: #f9fafb;
-  color: #111827;
+  font-weight: 400;
+  background-color: #eee9c4;
+  color: #0b0b0b !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+#sobel-matrix-y {
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  font-size: 13px;
+  font-weight: 400;
+  background-color: #cfecc7;
+  color: #0b0b0b !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
 }
 #sobel-gradient-matrix {
-  display: flex;
+  border: 1px solid #ccc;
   align-items: center;
+  display: flex;
   justify-content: center;
-  font-weight: 600;
-  border: 1px solid #bbf7d0;
-  background-color: #ecfdf5;
-  color: #065f46;
-  border-radius: 4px;
+  width: 37px;
+  height: 37px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: #d4e4fb;
+  color: #0b0b0b;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
 }
-
 
 /* new instruction box and tutor button */
 
@@ -1034,6 +1059,150 @@ h6 {
 @media screen and (max-width: 768px) {
   #instructions-dialog-title {
     font-size: 16px;
-      padding: 5px 10px;
+    padding: 5px 10px;
+  }
+}
+
+/* Non-maximal Suppression */
+.nms-explanation-box {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+  overflow-y: hidden;
+  color: #141414;
+}
+
+@media screen and (max-width: 768px) {
+  .nms-explanation-box {
+    flex-direction: column;
+  }
+}
+.nms-gradient-mag-matrix,
+.nms-gradient-dir-matrix {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  background-color: #d4e4fb;
+  border-radius: 2px;
+  font-weight: 400;
+  font-size: 14px;
+  box-shadow:
+    1px 1px 1px rgba(255, 255, 255, 0.901),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+.active-pixel {
+  background-color: #4cb5e9 !important;
+  color: rgb(0, 0, 0);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+.neighbor-pixel {
+  background-color: orange !important;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+.nms-live-explanation-btn-box {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+}
+.nms-live-explanation {
+  margin-left: -111px;
+  margin-top: 10px;
+  padding: 12px;
+  background: #ffffff;
+  /* border-left: 5px solid #2196f3; */
+  font-size: 14px;
+  width: 500px;
+  height: 140px;
+  border-radius: 4px;
+}
+
+/* matrix animate */
+
+#originalGrid {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ccc;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+}
+.canny-matrix-animate {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: dropDown 0.4s ease forwards;
+  background-color: #ffffff !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+.canny-matrix-non-animate,
+#gaussian_blur_matrix {
+  background-color: #ffffff !important;
+  color: #242424 !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+
+.kernel-canny-matrix-animate {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: dropDown 0.4s ease forwards;
+  background-color: #eee9c4 !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+.kernel-canny-matrix-non-animate {
+  background-color: #eee9c4 !important;
+  border-radius: 3px;
+  font-weight: 400;
+  box-shadow:
+    3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+.canny-matrix-over:hover,
+.original-matrix-box:hover,
+#gaussian_kernel_matrix:hover,
+#nonpadded_matrix:hover,
+#padded_matrix:hover,
+#padded-canny:hover,
+.kernel-canny-matrix-non-animate:hover,
+#gaussian_blur_matrix:hover,
+#result_gaussian_blur_matrix:hover,
+#blurred-out-canny-matrix:hover,
+#padded-blurred-out-canny-matrix:hover,
+#sobel-gradient-matrix:hover,
+#sobel-matrix-y:hover,
+#sobel-matrix-x:hover,
+.padded-sobel-matrix:hover,
+.quantised-canny-matrix:hover,
+.nms-gradient-mag-matrix:hover {
+  transform: translateY(-2px) !important;
+}
+@keyframes dropDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

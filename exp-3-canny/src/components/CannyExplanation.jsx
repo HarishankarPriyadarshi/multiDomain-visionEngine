@@ -72,7 +72,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [sobely, setSobely] = useState(null);
   const [convolutedx, setConvolutedx] = useState(null);
   const [convolutedy, setConvolutedy] = useState(null);
-  const [gradient, setGradient] = useState(null);
+  const [gradient, setGradient] = useState(null); //angle of gradient
+  const [gradientMag, setGradientMag] = useState(null); //total gradient magnitude
   const [quantize, setQuantize] = useState(null);
 
   const [index, setIndex] = useState(0); // for carousel
@@ -98,8 +99,12 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [completedSobelResSteps, setCompletedSobelResSteps] = useState([]);
 
   // state tracking for the Non maximum suppression
-
+  const [animatedSuppressed, setAnimatedSuppressed] = useState(null);
+  const [activePixel, setActivePixel] = useState(null);
+  const [activeNeighbors, setActiveNeighbors] = useState([]);
+  const [nmsExplanation, setNmsExplanation] = useState([]);
   const equation1 = "\\theta = \\tan^{-1}\\left(\\frac{G_y}{G_x}\\right)";
+  const equation2 = "G = \\sqrt{G_x^2 + G_y^2}";
 
   //console.log("index value:", index);
 
@@ -352,6 +357,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
     let grad = Array(7)
       .fill(0)
       .map(() => Array(7).fill(0));
+    let totalGrad = Array(7)
+      .fill(0)
+      .map(() => Array(7).fill(0));
 
     for (let i = 1; i < padBlur.length - 1; i++) {
       for (let j = 1; j < padBlur[0].length - 1; j++) {
@@ -389,11 +397,16 @@ export default function CannyExplanation({ handleClose3Modal }) {
         grad[i - 1][j - 1] = (Math.atan2(sumY, sumX) * (180 / Math.PI)).toFixed(
           0,
         );
-        console.log("grad:", grad[i - 1][j - 1]);
+        totalGrad[i - 1][j - 1] = Math.sqrt(sumX * sumX + sumY * sumY).toFixed(
+          2,
+        );
+
+        // console.log("grad:", grad[i - 1][j - 1]);
 
         setConvolutedx([...convolutedX]);
         setConvolutedy([...convolutedY]);
         setGradient(grad);
+        setGradientMag(totalGrad);
         await new Promise((resolve) => setTimeout(resolve, 2));
       }
     }
@@ -419,9 +432,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
         let angle = Number(gradient[i][j]) || 0;
-         console.log("quantiseGradBefore:", "angle:", angle, i, j);
+        // console.log("quantiseGradBefore:", "angle:", angle, i, j);
         angle = (angle + 180) % 180; // Normalize to 0–180
-        console.log("quantiseGradAfter:", "angle:", angle, i, j);
+        //console.log("quantiseGradAfter:", "angle:", angle, i, j);
 
         let value;
 
@@ -449,59 +462,199 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     enabledNext();
   }
-  function nonmax() {
-    if (!convolutedx || !convolutedy || !gradient) return;
+  async function dnonmax() {
+    if (!gradientMag || !gradient) return;
     myNonMaxButton.current.disabled = true;
-    let totalGradient = Array(7)
-      .fill(0)
-      .map(() => Array(7).fill(0));
-    let suppressed = Array(7)
-      .fill(0)
-      .map(() => Array(7).fill(0));
+    const rows = gradientMag.length;
+    const cols = gradientMag[0].length;
 
-    for (let i = 0; i < convolutedx.length; i++) {
-      for (let j = 0; j < convolutedx[0].length; j++) {
-        totalGradient[i][j] = Math.sqrt(
-          Math.pow(convolutedx[i][j], 2) + Math.pow(convolutedy[i][j], 2),
-        ).toFixed(2);
-      }
-    }
+    let suppressed = Array(rows)
+      .fill(0)
+      .map(() => Array(cols).fill(0));
+    console.log("suppressedIntial:", suppressed);
+    //initialize animated suppressed matrix
+    setAnimatedSuppressed(
+      Array(rows)
+        .fill(0)
+        .map(() => Array(cols).fill(0)),
+    );
 
-    for (let i = 1; i < gradient.length - 1; i++) {
-      for (let j = 1; j < gradient[0].length - 1; j++) {
-        let angle = gradient[i][j];
-        console.log("nonmax:", "angle:", angle, i, j);
-        let current = totalGradient[i][j];
-        let neighbor1 = 0,
-          neighbor2 = 0;
+    for (let i = 1; i < rows - 1; i++) {
+      for (let j = 1; j < cols - 1; j++) {
+        let angle = quantize[i][j];
+       console.log("nonmax:", "angle:", angle, i, j);
+        let current = parseFloat(gradientMag[i][j]);
+        let neighbor1 = 0;
+        let neighbor2 = 0;
+        let neighbors = [];
+        
 
         if (angle === 0) {
-          neighbor1 = totalGradient[i][j - 1];
-          neighbor2 = totalGradient[i][j + 1];
+          neighbor1 = gradientMag[i][j - 1];
+          neighbor2 = gradientMag[i][j + 1];
+          neighbors = [
+            [i, j - 1],
+            [i, j + 1],
+          ];
         } else if (angle === 45) {
-          neighbor1 = totalGradient[i - 1][j + 1];
-          neighbor2 = totalGradient[i + 1][j - 1];
+          neighbor1 = gradientMag[i - 1][j + 1];
+          neighbor2 = gradientMag[i + 1][j - 1];
+          neighbors = [
+            [i - 1, j + 1],
+            [i + 1, j - 1],
+          ];
         } else if (angle === 90) {
-          neighbor1 = totalGradient[i - 1][j];
-          neighbor2 = totalGradient[i + 1][j];
+          neighbor1 = gradientMag[i - 1][j];
+          neighbor2 = gradientMag[i + 1][j];
+          neighbors = [
+            [i - 1, j],
+            [i + 1, j],
+          ];
         } else if (angle === 135) {
-          neighbor1 = totalGradient[i - 1][j - 1];
-          neighbor2 = totalGradient[i + 1][j + 1];
+          neighbor1 = gradientMag[i - 1][j - 1];
+          neighbor2 = gradientMag[i + 1][j + 1];
+          neighbors = [
+            [i - 1, j - 1],
+            [i + 1, j + 1],
+          ];
         }
 
-        if (current >= neighbor1 && current >= neighbor2) {
-          suppressed[i][j] = current;
-        } else {
-          suppressed[i][j] = 0;
-        }
+        setActivePixel([i, j]);
+        setActiveNeighbors(neighbors);
+        setNmsExplanation([]);
+        // force React to render highlight first
+await new Promise((r) => setTimeout(r, 200));
+
+      setNmsExplanation([
+        `Direction: ${angle}°`,
+        `Current Magnitude: ${current}`,
+        `Comparing with ${neighbor1} and ${neighbor2}`
+      ]);
+
+
+        await new Promise((r) => setTimeout(r, 800));
+
+      if (current >= neighbor1 && current >= neighbor2) {
+        suppressed[i][j] = current;
+        setNmsExplanation(prev => [...prev, "Pixel is local maximum → KEPT"]);
+      } else {
+        suppressed[i][j] = 0;
+        setNmsExplanation(prev => [...prev, "Pixel is NOT maximum → SUPPRESSED"]);
+      }
+
+        setAnimatedSuppressed((prev) => {
+          const copy = prev.map((r) => [...r]);
+          copy[i][j] = suppressed[i][j];
+          return copy;
+        });
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }
     }
 
     setSupressed(suppressed);
-    console.log(suppressed);
+    setActivePixel(null);
+    setActiveNeighbors([]);
+    setNmsExplanation(["Non-Maximum Suppression Complete "]);
+
     enabledNext();
   }
+  // async function nonmax() {
+  //   if (!gradientMag || !quantize) return;
 
+  //   myNonMaxButton.current.disabled = true;
+
+  //   const rows = gradientMag.length;
+  //   const cols = gradientMag[0].length;
+
+  //   let suppressed = Array(rows)
+  //     .fill(0)
+  //     .map(() => Array(cols).fill(0));
+
+  //   // initialize animation matrix
+  //   setAnimatedSuppressed(
+  //     Array(rows)
+  //       .fill(0)
+  //       .map(() => Array(cols).fill(0)),
+  //   );
+
+  //   for (let i = 1; i < rows - 1; i++) {
+  //     for (let j = 1; j < cols - 1; j++) {
+  //       const angle = quantize[i][j];
+  //       const current = parseFloat(gradientMag[i][j]);
+
+  //       let neighbor1 = 0;
+  //       let neighbor2 = 0;
+  //       let neighbors = [];
+
+  //       // choose neighbors based on quantized direction
+  //       if (angle === 0) {
+  //         neighbor1 = gradientMag[i][j - 1];
+  //         neighbor2 = gradientMag[i][j + 1];
+  //         neighbors = [
+  //           [i, j - 1],
+  //           [i, j + 1],
+  //         ];
+  //       } else if (angle === 45) {
+  //         neighbor1 = gradientMag[i - 1][j + 1];
+  //         neighbor2 = gradientMag[i + 1][j - 1];
+  //         neighbors = [
+  //           [i - 1, j + 1],
+  //           [i + 1, j - 1],
+  //         ];
+  //       } else if (angle === 90) {
+  //         neighbor1 = gradientMag[i - 1][j];
+  //         neighbor2 = gradientMag[i + 1][j];
+  //         neighbors = [
+  //           [i - 1, j],
+  //           [i + 1, j],
+  //         ];
+  //       } else if (angle === 135) {
+  //         neighbor1 = gradientMag[i - 1][j - 1];
+  //         neighbor2 = gradientMag[i + 1][j + 1];
+  //         neighbors = [
+  //           [i - 1, j - 1],
+  //           [i + 1, j + 1],
+  //         ];
+  //       }
+
+  //       neighbor1 = parseFloat(neighbor1);
+  //       neighbor2 = parseFloat(neighbor2);
+
+  //       // animation highlight
+  //       setActivePixel([i, j]);
+  //       setActiveNeighbors(neighbors);
+
+  //       setNmsExplanation(
+  //         `Direction: ${angle}°. Comparing ${current.toFixed(
+  //           2,
+  //         )} with neighbors ${neighbor1.toFixed(2)} and ${neighbor2.toFixed(2)}.`,
+  //       );
+
+  //       await new Promise((resolve) => setTimeout(resolve, 600));
+
+  //       if (current >= neighbor1 && current >= neighbor2) {
+  //         suppressed[i][j] = current;
+  //         setNmsExplanation("Pixel kept (local maximum).");
+  //       } else {
+  //         suppressed[i][j] = 0;
+  //         setNmsExplanation("Pixel suppressed (not maximum).");
+  //       }
+
+  //       setAnimatedSuppressed((prev) => {
+  //         const copy = prev.map((r) => [...r]);
+  //         copy[i][j] = suppressed[i][j];
+  //         return copy;
+  //       });
+
+  //       await new Promise((resolve) => setTimeout(resolve, 1000));
+  //     }
+  //   }
+
+  //   setActivePixel(null);
+  //   setActiveNeighbors([]);
+  //   setSupressed(suppressed);
+  //   enabledNext();
+  // }
   function doubleThresholdAndHysteresis() {
     myThresButton.current.disabled = true;
     setTLowSliderIsDisabled(true);
@@ -1187,6 +1340,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
     index,
   ]);
 
+  const maxGrad =
+    gradientMag && Math.max(...gradientMag.flat().map(Number)) > 0
+      ? Math.max(...gradientMag.flat().map(Number))
+      : 1;
   return (
     <MathJaxContext>
       <OpenCvProvider>
@@ -1360,8 +1517,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
+                      gap: "1px",
                     }}
+                    className="original-matrix-box"
                   >
                     {original &&
                       original.map((row, rowIndex) =>
@@ -1379,10 +1537,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       )}
                   </div>
                   <div
+                  className="canny-matrix-over"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
+                      gap: "1px",
                     }}
                   >
                     {original &&
@@ -1391,7 +1550,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="original_matrix"
-                            className="matrix-animate"
+                            className="canny-matrix-animate"
                             style={{
                               backgroundColor: "white",
                               display: "flex",
@@ -1461,7 +1620,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(3,1fr)",
-                      gap: "2px",
+                      gap: "1px",
                     }}
                   >
                     {gKernel &&
@@ -1470,8 +1629,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
                           <div
                             key={`${rowIndex}-${colIndex}`}
                             id="gaussian_matrix"
-                            className="matrix-animate"
-                            style={{ animationDelay: `${rowIndex * 0.15}s` }}
+                            className="kernel-canny-matrix-animate"
+                            style={{ animationDelay: `${rowIndex * 0.15}s`}}
                           >
                             {cell}
                           </div>
@@ -1504,7 +1663,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
-                          gap: "2px",
+                          gap: "1px",
                         }}
                       >
                         {gKernel &&
@@ -1532,7 +1691,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(9, 1fr)",
-                          gap: "2px",
+                          gap: "1px",
                         }}
                       >
                         {padded &&
@@ -1589,12 +1748,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                 {padded && <h2>Gaussian Blur</h2>}
                 <div id="conv-mult-canny">
                   <div className="common-flex">
+                    <h4>Padded Image</h4>
                     <div
                       id="gaussian-blur-matrix-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(9, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {padded &&
@@ -1614,13 +1774,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         <div
                           style={{
                             position: "absolute",
-                            top: `${(blurX - 1) * (document.getElementById("padded-canny").offsetWidth + 2) + document.getElementById("padded-canny").offsetTop}px`,
-                            left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight + 2) + document.getElementById("padded-canny").offsetLeft}px`,
+                            top: `${(blurX - 1) * (document.getElementById("padded-canny").offsetWidth + 0.5) + document.getElementById("padded-canny").offsetTop}px`,
+                            left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight+0.5 ) + document.getElementById("padded-canny").offsetLeft}px`,
                             width: `${document.getElementById("padded-canny").offsetWidth * 3 + 6}px`,
                             height: `${document.getElementById("padded-canny").offsetHeight * 3 + 6}px`,
                             display: "grid",
                             gridTemplateColumns: "repeat(3, 1fr)",
-                            gap: "2px",
+                            gap: "1px",
                             border: "2px solid red",
 
                             backgroundColor: "rgba(255, 77, 77, 0.37)",
@@ -1638,12 +1798,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                   <div class="blur_oper">*</div>
                   <div className="common-flex">
+                    <h4>Gaussian Kernel</h4>
                     <div
                       id="gaussian-kernel-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(3, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {padded &&
@@ -1653,6 +1814,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                             <div
                               id="gaussian_matrix"
                               key={`${rowIndex}-${colIndex}`}
+                              className="kernel-canny-matrix-non-animate"
                             >
                               {cell}
                             </div>
@@ -1665,12 +1827,14 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                   <div class="blur_oper">=</div>
                   <div className="common-flex">
+                  
+                                         {startBlur &&   <h4>Gaussian Blurred Matrix</h4>}     
                     <div
                       id="gaussian-blurred-matrix-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {startBlur &&
@@ -1703,12 +1867,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   {startBlur && <div class="blur_oper">☰</div>}
                   <div id="blurred-out-canny">
                     <div className="common-flex">
+                    {startBlur &&   <h4>Gaussian Blurred Image</h4>}     
                       <div
                         id="gaussian-blurred-image-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
-                          gap: "2px",
+                          gap: "1px",
                         }}
                       >
                         {startBlur &&
@@ -1765,6 +1930,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     Blur
                   </Button>
                 )}
+
               </div>
             </Carousel.Item>
 
@@ -1788,13 +1954,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         alignItems: "center",
                       }}
                     >
-                      <div>Gaussian Blurred Image (7x7) </div>
+                      <h4>Gaussian Blurred Image (7x7) </h4>
                       <div
                         id="step-four-blurred-image-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
-                          gap: "2px",
+                          gap: "1px",
                         }}
                       >
                         {startBlur &&
@@ -1825,13 +1991,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       alignItems: "center",
                     }}
                   >
-                    {padBlur && <div>Padded Blurred Image (9x9)</div>}
+                    {padBlur && <h4>Padded Blurred Image (9x9)</h4>}
                     <div
                       id="step-four-padded-blurred-image-zone"
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(9, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {padBlur &&
@@ -1931,7 +2097,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       <div
                         style={{
                           position: "absolute",
-                          top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetTop || 0) - 37)}px`,
+                          top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0) + ((document.getElementById("sobel-cell")?.offsetTop || 0) - 37)}px`,
                           left: `${sobelPosY * ((document.getElementById("sobel-cell")?.offsetHeight || 0) - 0.5) + ((document.getElementById("sobel-cell")?.offsetLeft || 0) - 37)}px`,
                           width: `${(document.getElementById("sobel-cell")?.offsetWidth || 0) * 3 + 2.5}px`,
                           height: `${(document.getElementById("sobel-cell")?.offsetHeight || 0) * 3 + 2.5}px`,
@@ -1975,7 +2141,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                                 row.map((cell, colIndex) => (
                                   <div
                                     key={`${rowIndex}-${colIndex}-${imageAnimateKey}`}
-                                    className="kernel-matrix"
+                                    className="padded-sobel-matrix sobelX"
                                   >
                                     {cell}
                                   </div>
@@ -2012,14 +2178,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                                 row.map((cell, colIndex) => (
                                   <div
                                     key={`${rowIndex}-${colIndex}`}
-                                    style={{
-                                      width: "30px",
-                                      height: "30px",
-                                      backgroundColor: "white",
-                                      border: "1px solid #ccc",
-                                      alignItems: "center",
-                                      justifyItems: "center",
-                                    }}
+                                    className="padded-sobel-matrix sobelY"
                                   >
                                     {cell}
                                   </div>
@@ -2073,7 +2232,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                               row.map((cell, colIndex) => (
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
-                                  id="sobel-matrix"
+                                  id="sobel-matrix-x"
                                   className={
                                     activeSobelDX.row === rowIndex &&
                                     activeSobelDX.col === colIndex
@@ -2109,7 +2268,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                               row.map((cell, colIndex) => (
                                 <div
                                   key={`${rowIndex}-${colIndex}`}
-                                  id="sobel-matrix"
+                                  id="sobel-matrix-y"
                                   style={{}}
                                   className={
                                     activeSobelDY.row === rowIndex &&
@@ -2141,7 +2300,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <div id="gradient-canny">
-                      {gradient && <h4>Resultant Gradient</h4>}
+                      {gradient && <h4>Resultant Gradient Direction</h4>}
                       {gradient && <BlockMath math={equation1} />}
                       <div
                         style={{
@@ -2152,6 +2311,41 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       >
                         {gradient &&
                           gradient.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                id="sobel-gradient-matrix"
+                                className={
+                                  activeSobelRes.row === rowIndex &&
+                                  activeSobelRes.col === colIndex
+                                    ? "res-active"
+                                    : completedSobelResSteps.some(
+                                          (item) =>
+                                            item.row === rowIndex &&
+                                            item.col === colIndex,
+                                        )
+                                      ? "res-completed"
+                                      : ""
+                                }
+                              >
+                                {cell}
+                              </div>
+                            )),
+                          )}
+                      </div>
+                    </div>
+                    <div id="gradient-canny">
+                      {gradient && <h4 style={{"paddingTop":"10px"}} >Resultant Gradient Magnitude</h4>}
+                      {gradient && <BlockMath math={equation2} />}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(7, 1fr)",
+                          gap: "0px",
+                        }}
+                      >
+                        {gradientMag &&
+                          gradientMag.map((row, rowIndex) =>
                             row.map((cell, colIndex) => (
                               <div
                                 key={`${rowIndex}-${colIndex}`}
@@ -2203,7 +2397,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {gradient &&
@@ -2211,7 +2405,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                           row.map((cell, colIndex) => (
                             <div
                               key={`${rowIndex}-${colIndex}`}
-                              class="quantised-canny-matrix"
+                              className="padded-sobel-matrix"
                             >
                               {cell}
                             </div>
@@ -2244,7 +2438,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(7, 1fr)",
-                        gap: "2px",
+                        gap: "1px",
                       }}
                     >
                       {quantize &&
@@ -2290,34 +2484,174 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     Non-Maximum Suppression is used to thin the edges by
                     suppressing non-maximal pixels in the gradient direction.
                   </p>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
-                    }}
-                  >
-                    {supressed &&
-                      supressed.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            key={`${rowIndex}-${colIndex}`}
-                            style={{
-                              width: "30px",
-                              height: "30px",
-                              textAlign: "center",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              backgroundColor: `rgb(${(Math.abs(cell) / Math.max(...supressed.flat())) * 255},${(Math.abs(cell) / Math.max(...supressed.flat())) * 255},${(Math.abs(cell) / Math.max(...supressed.flat())) * 255})`,
-                              border: "1px solid #ccc",
-                            }}
-                          ></div>
-                        )),
+                  <div className="nms-explanation-box">
+                    <div id="gradient-canny">
+                      {gradient && (
+                        <h4 style={{ marginBottom: "10px" }}>
+                          Resultant Gradient Magnitude
+                        </h4>
                       )}
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(7, 1fr)",
+                          gap: "0px",
+                        }}
+                      >
+                        {gradientMag &&
+                          gradientMag.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                className={`nms-gradient-mag-matrix 
+  ${
+    activePixel && activePixel[0] === rowIndex && activePixel[1] === colIndex
+      ? "active-pixel"
+      : ""
+  }
+  ${
+    activeNeighbors &&
+    activeNeighbors.some(([r, c]) => r === rowIndex && c === colIndex)
+      ? "neighbor-pixel"
+      : ""
+  }`}
+                              >
+                                {cell}
+                              </div>
+                            )),
+                          )}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        textAlign: "center",
+                      }}
+                    >
+                      {quantize && <h4 style={{ marginBottom: "10px" }}>Quantise Gradient Direction</h4>}
+                      <div
+                        id="step-seven-quantise-matrix"
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(7, 1fr)",
+                        }}
+                      >
+                        {quantize &&
+                          quantize.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                className={`nms-gradient-mag-matrix 
+  ${
+    activePixel && activePixel[0] === rowIndex && activePixel[1] === colIndex
+      ? "active-pixel"
+      : ""
+  }
+  `}
+                              >
+                                {cell === null
+                                  ? ""
+                                  : cell === 0
+                                    ? "0"
+                                    : cell === 45
+                                      ? "45"
+                                      : cell === 90
+                                        ? "90"
+                                        : "135"}
+                              </div>
+                            )),
+                          )}
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div id="quantised-canny-arrow">&#129066;</div>
+                    </div>
+                    <div>
+                       {animatedSuppressed && <h4 style={{ marginBottom: "10px", textAlign: "center" }}>Suppressed Gradient</h4>}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(7, 1fr)",
+                        gap: "1px",
+                      }}
+                    >
+                      {animatedSuppressed &&
+                        animatedSuppressed.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => {
+                            const intensity = (cell / maxGrad) * 255;
+
+                            return (
+                              <div
+                                key={`${rowIndex}-${colIndex}`}
+                                style={{
+                                  width: "40px",
+                                  height: "40px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  fontSize: "12px",
+                                  backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
+                                  border: "1px solid #ccc",
+                                  transition: "all 0.3s ease",
+                                }}
+                                className={
+                                  ` ${
+                                    activePixel && activePixel[0] === rowIndex && activePixel[1] === colIndex
+                                    ? "active-pixel"
+                                    : ""
+                                  }`
+                                }
+                              >
+                                {cell > 0 ? Number(cell).toFixed(2) : ""}
+                              </div>
+                            );
+                          }),
+                        )}
+                    </div>
+                    </div>
+
                   </div>
-                  <Button className="btn" ref={myNonMaxButton} onClick={nonmax}>
+                  <div className="nms-live-explanation-btn-box">
+                                          {(
+                    <div className="nms-live-explanation">
+                      <h3 style={{ textAlign: "center", fontSize: "14px" }}>Explanation</h3>
+                      <h4>
+                       {activePixel && `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
+                      </h4>
+                      <p>
+                        {nmsExplanation.map((item) => (
+                          <span key={item}>{item}</span>
+                        ))}
+                      </p>
+                    </div>
+                  )}
+
+                  <Button
+                    className="btn"
+                    // ref={myNonMaxButton}
+                    onClick={dnonmax}
+                  >
                     Process
                   </Button>
+                  <Button
+                    className="btn"
+                    // ref={myNonMaxButton}
+                    onClick={dnonmax}
+                  >
+                    Process
+                  </Button>
+
+                  </div>
+                  
                 </div>
               )}
             </Carousel.Item>
@@ -2387,7 +2721,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "2px",
+                      gap: "1px",
                     }}
                   >
                     {finalGrid &&
