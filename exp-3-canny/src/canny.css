@@ -1,6 +1,6 @@
 #main-box-canny {
   width: 100%;
-  height: 105%;
+  height: 120%;
   background-color: #f2f9ff;
   display: flex;
   flex-direction: column;
@@ -359,6 +359,8 @@ h6 {
   /* gap: 20px; */
   justify-content: center;
   align-items: center;
+  padding-right: 10px;
+  padding-bottom: 10px;
 }
 
 #quantised-canny {
@@ -878,6 +880,7 @@ h6 {
   margin-top: 20px;
   padding: 15px;
   font-size: 14px;
+  width: 100%;
 }
 
 .conv-steps {
@@ -902,12 +905,25 @@ h6 {
   margin-right: 5px;
 }
 
+/* Sobel Gradient Convolution */
+
+.sobel-gradient-conv {
+  padding: 10px;
+  background-color: #ffffff;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #000;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+  font-weight: bold;
+}
+
 /* Finished cells */
 /*  dx-active style */
 .dx-active,
 .dy-active {
-  border: 2px solid #0028f2 !important;
-  background-color: #5975d1 !important;
+  border: 2px solid #ee2323 !important;
+  background-color: #fc4c3179 !important;
   border-radius: 4px;
   color: #fff;
   transform: scale(1.1);

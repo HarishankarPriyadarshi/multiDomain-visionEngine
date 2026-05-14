@@ -97,6 +97,21 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [completedSobelDXSteps, setCompletedSobelDXSteps] = useState([]);
   const [completedSobelDYSteps, setCompletedSobelDYSteps] = useState([]);
   const [completedSobelResSteps, setCompletedSobelResSteps] = useState([]);
+  // state tracking for sobel kernel as details
+  const [convSteps, setConvSteps] = useState({
+    x: [],
+    y: [],
+    result: [],
+    direction: [],
+  }); // for X,Y, and Result
+  const [currentSum, setCurrentSum] = useState({
+    x: 0,
+    y: 0,
+    result: 0,
+    direction: 0,
+  }); // for X,Y, and Result
+  const [step, setStep] = useState(0);
+  const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
 
   // state tracking for the Non maximum suppression
   const [animatedSuppressed, setAnimatedSuppressed] = useState(null);
@@ -348,6 +363,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
     setCompletedSobelDYSteps([]);
     setCompletedSobelResSteps([]);
 
+    // state tracking for sobel kernel as details
+    setStep(0);
+    setConvSteps({ x: [], y: [], result: [], direction: [] });
+    setCurrentSum({ x: 0, y: 0, result: 0, direction: 0 });
+
     let convolutedX = Array(7)
       .fill(0)
       .map(() => Array(7).fill(0));
@@ -369,10 +389,45 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setSobelPosY(j);
         setImageAnimateKey((prev) => prev + 1);
 
+        // reset convSteps and currentSum for each pixel
+        setConvSteps((prev) => ({
+          x: [],
+          y: [],
+          result: prev.result, // keep previous result visible
+          direction: prev.direction, // keep previous direction visible
+        }));
+        setCurrentSum((prev) => ({
+          x: 0,
+          y: 0,
+          result: prev.result, // keep previous gradient displayed
+          direction: prev.direction, // keep previous direction displayed
+        }));
+        setStep((prev) => prev + 1);
+
         for (let k = -1; k <= 1; k++) {
           for (let l = -1; l <= 1; l++) {
             sumX += padBlur[i + k][j + l] * sobelx[k + 1][l + 1];
             sumY += padBlur[i + k][j + l] * sobely[k + 1][l + 1];
+            // update convSteps and currentSum
+            setConvSteps((prev) => ({
+              x: [
+                ...prev.x,
+                `${padBlur[i + k][j + l]}×${sobelx[k + 1][l + 1]}`,
+              ],
+              y: [
+                ...prev.y,
+                `${padBlur[i + k][j + l]}×${sobely[k + 1][l + 1]}`,
+              ],
+              result: prev.result,
+              direction: prev.direction,
+            }));
+
+            setCurrentSum((prev) => ({
+              x: sumX,
+              y: sumY,
+              result: prev.result, // keep previous gradient displayed
+              direction: prev.direction, // keep previous direction displayed
+            }));
           }
         }
         //animation tracking
@@ -401,13 +456,27 @@ export default function CannyExplanation({ handleClose3Modal }) {
           2,
         );
 
-        // console.log("grad:", grad[i - 1][j - 1]);
+        const gradientMag = Math.sqrt(sumX * sumX + sumY * sumY);
+        const angle = Math.atan2(sumY, sumX) * (180 / Math.PI);
+
+        setConvSteps((prev) => ({
+          ...prev,
+          result: [`√( ${sumX.toFixed(2)}² + ${sumY.toFixed(2)}² )`],
+          direction: [`tan⁻¹( ${sumY.toFixed(2)} / ${sumX.toFixed(2)} )`],
+        }));
+
+        setCurrentSum((prev) => ({
+          ...prev,
+          result: gradientMag.toFixed(2),
+          direction: angle.toFixed(0),
+        }));
+        setFirstKernelCalculated(true);
 
         setConvolutedx([...convolutedX]);
         setConvolutedy([...convolutedY]);
         setGradient(grad);
         setGradientMag(totalGrad);
-        await new Promise((resolve) => setTimeout(resolve, 2));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
     enabledNext();
@@ -482,12 +551,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
     for (let i = 1; i < rows - 1; i++) {
       for (let j = 1; j < cols - 1; j++) {
         let angle = quantize[i][j];
-       console.log("nonmax:", "angle:", angle, i, j);
+        console.log("nonmax:", "angle:", angle, i, j);
         let current = parseFloat(gradientMag[i][j]);
         let neighbor1 = 0;
         let neighbor2 = 0;
         let neighbors = [];
-        
 
         if (angle === 0) {
           neighbor1 = gradientMag[i][j - 1];
@@ -523,24 +591,29 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setActiveNeighbors(neighbors);
         setNmsExplanation([]);
         // force React to render highlight first
-await new Promise((r) => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 200));
 
-      setNmsExplanation([
-        `Direction: ${angle}°`,
-        `Current Magnitude: ${current}`,
-        `Comparing with ${neighbor1} and ${neighbor2}`
-      ]);
-
+        setNmsExplanation([
+          `Direction: ${angle}°`,
+          `Current Magnitude: ${current}`,
+          `Comparing with ${neighbor1} and ${neighbor2}`,
+        ]);
 
         await new Promise((r) => setTimeout(r, 800));
 
-      if (current >= neighbor1 && current >= neighbor2) {
-        suppressed[i][j] = current;
-        setNmsExplanation(prev => [...prev, "Pixel is local maximum → KEPT"]);
-      } else {
-        suppressed[i][j] = 0;
-        setNmsExplanation(prev => [...prev, "Pixel is NOT maximum → SUPPRESSED"]);
-      }
+        if (current >= neighbor1 && current >= neighbor2) {
+          suppressed[i][j] = current;
+          setNmsExplanation((prev) => [
+            ...prev,
+            "Pixel is local maximum → KEPT",
+          ]);
+        } else {
+          suppressed[i][j] = 0;
+          setNmsExplanation((prev) => [
+            ...prev,
+            "Pixel is NOT maximum → SUPPRESSED",
+          ]);
+        }
 
         setAnimatedSuppressed((prev) => {
           const copy = prev.map((r) => [...r]);
@@ -1537,7 +1610,7 @@ await new Promise((r) => setTimeout(r, 200));
                       )}
                   </div>
                   <div
-                  className="canny-matrix-over"
+                    className="canny-matrix-over"
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(7, 1fr)",
@@ -1604,11 +1677,18 @@ await new Promise((r) => setTimeout(r, 200));
                               marks
                               valueLabelDisplay="auto"
                               onChange={(e) => {
-                                process(e.target.value);
                                 setSigma(e.target.value);
+                                process(e.target.value);
                               }}
                               disabled={isSliderDisabled}
                             />
+                            {/* <Button
+  variant="contained"
+  onClick={process}
+  disabled={!sigma}
+>
+  Generate Kernel
+</Button> */}
                           </div>
                         </>
                       )}
@@ -1630,7 +1710,7 @@ await new Promise((r) => setTimeout(r, 200));
                             key={`${rowIndex}-${colIndex}`}
                             id="gaussian_matrix"
                             className="kernel-canny-matrix-animate"
-                            style={{ animationDelay: `${rowIndex * 0.15}s`}}
+                            style={{ animationDelay: `${rowIndex * 0.15}s` }}
                           >
                             {cell}
                           </div>
@@ -1775,7 +1855,7 @@ await new Promise((r) => setTimeout(r, 200));
                           style={{
                             position: "absolute",
                             top: `${(blurX - 1) * (document.getElementById("padded-canny").offsetWidth + 0.5) + document.getElementById("padded-canny").offsetTop}px`,
-                            left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight+0.5 ) + document.getElementById("padded-canny").offsetLeft}px`,
+                            left: `${(blurY - 1) * (document.getElementById("padded-canny").offsetHeight + 0.5) + document.getElementById("padded-canny").offsetLeft}px`,
                             width: `${document.getElementById("padded-canny").offsetWidth * 3 + 6}px`,
                             height: `${document.getElementById("padded-canny").offsetHeight * 3 + 6}px`,
                             display: "grid",
@@ -1827,8 +1907,7 @@ await new Promise((r) => setTimeout(r, 200));
 
                   <div class="blur_oper">=</div>
                   <div className="common-flex">
-                  
-                                         {startBlur &&   <h4>Gaussian Blurred Matrix</h4>}     
+                    {startBlur && <h4>Gaussian Blurred Matrix</h4>}
                     <div
                       id="gaussian-blurred-matrix-zone"
                       style={{
@@ -1867,7 +1946,7 @@ await new Promise((r) => setTimeout(r, 200));
                   {startBlur && <div class="blur_oper">☰</div>}
                   <div id="blurred-out-canny">
                     <div className="common-flex">
-                    {startBlur &&   <h4>Gaussian Blurred Image</h4>}     
+                      {startBlur && <h4>Gaussian Blurred Image</h4>}
                       <div
                         id="gaussian-blurred-image-zone"
                         style={{
@@ -1930,7 +2009,6 @@ await new Promise((r) => setTimeout(r, 200));
                     Blur
                   </Button>
                 )}
-
               </div>
             </Carousel.Item>
 
@@ -2062,7 +2140,26 @@ await new Promise((r) => setTimeout(r, 200));
                       flexDirection: "column",
                       position: "relative",
                     }}
-                  >
+                  > 
+                  <div>
+
+                  </div>
+                    {/* {padBlur && (
+                      <div id="convStepsX" className="conv-steps-box">
+                        <h4>Kernel X Convolution Step</h4>
+
+                        <div className="conv-steps">
+                          <div className="conv-step">Step {step} :</div>
+                          {convSteps.x.map((item, index) => (
+                            <span key={index}>
+                              ({item})
+                              {index !== convSteps.x.length - 1 && " + "}
+                            </span>
+                          ))}
+                          <div className="conv-result">= {currentSum.x}</div>
+                        </div>
+                      </div>
+                    )} */}
                     {padBlur && (
                       <div className="padded-blurred-image">
                         Padded Blurred Image (9x9)
@@ -2110,6 +2207,26 @@ await new Promise((r) => setTimeout(r, 200));
                         }}
                       ></div>
                     )}
+                    {/* sobel x convolution step */}
+                    {/* <div>
+                                                            {padBlur && (
+                      <div id="convStepsX" className="conv-steps-box">
+                        <h4>Kernel X Convolution Step</h4>
+
+                        <div className="conv-steps">
+                          <div className="conv-step">Step {step} :</div>
+                          {convSteps.x.map((item, index) => (
+                            <span key={index}>
+                              ({item})
+                              {index !== convSteps.x.length - 1 && " + "}
+                            </span>
+                          ))}
+                          <div className="conv-result">= {currentSum.x}</div>
+                        </div>
+                      </div>
+                    )}
+                    </div> */}
+
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <h2>Sobel Application</h2>
@@ -2149,6 +2266,7 @@ await new Promise((r) => setTimeout(r, 200));
                               )}
                           </div>
                         </div>
+
                       </div>
 
                       <div
@@ -2216,6 +2334,7 @@ await new Promise((r) => setTimeout(r, 200));
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {convolutedx && <h2>Applying Convolution</h2>}
                     <div id="convolution-sobel-canny">
+
                       <div id="sobel-x-canny">
                         {convolutedx && (
                           <h4 style={{ color: "#1f2937" }}> Sobel X</h4>
@@ -2302,6 +2421,14 @@ await new Promise((r) => setTimeout(r, 200));
                     <div id="gradient-canny">
                       {gradient && <h4>Resultant Gradient Direction</h4>}
                       {gradient && <BlockMath math={equation1} />}
+                      {gradient && (
+                        <div className="sobel-gradient-conv">
+                          {convSteps.direction.map((item, index) => (
+                            <span key={index}>{item}</span>
+                          ))}{" "}
+                          = {currentSum.direction}
+                        </div>
+                      )}
                       <div
                         style={{
                           display: "grid",
@@ -2335,8 +2462,21 @@ await new Promise((r) => setTimeout(r, 200));
                       </div>
                     </div>
                     <div id="gradient-canny">
-                      {gradient && <h4 style={{"paddingTop":"10px"}} >Resultant Gradient Magnitude</h4>}
+                      {gradient && (
+                        <h4 style={{ paddingTop: "10px" }}>
+                          Resultant Gradient Magnitude
+                        </h4>
+                      )}
                       {gradient && <BlockMath math={equation2} />}
+                      {gradient && (
+                        <div className="sobel-gradient-conv">
+                          {convSteps.result.map((item, index) => (
+                            <span key={index}>{item}</span>
+                          ))}{" "}
+                          = {currentSum.result}
+                        </div>
+                      )}
+
                       <div
                         style={{
                           display: "grid",
@@ -2370,8 +2510,12 @@ await new Promise((r) => setTimeout(r, 200));
                       </div>
                     </div>
                   </div>
+                  
                 </div>
+                
+                
               )}
+              
             </Carousel.Item>
 
             {/* step6: quantise */}
@@ -2530,7 +2674,11 @@ await new Promise((r) => setTimeout(r, 200));
                         textAlign: "center",
                       }}
                     >
-                      {quantize && <h4 style={{ marginBottom: "10px" }}>Quantise Gradient Direction</h4>}
+                      {quantize && (
+                        <h4 style={{ marginBottom: "10px" }}>
+                          Quantise Gradient Direction
+                        </h4>
+                      )}
                       <div
                         id="step-seven-quantise-matrix"
                         style={{
@@ -2576,82 +2724,88 @@ await new Promise((r) => setTimeout(r, 200));
                       <div id="quantised-canny-arrow">&#129066;</div>
                     </div>
                     <div>
-                       {animatedSuppressed && <h4 style={{ marginBottom: "10px", textAlign: "center" }}>Suppressed Gradient</h4>}
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "repeat(7, 1fr)",
-                        gap: "1px",
-                      }}
-                    >
-                      {animatedSuppressed &&
-                        animatedSuppressed.map((row, rowIndex) =>
-                          row.map((cell, colIndex) => {
-                            const intensity = (cell / maxGrad) * 255;
+                      {animatedSuppressed && (
+                        <h4
+                          style={{ marginBottom: "10px", textAlign: "center" }}
+                        >
+                          Suppressed Gradient
+                        </h4>
+                      )}
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(7, 1fr)",
+                          gap: "1px",
+                        }}
+                      >
+                        {animatedSuppressed &&
+                          animatedSuppressed.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => {
+                              const intensity = (cell / maxGrad) * 255;
 
-                            return (
-                              <div
-                                key={`${rowIndex}-${colIndex}`}
-                                style={{
-                                  width: "40px",
-                                  height: "40px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  fontSize: "12px",
-                                  backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
-                                  border: "1px solid #ccc",
-                                  transition: "all 0.3s ease",
-                                }}
-                                className={
-                                  ` ${
-                                    activePixel && activePixel[0] === rowIndex && activePixel[1] === colIndex
-                                    ? "active-pixel"
-                                    : ""
-                                  }`
-                                }
-                              >
-                                {cell > 0 ? Number(cell).toFixed(2) : ""}
-                              </div>
-                            );
-                          }),
-                        )}
+                              return (
+                                <div
+                                  key={`${rowIndex}-${colIndex}`}
+                                  style={{
+                                    width: "40px",
+                                    height: "40px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px",
+                                    backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
+                                    border: "1px solid #ccc",
+                                    transition: "all 0.3s ease",
+                                  }}
+                                  className={` ${
+                                    activePixel &&
+                                    activePixel[0] === rowIndex &&
+                                    activePixel[1] === colIndex
+                                      ? "active-pixel"
+                                      : ""
+                                  }`}
+                                >
+                                  {cell > 0 ? Number(cell).toFixed(2) : ""}
+                                </div>
+                              );
+                            }),
+                          )}
+                      </div>
                     </div>
-                    </div>
-
                   </div>
                   <div className="nms-live-explanation-btn-box">
-                                          {(
-                    <div className="nms-live-explanation">
-                      <h3 style={{ textAlign: "center", fontSize: "14px" }}>Explanation</h3>
-                      <h4>
-                       {activePixel && `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
-                      </h4>
-                      <p>
-                        {nmsExplanation.map((item) => (
-                          <span key={item}>{item}</span>
-                        ))}
-                      </p>
-                    </div>
-                  )}
+                    {
+                      <div className="nms-live-explanation">
+                        <h3 style={{ textAlign: "center", fontSize: "14px" }}>
+                          Explanation
+                        </h3>
+                        <h4>
+                          {activePixel &&
+                            `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
+                        </h4>
+                        <p>
+                          {nmsExplanation.map((item) => (
+                            <span key={item}>{item}</span>
+                          ))}
+                        </p>
+                      </div>
+                    }
 
-                  <Button
-                    className="btn"
-                    // ref={myNonMaxButton}
-                    onClick={dnonmax}
-                  >
-                    Process
-                  </Button>
-                  <Button
-                    className="btn"
-                    // ref={myNonMaxButton}
-                    onClick={dnonmax}
-                  >
-                    Process
-                  </Button>
-
+                    <Button
+                      className="btn"
+                      ref={myNonMaxButton}
+                      onClick={dnonmax}
+                    >
+                      Process
+                    </Button>
+                    {/* <Button
+                      className="btn"
+                     ref={myNonMaxButton}
+                      onClick={dnonmax}
+                    >
+                      Process
+                    </Button> */}
                   </div>
-                  
                 </div>
               )}
             </Carousel.Item>
