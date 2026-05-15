@@ -858,6 +858,19 @@ h6 {
   }
 }
 
+.dirQ-0 {
+  background-color: #e9e9f7;
+}
+.dirQ-45 {
+  background-color: #e0e0ff;
+}
+.dirQ-90 {
+  background-color: #d2d2fc;
+}
+.dirQ-135 {
+  background-color: #bdbdfb;
+}
+
 .dir-0 {
   background-color: #ffe0e0;
 }
@@ -876,11 +889,14 @@ h6 {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  background-color: #ffffffc6;
+  border-radius: 10px;
+  border: 1px solid #c5c5c5;
 
   margin-top: 20px;
   padding: 15px;
   font-size: 14px;
-  width: 100%;
+  min-width: 70%;
 }
 
 .conv-steps {
@@ -904,6 +920,44 @@ h6 {
   color: #1d2a6d;
   margin-right: 5px;
 }
+.conv-steps-quantise-container {
+  background-color: #ffffff99;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #d8d8d8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  overflow-y: auto;
+  color: #141414;
+}
+.conv-steps-quantise-box{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.conv-step-quantise-step {
+  font-size: 16px;
+  font-weight: bold;
+  color: #090909;
+}
+.conv-step-quantise-item-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  overflow-y: auto;
+  color: #141414;
+}
+.conv-step-quantise-item-box div {
+  font-size: 14px;
+  color: #090909;
+  font-weight: 400;
+}
 
 /* Sobel Gradient Convolution */
 
@@ -912,7 +966,7 @@ h6 {
   background-color: #ffffff;
   padding: 6px;
   border-radius: 4px;
-  border: 1px solid #000;
+  border: 1px solid #c5c5c5;
   margin-bottom: 10px;
   transition: transform 0.3s ease;
   font-weight: bold;
@@ -967,7 +1021,13 @@ h6 {
   color: #0b0b0b;
   margin-bottom: 10px;
 }
-
+.active-quant-pixel {
+  background-color: #7752fe !important;
+  border: 2px solid #45a1ed !important;
+  color: #0b0b0b !important;
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
 .padded-sobel-matrix {
   border: 1px solid #ccc;
   align-items: center;
@@ -1124,22 +1184,23 @@ h6 {
   transition: all 0.3s ease;
 }
 
-.nms-live-explanation-btn-box {
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+.nms-live-explanation-container {
+  
   gap: 10px;
-}
-.nms-live-explanation {
-  margin-left: -111px;
   margin-top: 10px;
   padding: 12px;
-  background: #ffffff;
-  /* border-left: 5px solid #2196f3; */
+  background: #ffffff94;
   font-size: 14px;
   width: 500px;
-  height: 140px;
-  border-radius: 4px;
+  min-height: 210px;
+  border-radius: 10px;
+  border: 1px solid #dddddd !important;
+}
+.nms-live-explanation {
+  display: flex;
+  justify-content: center;
+  align-items:center;
+  flex-direction: column;
 }
 
 /* matrix animate */

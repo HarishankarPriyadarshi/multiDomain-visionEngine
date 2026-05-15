@@ -113,6 +113,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [step, setStep] = useState(0);
   const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
 
+  // state tracking for quantization steps
+const [quantSteps, setQuantSteps] = useState([]);
+const [quantStepNumber, setQuantStepNumber] = useState(0);
+const [activeQuantPixel, setActiveQuantPixel] = useState(null);
+
   // state tracking for the Non maximum suppression
   const [animatedSuppressed, setAnimatedSuppressed] = useState(null);
   const [activePixel, setActivePixel] = useState(null);
@@ -476,13 +481,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setConvolutedy([...convolutedY]);
         setGradient(grad);
         setGradientMag(totalGrad);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2));
       }
     }
     enabledNext();
   }
 
-  function quantiseGrad() {
+  async function quantiseGrad() {
     if (!gradient) return;
     myQuantButton.current.disabled = true;
 
@@ -495,39 +500,65 @@ export default function CannyExplanation({ handleClose3Modal }) {
       .map(() => Array(cols).fill(null));
 
     setQuantize(initialMatrix);
+    setQuantSteps([]);
+   
+    setQuantStepNumber(0);
 
     let index = 0;
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
+         setActiveQuantPixel([i, j]); 
         let angle = Number(gradient[i][j]) || 0;
         // console.log("quantiseGradBefore:", "angle:", angle, i, j);
         angle = (angle + 180) % 180; // Normalize to 0–180
         //console.log("quantiseGradAfter:", "angle:", angle, i, j);
 
         let value;
+let rangeInfo = "";
 
-        if (angle < 22.5 || angle >= 157.5) {
-          value = 0;
-        } else if (angle >= 22.5 && angle < 67.5) {
-          value = 45;
-        } else if (angle >= 67.5 && angle < 112.5) {
-          value = 90;
-        } else {
-          value = 135;
-        }
+if (angle < 22.5 || angle >= 157.5) {
+  value = 0;
+  rangeInfo = "Angle < 22.5° or ≥ 157.5°";
+} 
+else if (angle >= 22.5 && angle < 67.5) {
+  value = 45;
+  rangeInfo = "Angle between 22.5° and 67.5°";
+} 
+else if (angle >= 67.5 && angle < 112.5) {
+  value = 90;
+  rangeInfo = "Angle between 67.5° and 112.5°";
+} 
+else {
+  value = 135;
+  rangeInfo = "Angle between 112.5° and 157.5°";
+}
 
-        setTimeout(() => {
-          setQuantize((prev) => {
-            const updated = prev.map((r) => [...r]);
-            updated[i][j] = value;
-            return updated;
-          });
-        }, index * 70);
+setQuantStepNumber((prev) => prev + 1);
 
-        index++;
+setQuantSteps([
+  {
+    OriginalAngle: gradient[i][j] + "°",
+    Normalized: angle.toFixed(2) + "°",
+    RangeMatched: rangeInfo,
+    QuantizedTo: value + "°"
+  }
+]);
+
+
+
+setQuantize((prev) => {
+  const updated = prev.map((r) => [...r]);
+  updated[i][j] = value;
+  return updated;
+});
+
+await new Promise((resolve) => setTimeout(resolve, 100));
+
+        
       }
     }
+    setActiveQuantPixel(null);   // remove highlight 
 
     enabledNext();
   }
@@ -593,26 +624,34 @@ export default function CannyExplanation({ handleClose3Modal }) {
         // force React to render highlight first
         await new Promise((r) => setTimeout(r, 200));
 
-        setNmsExplanation([
-          `Direction: ${angle}°`,
-          `Current Magnitude: ${current}`,
-          `Comparing with ${neighbor1} and ${neighbor2}`,
-        ]);
+setNmsExplanation([
+  {
+    direction: angle + "°",
+    currentMagnitude: current,
+    neighbor1: neighbor1,
+    neighbor2: neighbor2,
+    decision: null,
+  },
+]);
 
         await new Promise((r) => setTimeout(r, 800));
 
         if (current >= neighbor1 && current >= neighbor2) {
           suppressed[i][j] = current;
-          setNmsExplanation((prev) => [
-            ...prev,
-            "Pixel is local maximum → KEPT",
-          ]);
+           setNmsExplanation((prev) => [
+    {
+      ...prev[0],
+      decision: "KEPT (Local Maximum)",
+    },
+  ]);
         } else {
           suppressed[i][j] = 0;
-          setNmsExplanation((prev) => [
-            ...prev,
-            "Pixel is NOT maximum → SUPPRESSED",
-          ]);
+           setNmsExplanation((prev) => [
+    {
+      ...prev[0],
+      decision: "SUPPRESSED (Not Maximum)",
+    },
+  ]);
         }
 
         setAnimatedSuppressed((prev) => {
@@ -620,7 +659,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
           copy[i][j] = suppressed[i][j];
           return copy;
         });
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
     }
 
@@ -631,103 +670,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     enabledNext();
   }
-  // async function nonmax() {
-  //   if (!gradientMag || !quantize) return;
-
-  //   myNonMaxButton.current.disabled = true;
-
-  //   const rows = gradientMag.length;
-  //   const cols = gradientMag[0].length;
-
-  //   let suppressed = Array(rows)
-  //     .fill(0)
-  //     .map(() => Array(cols).fill(0));
-
-  //   // initialize animation matrix
-  //   setAnimatedSuppressed(
-  //     Array(rows)
-  //       .fill(0)
-  //       .map(() => Array(cols).fill(0)),
-  //   );
-
-  //   for (let i = 1; i < rows - 1; i++) {
-  //     for (let j = 1; j < cols - 1; j++) {
-  //       const angle = quantize[i][j];
-  //       const current = parseFloat(gradientMag[i][j]);
-
-  //       let neighbor1 = 0;
-  //       let neighbor2 = 0;
-  //       let neighbors = [];
-
-  //       // choose neighbors based on quantized direction
-  //       if (angle === 0) {
-  //         neighbor1 = gradientMag[i][j - 1];
-  //         neighbor2 = gradientMag[i][j + 1];
-  //         neighbors = [
-  //           [i, j - 1],
-  //           [i, j + 1],
-  //         ];
-  //       } else if (angle === 45) {
-  //         neighbor1 = gradientMag[i - 1][j + 1];
-  //         neighbor2 = gradientMag[i + 1][j - 1];
-  //         neighbors = [
-  //           [i - 1, j + 1],
-  //           [i + 1, j - 1],
-  //         ];
-  //       } else if (angle === 90) {
-  //         neighbor1 = gradientMag[i - 1][j];
-  //         neighbor2 = gradientMag[i + 1][j];
-  //         neighbors = [
-  //           [i - 1, j],
-  //           [i + 1, j],
-  //         ];
-  //       } else if (angle === 135) {
-  //         neighbor1 = gradientMag[i - 1][j - 1];
-  //         neighbor2 = gradientMag[i + 1][j + 1];
-  //         neighbors = [
-  //           [i - 1, j - 1],
-  //           [i + 1, j + 1],
-  //         ];
-  //       }
-
-  //       neighbor1 = parseFloat(neighbor1);
-  //       neighbor2 = parseFloat(neighbor2);
-
-  //       // animation highlight
-  //       setActivePixel([i, j]);
-  //       setActiveNeighbors(neighbors);
-
-  //       setNmsExplanation(
-  //         `Direction: ${angle}°. Comparing ${current.toFixed(
-  //           2,
-  //         )} with neighbors ${neighbor1.toFixed(2)} and ${neighbor2.toFixed(2)}.`,
-  //       );
-
-  //       await new Promise((resolve) => setTimeout(resolve, 600));
-
-  //       if (current >= neighbor1 && current >= neighbor2) {
-  //         suppressed[i][j] = current;
-  //         setNmsExplanation("Pixel kept (local maximum).");
-  //       } else {
-  //         suppressed[i][j] = 0;
-  //         setNmsExplanation("Pixel suppressed (not maximum).");
-  //       }
-
-  //       setAnimatedSuppressed((prev) => {
-  //         const copy = prev.map((r) => [...r]);
-  //         copy[i][j] = suppressed[i][j];
-  //         return copy;
-  //       });
-
-  //       await new Promise((resolve) => setTimeout(resolve, 1000));
-  //     }
-  //   }
-
-  //   setActivePixel(null);
-  //   setActiveNeighbors([]);
-  //   setSupressed(suppressed);
-  //   enabledNext();
-  // }
   function doubleThresholdAndHysteresis() {
     myThresButton.current.disabled = true;
     setTLowSliderIsDisabled(true);
@@ -774,6 +716,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         }
       }
     }
+    console.log("thresholded:", thresholded);
 
     // Apply hysteresis
     for (let i = 1; i < thresholded.length - 1; i++) {
@@ -796,9 +739,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
         }
       }
     }
+    console.log("thresholdedAfterHysteresis:", thresholded);
 
     setFinalGrid(thresholded);
-    console.log(thresholded);
+    
     notifyS("Process Completed !!");
   }
 
@@ -1429,7 +1373,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                 display: "flex",
               }}
             >
-              Derivative Concept
+              Canny Edge Detection Concept
             </div>
             <div
               style={{
@@ -2549,7 +2493,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
                           row.map((cell, colIndex) => (
                             <div
                               key={`${rowIndex}-${colIndex}`}
-                              className="padded-sobel-matrix"
+                              className={`padded-sobel-matrix ${
+            activeQuantPixel &&
+            activeQuantPixel[0] === rowIndex &&
+            activeQuantPixel[1] === colIndex
+              ? "active-quant-pixel"
+              : ""
+          }`}
                             >
                               {cell}
                             </div>
@@ -2590,7 +2540,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                           row.map((cell, colIndex) => (
                             <div
                               key={`${rowIndex}-${colIndex}`}
-                              className={`quantised-canny-matrix dir-${cell}`}
+                              className={`quantised-canny-matrix dirQ-${cell}`}
                             >
                               {cell === null
                                 ? ""
@@ -2607,6 +2557,28 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   </div>
                 </div>
+                
+                {quantStepNumber !== 0 && 
+                (
+                  <div id="convStepsQuant" className="conv-steps-quantise-container">
+  <h4>Gradient Direction Quantization Step</h4>
+
+  <div className="conv-steps-quantise-box">
+    <div className="conv-step-quantise-step">Step {quantStepNumber} :</div>
+
+{quantSteps.map((item, index) => (
+  <div className="conv-step-quantise-item-box" key={index}>
+    <div>Original Angle: {item.OriginalAngle}</div>
+    <div>Normalized: {item.Normalized}</div>
+    <div>{item.RangeMatched}</div>
+    <div>Quantized To: {item.QuantizedTo}</div>
+  </div>
+))}
+
+    
+  </div>
+</div>
+                )}
 
                 <Button
                   id="step-six-quantise-button"
@@ -2691,7 +2663,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                             row.map((cell, colIndex) => (
                               <div
                                 key={`${rowIndex}-${colIndex}`}
-                                className={`nms-gradient-mag-matrix 
+                                className={`nms-gradient-mag-matrix dirQ-${cell} 
   ${
     activePixel && activePixel[0] === rowIndex && activePixel[1] === colIndex
       ? "active-pixel"
@@ -2773,39 +2745,65 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       </div>
                     </div>
                   </div>
-                  <div className="nms-live-explanation-btn-box">
-                    {
-                      <div className="nms-live-explanation">
-                        <h3 style={{ textAlign: "center", fontSize: "14px" }}>
-                          Explanation
+                  {animatedSuppressed  &&
+                  <div className="nms-live-explanation-container">
+                      <h3 style={{ textAlign: "center", fontSize: "14px" }}>
+                          Non-Maximum Suppression Explanation
                         </h3>
-                        <h4>
-                          {activePixel &&
-                            `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
-                        </h4>
-                        <p>
-                          {nmsExplanation.map((item) => (
-                            <span key={item}>{item}</span>
-                          ))}
-                        </p>
-                      </div>
-                    }
+                      <div className="nms-live-explanation">
+  <h4>
+    {activePixel &&
+      `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
+  </h4>
 
-                    <Button
+  {nmsExplanation.map((item, index) => (
+    <div key={index} className="nms-step-box">
+      {item.direction && 
+      <div>
+        <strong>Direction:</strong> {item.direction}
+      </div> }
+      
+  {item.currentMagnitude && 
+      <div>
+        <strong>Current Magnitude:</strong> {item.currentMagnitude}
+      </div> }
+      
+  {item.neighbor1 && 
+      <div>
+        <strong>Neighbor 1:</strong> {item.neighbor1}
+      </div> }
+      
+  {item.neighbor2 && 
+      <div>
+        <strong>Neighbor 2:</strong> {item.neighbor2}
+      </div> }
+      
+       {item.decision && 
+      <div>
+  {item.currentMagnitude >= item.neighbor1 &&
+   item.currentMagnitude >= item.neighbor2
+    ? "Current pixel is LOCAL MAXIMUM (greater than both neighbors)"
+    : "Current pixel is NOT maximum (less than at least one neighbor)"}
+</div> }
+
+      {item.decision && (
+        <div style={{ color: item.decision.includes("KEPT") ? "green" : "red" }}>
+          <strong>Result:</strong> {item.decision}
+        </div>
+      )}
+
+    </div>
+  ))}
+</div>
+                  </div>
+                  }
+                  <Button
                       className="btn"
                       ref={myNonMaxButton}
                       onClick={dnonmax}
                     >
                       Process
                     </Button>
-                    {/* <Button
-                      className="btn"
-                     ref={myNonMaxButton}
-                      onClick={dnonmax}
-                    >
-                      Process
-                    </Button> */}
-                  </div>
                 </div>
               )}
             </Carousel.Item>
@@ -2907,49 +2905,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
           </Carousel>
 
           {showButtons && (
-            // <div className='carousel__btns'>
-            //     <div id="carousel_pre_btn">
-            //     <Button onClick={Previous} disabled={index === 0}
-            //             style={{
-            //                 backgroundColor: '#1D2A6D',
-            //                 border: '1px solid #ffffff4d',
-            //                 borderRadius: '50%',
-            //                 width: '40px',
-            //                 height: '40px',
-            //                 display: 'flex',
-            //                 alignItems: 'center',
-            //                 justifyContent: 'center',
-            //                 padding: '0'
-            //             }}
-            //             >
-            //             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-            //                 <path fillRule="evenodd" d="M11.854 1.646a.5.5 0 0 1 0 .708L7.207 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
-            //                 <path fillRule="evenodd" d="M7.854 1.646a.5.5 0 0 1 0 .708L3.207 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
-            //             </svg>
-            //             </Button>
-
-            //     </div>
-            //     <div id="carousel_next_btn">
-            //     <Button ref={myNextButton} onClick={() => NEXT()}  style={{
-            //                 backgroundColor: '#1D2A6D',
-            //                 border: '1px solid #ffffff4d',
-            //                 borderRadius: '50%',
-            //                 width: '40px',
-            //                 height: '40px',
-            //                 display: 'flex',
-            //                 alignItems: 'center',
-            //                 justifyContent: 'center',
-            //                 padding: '0'
-            //             }}>
-            //             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
-            //                 <path fillRule="evenodd" d="M4.146 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 1 1-.708-.708L8.793 7 4.146 2.354a.5.5 0 0 1 0-.708z"/>
-            //                 <path fillRule="evenodd" d="M8.146 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 1 1-.708-.708L12.793 7 8.146 2.354a.5.5 0 0 1 0-.708z"/>
-            //             </svg>
-            //             </Button>
-            //     </div>
-
-            // </div>
-
             <div className="carousel__btns">
               <div className="button-container">
                 <button
