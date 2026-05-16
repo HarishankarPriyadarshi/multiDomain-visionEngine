@@ -52,7 +52,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const myQuantButton = useRef(null);
   const myNonMaxButton = useRef(null);
   const myThresButton = useRef(null);
-  const myHytresisButton=useRef(null);
+  const myHytresisButton = useRef(null);
   const myNextButton = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showButtons, setShowButtons] = useState(false); //carousel buttons
@@ -138,9 +138,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [activeHystNeighbors, setActiveHystNeighbors] = useState([]);
   const [hystExplanation, setHystExplanation] = useState([]);
   const [isThresholdRunning, setIsThresholdRunning] = useState(false);
-     const [isBoxRunning, setIsBoxRunning] = useState(false);
-const [isHysteresisRunning, setIsHysteresisRunning] = useState(false);
-const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
+  const [isBoxRunning, setIsBoxRunning] = useState(false);
+  const [isHysteresisRunning, setIsHysteresisRunning] = useState(false);
+  const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
 
   useEffect(() => {
     const sobelXKernel = [
@@ -678,12 +678,11 @@ const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
     enabledNext();
   }
 
-
   async function animateDoubleThreshold() {
     setIsBoxRunning(true);
     setIsThresholdRunning(true);
-      setIsThresholdCompleted(false);
-       // myThresButton.current.disabled = true;
+    setIsThresholdCompleted(false);
+    // myThresButton.current.disabled = true;
     setTLowSliderIsDisabled(true);
     setTHighSliderIsDisabled(true);
     if (!supressed) return;
@@ -700,12 +699,16 @@ const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
     let tHighVal = thigh * maxVal;
 
     setTLowHighExplanation([
-  { text1: `Max Gradient Value = ${maxVal.toFixed(2)}` },
-  { text2: `Selected T_low ratio = ${tlow}` },
-  { text3: `Selected T_high ratio = ${thigh}` },
-  { text4: `Final T_low = ${tlow} × ${maxVal.toFixed(2)} = ${tLowVal.toFixed(2)}` },
-  { text5: `Final T_high = ${thigh} × ${maxVal.toFixed(2)} = ${tHighVal.toFixed(2)}` },
-]);
+      { text1: `Max Gradient Value = ${maxVal.toFixed(2)}` },
+      { text2: `Selected T_low ratio = ${tlow}` },
+      { text3: `Selected T_high ratio = ${thigh}` },
+      {
+        text4: `Final T_low = ${tlow} × ${maxVal.toFixed(2)} = ${tLowVal.toFixed(2)}`,
+      },
+      {
+        text5: `Final T_high = ${thigh} × ${maxVal.toFixed(2)} = ${tHighVal.toFixed(2)}`,
+      },
+    ]);
 
     let strong = 255;
     let weak = 75;
@@ -755,142 +758,124 @@ const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
 
         setThresholdGrid(tempGrid.map((r) => [...r]));
         await new Promise((r) => setTimeout(r, 7));
-        
       }
-      
     }
     setIsThresholdRunning(false);
-setIsThresholdCompleted(true);
+    setIsThresholdCompleted(true);
   }
   async function animateHysteresis() {
-  setIsHysteresisRunning(true);
-  setHystExplanation([]);
+    setIsHysteresisRunning(true);
+    setHystExplanation([]);
 
-  if (!thresholdGrid) return;
+    if (!thresholdGrid) return;
 
-  let strong = 255;
-  let weak = 75;
+    let strong = 255;
+    let weak = 75;
 
-  let temp = thresholdGrid.map((r) => [...r]);
+    let temp = thresholdGrid.map((r) => [...r]);
 
-  const rows = temp.length;
-  const cols = temp[0].length;
+    const rows = temp.length;
+    const cols = temp[0].length;
 
-  //  Step 1: Final grid initially transparent
-  let progressiveFinal = Array(rows)
-    .fill(null)
-    .map(() => Array(cols).fill(null));
+    //  Step 1: Final grid initially transparent
+    let progressiveFinal = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(null));
 
-  setFinalGrid(progressiveFinal);
+    setFinalGrid(progressiveFinal);
 
-for (let i = 0; i < rows; i++) {
-  for (let j = 0; j < cols; j++) {
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        setActiveHystPixel([i, j]);
+        setActiveHystNeighbors([]);
 
-    setActiveHystPixel([i, j]);
-    setActiveHystNeighbors([]);
+        await new Promise((r) => setTimeout(r, 500));
 
-    await new Promise((r) => setTimeout(r, 500));
+        // 🔹 CASE 1: Strong pixel
+        if (temp[i][j] === strong) {
+          setHystExplanation([
+            { text: "Strong pixel (255)" },
+            { text: "Already strong → kept as edge" },
+          ]);
 
-    // 🔹 CASE 1: Strong pixel
-    if (temp[i][j] === strong) {
+          progressiveFinal[i][j] = strong;
 
-      setHystExplanation([
-        { text: "Strong pixel (255)" },
-        { text: "Already strong → kept as edge" }
-      ]);
+          setFinalGrid(progressiveFinal.map((r) => [...r]));
+          await new Promise((r) => setTimeout(r, 800));
+          continue;
+        }
 
-      progressiveFinal[i][j] = strong;
+        // 🔹 CASE 2: Weak pixel
+        if (temp[i][j] === weak) {
+          setHystExplanation([{ text: "Weak pixel (75) found" }]);
 
-      setFinalGrid(progressiveFinal.map(r => [...r]));
-      await new Promise((r) => setTimeout(r, 800));
-      continue;
-    }
+          let neighbors = [];
 
-    // 🔹 CASE 2: Weak pixel
-    if (temp[i][j] === weak) {
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              if (dx === 0 && dy === 0) continue;
 
-      setHystExplanation([
-        { text: "Weak pixel (75) found" }
-      ]);
+              let newX = i + dx;
+              let newY = j + dy;
 
-      let neighbors = [];
-
-      for (let dx = -1; dx <= 1; dx++) {
-        for (let dy = -1; dy <= 1; dy++) {
-
-          if (dx === 0 && dy === 0) continue;
-
-          let newX = i + dx;
-          let newY = j + dy;
-
-          if (
-            newX >= 0 &&
-            newX < rows &&
-            newY >= 0 &&
-            newY < cols
-          ) {
-            neighbors.push([newX, newY]);
+              if (newX >= 0 && newX < rows && newY >= 0 && newY < cols) {
+                neighbors.push([newX, newY]);
+              }
+            }
           }
+
+          setActiveHystNeighbors(neighbors);
+
+          await new Promise((r) => setTimeout(r, 1000));
+
+          let connected = neighbors.some(([x, y]) => temp[x][y] === strong);
+
+          if (connected) {
+            temp[i][j] = strong;
+            setHystExplanation((prev) => [
+              ...prev,
+              { text: "Connected to STRONG neighbor → PROMOTED to STRONG" },
+            ]);
+          } else {
+            temp[i][j] = 0;
+            setHystExplanation((prev) => [
+              ...prev,
+              { text: "No STRONG neighbor found" },
+              { text: "Pixel is SUPPRESSED (0)" },
+            ]);
+          }
+
+          await new Promise((r) => setTimeout(r, 1000));
+
+          progressiveFinal[i][j] = temp[i][j];
+          setFinalGrid(progressiveFinal.map((r) => [...r]));
+
+          continue;
+        }
+
+        // 🔹 CASE 3: Already zero
+        if (temp[i][j] === 0) {
+          setHystExplanation([
+            { text: "Pixel value is 0" },
+            { text: "Already suppressed → remains 0" },
+          ]);
+
+          progressiveFinal[i][j] = 0;
+
+          setFinalGrid(progressiveFinal.map((r) => [...r]));
+          await new Promise((r) => setTimeout(r, 600));
         }
       }
-
-      setActiveHystNeighbors(neighbors);
-
-      await new Promise((r) => setTimeout(r, 1000));
-
-      let connected = neighbors.some(
-        ([x, y]) => temp[x][y] === strong
-      );
-
-      if (connected) {
-        temp[i][j] = strong;
-        setHystExplanation((prev) => [
-          ...prev,
-          { text: "Connected to STRONG neighbor → PROMOTED to STRONG" }
-        ]);
-      } else {
-        temp[i][j] = 0;
-        setHystExplanation((prev) => [
-          ...prev,
-          { text: "No STRONG neighbor found" },
-          { text: "Pixel is SUPPRESSED (0)" }
-        ]);
-      }
-
-      await new Promise((r) => setTimeout(r, 1000));
-
-      progressiveFinal[i][j] = temp[i][j];
-      setFinalGrid(progressiveFinal.map(r => [...r]));
-
-      continue;
     }
 
-    // 🔹 CASE 3: Already zero
-    if (temp[i][j] === 0) {
+    setActiveHystPixel(null);
+    setActiveHystNeighbors([]);
 
-      setHystExplanation([
-        { text: "Pixel value is 0" },
-        { text: "Already suppressed → remains 0" }
-      ]);
+    setHystExplanation([{ text: "Hysteresis Completed Successfully ✅" }]);
 
-      progressiveFinal[i][j] = 0;
-
-      setFinalGrid(progressiveFinal.map(r => [...r]));
-      await new Promise((r) => setTimeout(r, 600));
-    }
+    setIsHysteresisRunning(false);
+    notifyS("Hysteresis Completed Successfully ✅");
   }
-}
-
-  setActiveHystPixel(null);
-  setActiveHystNeighbors([]);
-
-  setHystExplanation([
-    { text: "Hysteresis Completed Successfully ✅" }
-  ]);
-
-  setIsHysteresisRunning(false);
-  notifyS( "Hysteresis Completed Successfully ✅");
-}
 
   function Previous() {
     prevSlide();
@@ -916,7 +901,7 @@ for (let i = 0; i < rows; i++) {
       myNextButton.current.disabled = false;
     } else if (index == 5 && myNonMaxButton.current.disabled == true) {
       myNextButton.current.disabled = false;
-    } else if (index == 6 ) {
+    } else if (index == 6) {
       myNextButton.current.disabled = true;
       // handleClose2();
     } else {
@@ -1177,7 +1162,7 @@ for (let i = 0; i < rows; i++) {
         content:
           "This is the padded 9×9 image. Padding ensures that convolution can be applied at border pixels without losing information.",
         targetId: "gaussian-blur-matrix-zone",
-        placement: "top",
+        placement: "left",
         offset: [0, 10],
       },
       {
@@ -1185,7 +1170,7 @@ for (let i = 0; i < rows; i++) {
         content:
           "This 3×3 Gaussian kernel assigns higher weight to the center pixel and smaller weights to surrounding pixels. It smooths the image by weighted averaging.",
         targetId: "gaussian-kernel-zone",
-        placement: "top",
+        placement: "right",
         offset: [0, 10],
       },
       {
@@ -1317,43 +1302,112 @@ for (let i = 0; i < rows; i++) {
       return;
     }
     // STEP 5 — SOBEL CONVOLUTION
-    baseSteps.push({
-      title: "Sobel Edge Detection",
-      content:
-        "Sobel X and Sobel Y detect horizontal and vertical intensity changes.",
-      targetId: "sobel-application-canny",
-      placement: "left",
-    });
-
-    if (!convolutedx) {
-      baseSteps.push({
-        title: "Action Required",
-        content:
-          "Please click the 'Pad' button to generate the padded blurred image.",
-        targetId: "step-four-pad-blurred-button",
-        placement: "bottom",
-      });
-
-      setTutorStepsSim(baseSteps);
-      return;
-    }
     baseSteps.push(
-      {
-        title: "Apply Sobel",
-        content: "Click 'Apply Sobel' to compute gradient components.",
-        targetId: mySobelButton?.current?.id || "sobel-application-canny",
-        placement: "bottom",
-      },
-      {
-        title: "Next Step",
-        content: "Click the 'Next' button to continue to the next step.",
-        targetId: "next-btn-zone",
-        placement: "left",
-        offset: [0, 10],
-      },
-    );
+  {
+    title: "Step 5: Gradient Computation using Sobel Operator",
+    content:
+      "In this stage, we compute the intensity gradient of the Gaussian-smoothed image using Sobel operators. The gradient identifies regions of rapid intensity change, which correspond to potential edges.",
+    targetId: "padded-blurred-image-matrix-zone",
+    placement: "bottom",
+    offset: [0, 10],
+  },
+  {
+    title: "Sobel Kernels ",
+    content:
+      "The Sobel X and Sobel Y kernels approximate first-order partial derivatives along horizontal (Gx) and vertical (Gy) directions. These kernels emphasize intensity changes while incorporating slight smoothing.",
+    targetId: "sobel-kernel-div",
+    placement: "left",
+    offset: [0, 10],
+  },
+  
+  {
+    title: "Apply Sobel Convolution",
+    content:
+      "Click the 'Apply Sobel' button to begin animated convolution. Each 3×3 neighborhood is multiplied element-wise with the Sobel kernels, and the products are summed to compute Gx and Gy at that pixel location.",
+    targetId: "apply-sobel-button-zone",
+    placement: "bottom",
+  }
+);
 
-    if (index === 4) {
+// Action gating
+      if (!convolutedx || !convolutedy) {
+  baseSteps.push({
+    title: "Action Required",
+    content:
+      "Please click the 'Apply Sobel' button to compute the horizontal and vertical gradient components.",
+    targetId: "apply-sobel-button-zone",
+    placement: "bottom",
+  });
+
+  setTutorStepsSim(baseSteps);
+  return;
+      }
+      
+        baseSteps.push(
+            {
+          title: "Sliding Window Operation",
+          content:
+            "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+          targetId: "kernel-sliding-box",
+          placement: "top",
+          offset: [-10, 12],
+        },
+  {
+    title: "Horizontal Gradient (Gx)",
+    content:
+      "This matrix represents the horizontal gradient component computed using the Sobel X kernel. Large magnitude values indicate strong vertical edges in the image.",
+    targetId: "sobel-x-canny",
+    placement: "top",
+  },
+  {
+    title: "Vertical Gradient (Gy)",
+    content:
+      "This matrix represents the vertical gradient component computed using the Sobel Y kernel. Large magnitude values indicate strong horizontal edges.",
+    targetId: "sobel-y-canny",
+    placement: "top",
+  },
+  {
+  title: "Live Gradient Direction Computation",
+  content:
+    "The edge orientation is calculated using above formula. The substituted expression shown here corresponds to the exact horizontal and vertical gradient components computed for this pixel. The resulting angle indicates the direction of maximum intensity variation and will later be quantized during Non-Maximum Suppression.",
+  targetId: "gradient-direction-canny-zone",
+  placement: "right",
+  offset: [0, 10],
+},
+  {
+  title: "Gradient Direction (Edge Orientation)",
+  content:
+    "The gradient direction θ, derived from Gy and Gx, indicates the orientation of maximum intensity change and defines the edge direction.",
+  targetId: "gradient-direction-matrix-zone",
+  placement: "bottom",
+  offset: [0, 10],
+},
+{
+  title: "Live Gradient Magnitude Computation",
+  content:
+    "For the currently highlighted pixel, the gradient magnitude is computed using above formula. The displayed expression shows the actual substituted values of Gx and Gy obtained from convolution. This represents the Euclidean norm of the gradient vector and quantifies the edge strength at that pixel location.",
+  targetId: "gradient-magnitude-canny-zone",
+  placement: "right",
+  offset: [0, 10],
+},
+{
+  title: "Gradient Magnitude (Edge Strength)",
+  content:
+    "The gradient magnitude G quantifies how rapidly the image intensity changes at a pixel. It is computed as the Euclidean norm of the gradient vector formed by (Gx, Gy). Larger magnitude values correspond to sharper transitions in intensity, indicating stronger potential edges.",
+  targetId: "gradient-magnitude-matrix-zone",
+  placement: "bottom",
+  offset: [0, 10],
+},
+  {
+    title: "Next Step",
+    content:
+      "Click the 'Next' button to continue to the next step.",
+    targetId: "next-btn-zone",
+    placement: "left",
+    offset: [0, 10],
+  }
+      );
+      if (index === 4) {
       baseSteps.push({
         title: "Action Required",
         content: "Click the 'Next' button to continue to the next step.",
@@ -1364,7 +1418,7 @@ for (let i = 0; i < rows; i++) {
 
       setTutorStepsSim(baseSteps);
       return;
-    }
+      }
 
     // STEP 6 — GRADIENT QUANTISATION
 
@@ -1382,8 +1436,8 @@ for (let i = 0; i < rows; i++) {
         content:
           "For Non-Maximum Suppression, we only need four principal directions: 0°, 45°, 90°, and 135°. Therefore, each gradient angle is approximated to the nearest of these four directions.",
         targetId: "step-six-quantise-button",
-        placement: "right",
-        offset: [0, 10],
+        placement: "bottom",
+        
       },
       {
         title: "Start Quantisation",
@@ -1409,17 +1463,25 @@ for (let i = 0; i < rows; i++) {
 
     baseSteps.push(
       {
+  title: "Live Gradient Direction Quantization",
+  content:
+    "For the currently highlighted pixel, the computed gradient angle is first normalized to the range [0°, 180°). It is then compared against predefined angular intervals to determine the closest principal direction (0°, 45°, 90°, or 135°). This quantized direction defines the axis along which neighboring pixels will be examined in the next stage.",
+  targetId: "convStepsQuant",
+  placement: "right",
+  offset: [0, 10],
+},
+      {
         title: "Quantised Direction Matrix",
         content:
           "Each gradient angle has now been replaced with its nearest principal direction. This simplifies edge direction analysis and prepares the image for Non-Maximum Suppression.",
         targetId: "step-six-quantise-matrix",
-        placement: "bottom",
+        placement: "right",
         offset: [0, 10],
       },
       {
         title: "Directional Meaning",
         content:
-          "• 0° means Horizontal edge comparison\n• 90° means Vertical edge comparison\n•  45° and 135° means Diagonal edge comparison\n\nThese directions determine which neighboring pixels will be compared in the next step.",
+          "0° means Horizontal edge comparison\n90° means Vertical edge comparison\n45° and 135° means Diagonal edge comparison\n\nThese directions determine which neighboring pixels will be compared in the next step.",
         targetId: "quantised-canny-div",
         placement: "top",
         offset: [0, 10],
@@ -1446,7 +1508,17 @@ for (let i = 0; i < rows; i++) {
     }
 
     //  STEP 7 — NON-MAX SUPPRESSION
-
+    baseSteps.push(
+      {
+  title: "Live Gradient Direction Quantization",
+  content:
+    "For the currently highlighted pixel, the computed gradient angle is first normalized to the range [0°, 180°). It is then compared against predefined angular intervals to determine the closest principal direction (0°, 45°, 90°, or 135°). This quantized direction defines the axis along which neighboring pixels will be examined in the next stage.",
+  targetId: "convStepsQuant",
+  placement: "right",
+  offset: [0, 10],
+},
+      
+    );
     if (!supressed) {
       baseSteps.push({
         title: "Non-Maximum Suppression",
@@ -2256,6 +2328,7 @@ for (let i = 0; i < rows; i++) {
 
                     {padBlur && (
                       <div
+                      id="padded-blurred-image-matrix-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(9, 1fr)",
@@ -2280,6 +2353,7 @@ for (let i = 0; i < rows; i++) {
                     )}
                     {sobelPosX !== -1 && sobelPosY !== -1 && (
                       <div
+                      id="kernel-sliding-box"
                         style={{
                           position: "absolute",
                           top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0) + ((document.getElementById("sobel-cell")?.offsetTop || 0) - 37)}px`,
@@ -2400,6 +2474,7 @@ for (let i = 0; i < rows; i++) {
                         }}
                       >
                         <Button
+                        id="apply-sobel-button-zone"
                           className="btn"
                           ref={mySobelButton}
                           onClick={applySobelConvolution}
@@ -2507,7 +2582,7 @@ for (let i = 0; i < rows; i++) {
                       {gradient && <h4>Resultant Gradient Direction</h4>}
                       {gradient && <BlockMath math={equation1} />}
                       {gradient && (
-                        <div className="sobel-gradient-conv">
+                        <div id="gradient-direction-canny-zone" className="sobel-gradient-conv">
                           {convSteps.direction.map((item, index) => (
                             <span key={index}>{item}</span>
                           ))}{" "}
@@ -2515,6 +2590,7 @@ for (let i = 0; i < rows; i++) {
                         </div>
                       )}
                       <div
+                        id="gradient-direction-matrix-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -2554,7 +2630,7 @@ for (let i = 0; i < rows; i++) {
                       )}
                       {gradient && <BlockMath math={equation2} />}
                       {gradient && (
-                        <div className="sobel-gradient-conv">
+                        <div id="gradient-magnitude-canny-zone" className="sobel-gradient-conv">
                           {convSteps.result.map((item, index) => (
                             <span key={index}>{item}</span>
                           ))}{" "}
@@ -2563,6 +2639,7 @@ for (let i = 0; i < rows; i++) {
                       )}
 
                       <div
+                        id="gradient-magnitude-matrix-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -3029,275 +3106,263 @@ for (let i = 0; i < rows; i++) {
                       />
                     </div>
                   </div>
-                  { isBoxRunning && (
-                  <div className="dlLow-live-explanation-container">
-                    {tLowHighExplanation?.map((item) => (
-                      <div key={item.text1}>{item.text1}</div>
-                    ))}
+                  {isBoxRunning && (
+                    <div className="dlLow-live-explanation-container">
+                      {tLowHighExplanation?.map((item) => (
+                        <div key={item.text1}>{item.text1}</div>
+                      ))}
 
-                    {tLowHighExplanation?.map((item) => (
-                      <div key={item.text4}>{item.text4}</div>
-                    ))}
-                    {tLowHighExplanation?.map((item) => (
-                      <div key={item.text5}>{item.text5}</div>
-                    ))}
-
-                  </div>
+                      {tLowHighExplanation?.map((item) => (
+                        <div key={item.text4}>{item.text4}</div>
+                      ))}
+                      {tLowHighExplanation?.map((item) => (
+                        <div key={item.text5}>{item.text5}</div>
+                      ))}
+                    </div>
                   )}
                   {/* all matrix */}
                   <div className="final-grid-matrix-container">
                     {/* 🔹 SUPPRESSED GRID */}
-{supressed && (
-  <div className="final-grid-matrix">
-    <h3>Suppressed Gradient</h3>
+                    {supressed && (
+                      <div className="final-grid-matrix">
+                        <h3>Suppressed Gradient</h3>
 
-    {(() => {
-      const maxVal = Math.max(
-        0,
-        ...supressed.flat().filter(
-          (v) => typeof v === "number" && !isNaN(v)
-        )
-      );
+                        {(() => {
+                          const maxVal = Math.max(
+                            0,
+                            ...supressed
+                              .flat()
+                              .filter(
+                                (v) => typeof v === "number" && !isNaN(v),
+                              ),
+                          );
 
-      return (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: "1px",
-            marginBottom: "15px",
-          }}
-        >
-          {supressed.map((row, rowIndex) =>
-            row.map((cell, colIndex) => {
-                            const isActive =
-                activeThreshPixel &&
-                activeThreshPixel[0] === rowIndex &&
-                activeThreshPixel[1] === colIndex;
-              const intensity =
-                maxVal === 0
-                  ? 0
-                  : (Math.abs(cell) / maxVal) * 255;
+                          return (
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(7, 1fr)",
+                                gap: "1px",
+                                marginBottom: "15px",
+                              }}
+                            >
+                              {supressed.map((row, rowIndex) =>
+                                row.map((cell, colIndex) => {
+                                  const isActive =
+                                    activeThreshPixel &&
+                                    activeThreshPixel[0] === rowIndex &&
+                                    activeThreshPixel[1] === colIndex;
+                                  const intensity =
+                                    maxVal === 0
+                                      ? 0
+                                      : (Math.abs(cell) / maxVal) * 255;
 
-              return (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`threshold-cell ${
-                    isActive ? "active-current" : ""
-                  }`}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
-                    border: "1px solid #ccc",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                  }}
-                > 
-                  {cell}
-                </div>
-              );
-            })
-          )}
-        </div>
-      );
-    })()}
-  </div>
-)}
-                    { isBoxRunning && (
-   <div id="quantised-canny-arrow">&#129066;</div>
-)}
-{/* 🔹 THRESHOLD GRID */}
-{thresholdGrid && (
-  <div className="final-grid-matrix">
-    <h3>After Double Threshold</h3>
+                                  return (
+                                    <div
+                                      key={`${rowIndex}-${colIndex}`}
+                                      className={`threshold-cell ${
+                                        isActive ? "active-current" : ""
+                                      }`}
+                                      style={{
+                                        width: "30px",
+                                        height: "30px",
+                                        backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
+                                        border: "1px solid #ccc",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      {cell}
+                                    </div>
+                                  );
+                                }),
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                    {isBoxRunning && (
+                      <div id="quantised-canny-arrow">&#129066;</div>
+                    )}
+                    {/* 🔹 THRESHOLD GRID */}
+                    {thresholdGrid && (
+                      <div className="final-grid-matrix">
+                        <h3>After Double Threshold</h3>
 
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(7, 1fr)",
-        gap: "1px",
-        marginBottom: "15px",
-      }}
-    >
-      {thresholdGrid.map((row, rowIndex) =>
-        row.map((cell, colIndex) => {
-          
-          const isCurrent =
-                activeHystPixel &&
-                activeHystPixel[0] === rowIndex &&
-                activeHystPixel[1] === colIndex;
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(7, 1fr)",
+                            gap: "1px",
+                            marginBottom: "15px",
+                          }}
+                        >
+                          {thresholdGrid.map((row, rowIndex) =>
+                            row.map((cell, colIndex) => {
+                              const isCurrent =
+                                activeHystPixel &&
+                                activeHystPixel[0] === rowIndex &&
+                                activeHystPixel[1] === colIndex;
 
-          const isNeighbor =
-                activeHystNeighbors?.some(
-                  ([x, y]) => x === rowIndex && y === colIndex
-                );
-                console.log("isCurrent",isCurrent,"isNeighbor",isNeighbor);
-                
-          return (
-            <div
-              key={`${rowIndex}-${colIndex}`}
-              className={`threshold-cell 
-                ${
-                  isCurrent ? "active-current" : ""
-                 }
-                  ${
-                  isNeighbor ? "active-neighbour" : ""
-                 }`
-            }
-              style={{
-                width: "30px",
-                height: "30px",
-                backgroundColor:
-isCurrent
-                                   ? "#3cf7d2ff"        // 🔥 cyan for current pixel
-                                   : isNeighbor
-                                   ? "#ffcc00"        // 🔥 yellow for neighbors
-                                   : cell === 255
-                                   ? "white"
-                                   : cell === 75
-                    ? "rgb(150,150,150)"
-                    : cell === 0
-                    ? "black"
-                    : "transparent",
+                              const isNeighbor = activeHystNeighbors?.some(
+                                ([x, y]) => x === rowIndex && y === colIndex,
+                              );
+                              console.log(
+                                "isCurrent",
+                                isCurrent,
+                                "isNeighbor",
+                                isNeighbor,
+                              );
 
-                border: "1px solid #ccc",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "12px",
-              }}
-            >
-              {cell === 1 ? "" : cell}
-            </div>
-          );
-        })
-      )}
-    </div>
-  </div>
-)}
-                 { isBoxRunning && (
-   <div id="quantised-canny-arrow">&#129066;</div>
-)}
-{/* 🔹 FINAL GRID */}
-{finalGrid && (
-  <div className="final-grid-matrix">
-    <h3>Final Edge Map (After Hysteresis)</h3>
+                              return (
+                                <div
+                                  key={`${rowIndex}-${colIndex}`}
+                                  className={`threshold-cell 
+                ${isCurrent ? "active-current" : ""}
+                  ${isNeighbor ? "active-neighbour" : ""}`}
+                                  style={{
+                                    width: "30px",
+                                    height: "30px",
+                                    backgroundColor: isCurrent
+                                      ? "#3cf7d2ff" // 🔥 cyan for current pixel
+                                      : isNeighbor
+                                        ? "#ffcc00" // 🔥 yellow for neighbors
+                                        : cell === 255
+                                          ? "white"
+                                          : cell === 75
+                                            ? "rgb(150,150,150)"
+                                            : cell === 0
+                                              ? "black"
+                                              : "transparent",
 
-    {(() => {
+                                    border: "1px solid #ccc",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    fontSize: "12px",
+                                  }}
+                                >
+                                  {cell === 1 ? "" : cell}
+                                </div>
+                              );
+                            }),
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {isBoxRunning && (
+                      <div id="quantised-canny-arrow">&#129066;</div>
+                    )}
+                    {/* 🔹 FINAL GRID */}
+                    {finalGrid && (
+                      <div className="final-grid-matrix">
+                        <h3>Final Edge Map (After Hysteresis)</h3>
 
+                        {(() => {
+                          return (
+                            <div
+                              style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(7, 1fr)",
+                                gap: "1px",
+                                marginBottom: "15px",
+                              }}
+                            >
+                              {finalGrid.map((row, rowIndex) =>
+                                row.map((cell, colIndex) => {
+                                  // const isCurrent =
+                                  //   activeHystPixel &&
+                                  //   activeHystPixel[0] === rowIndex &&
+                                  //   activeHystPixel[1] === colIndex;
 
-      return (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: "1px",
-            marginBottom: "15px",
-          }}
-        >
-          {finalGrid.map((row, rowIndex) =>
-            row.map((cell, colIndex) => {
+                                  // const isNeighbor =
+                                  //   activeHystNeighbors?.some(
+                                  //     ([x, y]) => x === rowIndex && y === colIndex
+                                  //   );
 
-
-              // const isCurrent =
-              //   activeHystPixel &&
-              //   activeHystPixel[0] === rowIndex &&
-              //   activeHystPixel[1] === colIndex;
-
-              // const isNeighbor =
-              //   activeHystNeighbors?.some(
-              //     ([x, y]) => x === rowIndex && y === colIndex
-              //   );
-
-              return (
-                <div
-                  key={`${rowIndex}-${colIndex}`}
-                  className={`threshold-cell
+                                  return (
+                                    <div
+                                      key={`${rowIndex}-${colIndex}`}
+                                      className={`threshold-cell
 
                   `}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    backgroundColor:
-  cell === null
-    ? "transparent"
-    : cell === 255
-    ? "white"
-    : cell === 75
-    ? "gray"
-    : "black",
-                    
-                    border: "1px solid #ccc",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "12px",
-                  }}
-                >
-                 
-                </div>
-              );
-            })
-          )}
-        </div>
-      );
-    })()}
-  </div>
-)}
+                                      style={{
+                                        width: "30px",
+                                        height: "30px",
+                                        backgroundColor:
+                                          cell === null
+                                            ? "transparent"
+                                            : cell === 255
+                                              ? "white"
+                                              : cell === 75
+                                                ? "gray"
+                                                : "black",
+
+                                        border: "1px solid #ccc",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "12px",
+                                      }}
+                                    ></div>
+                                  );
+                                }),
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
 
                   {/* 🔹 Buttons */}
                   <div className="final-grid-btn-container">
                     <Button
-  className="btn"
-  onClick={animateDoubleThreshold}
-  disabled={isThresholdRunning || isThresholdCompleted}
->
-  Run Double Threshold
-</Button>
+                      className="btn"
+                      onClick={animateDoubleThreshold}
+                      disabled={isThresholdRunning || isThresholdCompleted}
+                    >
+                      Run Double Threshold
+                    </Button>
 
-<Button
-  className="btn"
-  onClick={animateHysteresis}
-   disabled={!isThresholdCompleted || isHysteresisRunning}
->
-  Run Hysteresis
-</Button>
+                    <Button
+                      className="btn"
+                      onClick={animateHysteresis}
+                      disabled={!isThresholdCompleted || isHysteresisRunning}
+                    >
+                      Run Hysteresis
+                    </Button>
                   </div>
 
                   {/* 🔹 Explanation Panel */}
 
-                   { (isBoxRunning ) && (
+                  {isBoxRunning && (
                     <div className="dl-live-explanation-container">
-                    <h4>
-                      {activeThreshPixel &&
-                        `Checking Pixel (${activeThreshPixel[0]}, ${activeThreshPixel[1]})`}
-                    </h4>
+                      <h4>
+                        {activeThreshPixel &&
+                          `Checking Pixel (${activeThreshPixel[0]}, ${activeThreshPixel[1]})`}
+                      </h4>
 
-                    {thresholdExplanation.map((item, index) => (
-                      <div key={index}>{item.text}</div>
-                    ))}
-
-                    
-                  </div>)}
-                                     { (isBoxRunning && isHysteresisRunning ) && (
+                      {thresholdExplanation.map((item, index) => (
+                        <div key={index}>{item.text}</div>
+                      ))}
+                    </div>
+                  )}
+                  {isBoxRunning && isHysteresisRunning && (
                     <div className="dl-live-explanation-container">
-                    <h4>
-                      {activeHystPixel &&
-                        `Checking Pixel (${activeHystPixel[0]}, ${activeHystPixel[1]})`}
-                    </h4>
+                      <h4>
+                        {activeHystPixel &&
+                          `Checking Pixel (${activeHystPixel[0]}, ${activeHystPixel[1]})`}
+                      </h4>
 
-                    
-
-                    {hystExplanation.map((item, index) => (
-                      <div key={`h-${index}`}>{item.text}</div>
-                    ))}
-                  </div>)}
-
-
+                      {hystExplanation.map((item, index) => (
+                        <div key={`h-${index}`}>{item.text}</div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </Carousel.Item>
