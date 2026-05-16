@@ -760,7 +760,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         await new Promise((r) => setTimeout(r, 7));
       }
     }
-    setIsThresholdRunning(false);
+    //setIsThresholdRunning(false);
     setIsThresholdCompleted(true);
   }
   async function animateHysteresis() {
@@ -873,7 +873,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     setHystExplanation([{ text: "Hysteresis Completed Successfully ✅" }]);
 
-    setIsHysteresisRunning(false);
+    //setIsHysteresisRunning(false);
     notifyS("Hysteresis Completed Successfully ✅");
   }
 
@@ -1509,53 +1509,199 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
     //  STEP 7 — NON-MAX SUPPRESSION
     baseSteps.push(
-      {
-  title: "Live Gradient Direction Quantization",
-  content:
-    "For the currently highlighted pixel, the computed gradient angle is first normalized to the range [0°, 180°). It is then compared against predefined angular intervals to determine the closest principal direction (0°, 45°, 90°, or 135°). This quantized direction defines the axis along which neighboring pixels will be examined in the next stage.",
-  targetId: "convStepsQuant",
-  placement: "right",
-  offset: [0, 10],
-},
-      
+{
+    title: "Resultant Gradient Magnitude",
+    content:
+      "This matrix represents the gradient magnitude computed using Sobel derivatives. Each value indicates the edge strength at that pixel. Higher magnitudes correspond to stronger intensity transitions and potential edge locations.",
+    targetId: "step-seven-gradient-mag-matrix",
+    placement: "right",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Quantised Gradient Direction",
+    content:
+      "Each pixel's gradient direction has been quantized to one of four principal orientations: 0°, 45°, 90°, or 135°. This discretization determines the axis along which neighboring pixels will be compared during non-maximum suppression.",
+    targetId: "step-seven-quantise-matrix",
+    placement: "left",
+    offset: [0, 10],
+  },
+  {
+    title:"Click Process Button",
+    content:"Click 'Process' to thin edges by removing non-maximal gradient pixels.",
+    targetId: "step-seven-process-btn",
+    placement: "bottom",
+    
+  }   
     );
     if (!supressed) {
+      console.log("supressed", supressed);
+      console.log(baseSteps.length);
       baseSteps.push({
-        title: "Non-Maximum Suppression",
+        title: "Action Required",
         content:
-          "Click 'Process' to thin edges by removing non-maximal gradient pixels.",
-        targetId: myNonMaxButton?.current?.id || "non-max-supression-canny",
+          "Click 'Process' to apply Non-Maximum Suppression.",
+        targetId: "step-seven-process-btn",
         placement: "bottom",
       });
 
       setTutorStepsSim(baseSteps);
       return;
     }
+    baseSteps.push(
+ {
+    title: "Non-Maximum Suppression Explanation",
+    content:
+      "For the highlighted pixel, the algorithm selects two neighboring pixels along the quantized gradient direction. If the current magnitude is greater than or equal to both neighbors, it is preserved as a local maximum. Otherwise, it is suppressed to zero. Highlighted cells indicate the active pixel and its comparison neighbors.",
+    targetId: "step-seven-nms-explanation-container",
+    placement: "left",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Suppressed Gradient",
+    content:
+      "After processing all pixels, only local maxima remain. Non-maximal pixels are suppressed to zero, resulting in thin, well-localized edges. This refined edge map is the output of the Non-Maximum Suppression stage.",
+    targetId: "step-seven-suppressed-gradient-matrix",
+    placement: "top",
+    offset: [0, 10],
+  },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+    if (index === 6) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
 
     // STEP 8 — DOUBLE THRESHOLD
+    baseSteps.push(
+        {
+    title: "Suppressed Gradient",
+    content:
+      "This matrix is the output of Non-Maximum Suppression. It contains thin edge responses where only local maxima were retained. These values will now be classified using double thresholding.",
+    targetId: "step-eight-suppressed-gradient",
+    placement: "top",
+    offset: [0, 10],
+  },
 
-    if (!finalGrid) {
+  {
+    title: "Set Threshold Ratios (T_low and T_high)",
+    content:
+      "Adjust the T_low and T_high sliders. These ratios are multiplied with the maximum gradient magnitude to compute the actual threshold values. T_high identifies strong edges, while T_low determines potential weak edges.",
+    targetId: "step-eight-thresholding-container",
+    placement: "bottom",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Click Double Threshold Button",
+    content:
+      "Click 'Run Double Threshold' to classify pixels. ",
+    targetId: "step-eight-run-double-threshold",
+    placement: "bottom",
+    offset: [0, 10],
+  },
+    )
+
+    if (!isThresholdRunning) {
       baseSteps.push({
-        title: "Double Threshold & Hysteresis",
+        title: "Action Required",
         content:
-          "Set T_low and T_high, then click 'Process' to finalize edge detection.",
+          " Click 'Run Double Threshold' to classify pixels. ",
         targetId: myThresButton?.current?.id || "final-grid-canny",
         placement: "bottom",
       });
 
-      // FINAL STEP
-
-      baseSteps.push({
-        title: "Edge Detection Complete",
-        content:
-          "You have successfully completed all stages of the Canny Edge Detection algorithm.",
-        targetId: "final-grid-canny",
-        placement: "top",
-      });
-
       setTutorStepsSim(baseSteps);
       return;
     }
+    baseSteps.push({
+   title:"Calculated T_low and T_high Values",
+   content:"The algorithm computes the actual T low and T high values by multiplying the ratios with the maximum gradient magnitude. T_high identifies strong edges, while T_low determines potential weak edges.",
+   targetId: "step-eight-dlLow-live-explanation",
+   placement: "right",
+    offset: [0, 10],
+ },
+  {
+    title: "Double Threshold Live Explanation",
+    content:
+      "For the highlighted pixel, the algorithm displays its magnitude, computed T_low and T_high values, and its classification result. The matrix updates progressively to show strong (white), weak (gray), and suppressed (black) pixels.",
+    targetId: "step-eight-dl-live-explanation",
+    placement: "left",
+    offset: [0, 10],
+  },
+  {
+    title: "Double Threshold Matrix",
+    content:
+      "This matrix displays the result of double thresholding. Strong edges are white, weak edges are gray, and suppressed edges are black.",
+    targetId: "step-eight-threshold-matrix",
+    placement: "right",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Run Hysteresis",
+    content:
+      "Now, Click 'Run Hysteresis' to refine edges.",
+    targetId: "step-eight-run-hysteresis",
+    placement: "bottom",
+    offset: [0, 10],
+  },
+);
+ if(!isHysteresisRunning){
+  baseSteps.push({
+    title: "Action Required",
+    content:
+      " Click 'Run Hysteresis' to refine edges.",
+    targetId: "step-eight-run-hysteresis",
+    placement: "bottom",
+    offset: [0, 10],
+  });
+ }
+baseSteps.push(
+  
+  {
+    title: "Hysteresis Live Explanation",
+    content:
+      "If a weak pixel is connected to at least one strong neighbor, it is promoted to STRONG (255). Otherwise, it is suppressed to zero. Highlighted neighbors indicate the connectivity check.",
+    targetId: "step-eight-hytresis-live-explanation",
+    placement: "left",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Final Edge Map",
+    content:
+      "After hysteresis, only strong and connected edge pixels remain. This final binary edge map represents the complete output of the Canny Edge Detection algorithm.",
+    targetId: "step-eight-final-grid-matrix",
+    placement: "bottom",
+    offset: [0, 10],
+  },
+
+  {
+    title: "Simulation Completed",
+    content:
+      "Congratulations! All stages of the Canny Edge Detection algorithm have now been executed: Gradient Computation, Quantization, Non-Maximum Suppression, Double Thresholding, and Hysteresis.",
+    targetId: "step-eight-final-grid-matrix",
+    placement: "bottom",
+    offset: [0, 10],
+  }
+)
 
     setTutorStepsSim(baseSteps);
   }, [
@@ -1573,6 +1719,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
     finalGrid,
     setTutorStepsSim,
     index,
+    isHysteresisRunning,
+    isBoxRunning,
+
   ]);
 
   const maxGrad =
@@ -2828,6 +2977,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                       )}
 
                       <div
+                      id="step-seven-gradient-mag-matrix"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -2923,6 +3073,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         </h4>
                       )}
                       <div
+                      id="step-seven-suppressed-gradient-matrix"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -2965,7 +3116,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   </div>
                   {animatedSuppressed && (
-                    <div className="nms-live-explanation-container">
+                    <div 
+                    id="step-seven-nms-explanation-container"
+                    className="nms-live-explanation-container">
                       <h3 style={{ textAlign: "center", fontSize: "14px" }}>
                         Non-Maximum Suppression Explanation
                       </h3>
@@ -3028,6 +3181,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   )}
                   <Button
+                  id="step-seven-process-btn"
                     className="btn"
                     ref={myNonMaxButton}
                     onClick={dnonmax}
@@ -3053,8 +3207,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </p>
                   </div>
                   {/* slider */}
-                  <div className="final-grid-slider">
-                    <div id="tLow_slider">
+                  <div
+                  id="step-eight-thresholding-container"
+                   className="final-grid-slider">
+                    <div 
+                     id="tLow_slider">
                       <h4
                         style={{
                           margin: "5px 0px",
@@ -3107,7 +3264,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   </div>
                   {isBoxRunning && (
-                    <div className="dlLow-live-explanation-container">
+                    <div
+                    id="step-eight-dlLow-live-explanation"
+                     className="dlLow-live-explanation-container">
                       {tLowHighExplanation?.map((item) => (
                         <div key={item.text1}>{item.text1}</div>
                       ))}
@@ -3139,6 +3298,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                           return (
                             <div
+                              id="step-eight-suppressed-gradient"
                               style={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(7, 1fr)",
@@ -3193,6 +3353,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         <h3>After Double Threshold</h3>
 
                         <div
+                          id="step-eight-threshold-matrix"
                           style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(7, 1fr)",
@@ -3264,6 +3425,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                         {(() => {
                           return (
                             <div
+                              id="step-eight-final-grid-matrix"
                               style={{
                                 display: "grid",
                                 gridTemplateColumns: "repeat(7, 1fr)",
@@ -3285,6 +3447,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
                                   return (
                                     <div
+                                      
                                       key={`${rowIndex}-${colIndex}`}
                                       className={`threshold-cell
 
@@ -3321,6 +3484,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   {/* 🔹 Buttons */}
                   <div className="final-grid-btn-container">
                     <Button
+                      id="step-eight-run-double-threshold"
                       className="btn"
                       onClick={animateDoubleThreshold}
                       disabled={isThresholdRunning || isThresholdCompleted}
@@ -3329,6 +3493,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </Button>
 
                     <Button
+                      id="step-eight-run-hysteresis"
                       className="btn"
                       onClick={animateHysteresis}
                       disabled={!isThresholdCompleted || isHysteresisRunning}
@@ -3340,7 +3505,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
                   {/* 🔹 Explanation Panel */}
 
                   {isBoxRunning && (
-                    <div className="dl-live-explanation-container">
+                    <div
+                    id="step-eight-dl-live-explanation"
+                     className="dl-live-explanation-container">
                       <h4>
                         {activeThreshPixel &&
                           `Checking Pixel (${activeThreshPixel[0]}, ${activeThreshPixel[1]})`}
@@ -3352,7 +3519,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
                     </div>
                   )}
                   {isBoxRunning && isHysteresisRunning && (
-                    <div className="dl-live-explanation-container">
+                    <div
+                    id="step-eight-hytresis-live-explanation"
+                     className="dl-live-explanation-container">
                       <h4>
                         {activeHystPixel &&
                           `Checking Pixel (${activeHystPixel[0]}, ${activeHystPixel[1]})`}
