@@ -52,6 +52,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const myQuantButton = useRef(null);
   const myNonMaxButton = useRef(null);
   const myThresButton = useRef(null);
+  const myHytresisButton=useRef(null);
   const myNextButton = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showButtons, setShowButtons] = useState(false); //carousel buttons
@@ -114,9 +115,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
 
   // state tracking for quantization steps
-const [quantSteps, setQuantSteps] = useState([]);
-const [quantStepNumber, setQuantStepNumber] = useState(0);
-const [activeQuantPixel, setActiveQuantPixel] = useState(null);
+  const [quantSteps, setQuantSteps] = useState([]);
+  const [quantStepNumber, setQuantStepNumber] = useState(0);
+  const [activeQuantPixel, setActiveQuantPixel] = useState(null);
 
   // state tracking for the Non maximum suppression
   const [animatedSuppressed, setAnimatedSuppressed] = useState(null);
@@ -126,7 +127,20 @@ const [activeQuantPixel, setActiveQuantPixel] = useState(null);
   const equation1 = "\\theta = \\tan^{-1}\\left(\\frac{G_y}{G_x}\\right)";
   const equation2 = "G = \\sqrt{G_x^2 + G_y^2}";
 
-  //console.log("index value:", index);
+  //thresholded
+  const [thresholdGrid, setThresholdGrid] = useState(null);
+  const [activeThreshPixel, setActiveThreshPixel] = useState(null);
+  const [thresholdExplanation, setThresholdExplanation] = useState([]);
+  const [tLowHighExplanation, setTLowHighExplanation] = useState([]);
+  const [maxGradientVal, setMaxGradientVal] = useState(0);
+  // hysteresis,
+  const [activeHystPixel, setActiveHystPixel] = useState(null);
+  const [activeHystNeighbors, setActiveHystNeighbors] = useState([]);
+  const [hystExplanation, setHystExplanation] = useState([]);
+  const [isThresholdRunning, setIsThresholdRunning] = useState(false);
+     const [isBoxRunning, setIsBoxRunning] = useState(false);
+const [isHysteresisRunning, setIsHysteresisRunning] = useState(false);
+const [isThresholdCompleted, setIsThresholdCompleted] = useState(false);
 
   useEffect(() => {
     const sobelXKernel = [
@@ -501,64 +515,57 @@ const [activeQuantPixel, setActiveQuantPixel] = useState(null);
 
     setQuantize(initialMatrix);
     setQuantSteps([]);
-   
+
     setQuantStepNumber(0);
 
     let index = 0;
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-         setActiveQuantPixel([i, j]); 
+        setActiveQuantPixel([i, j]);
         let angle = Number(gradient[i][j]) || 0;
         // console.log("quantiseGradBefore:", "angle:", angle, i, j);
         angle = (angle + 180) % 180; // Normalize to 0–180
         //console.log("quantiseGradAfter:", "angle:", angle, i, j);
 
         let value;
-let rangeInfo = "";
+        let rangeInfo = "";
 
-if (angle < 22.5 || angle >= 157.5) {
-  value = 0;
-  rangeInfo = "Angle < 22.5° or ≥ 157.5°";
-} 
-else if (angle >= 22.5 && angle < 67.5) {
-  value = 45;
-  rangeInfo = "Angle between 22.5° and 67.5°";
-} 
-else if (angle >= 67.5 && angle < 112.5) {
-  value = 90;
-  rangeInfo = "Angle between 67.5° and 112.5°";
-} 
-else {
-  value = 135;
-  rangeInfo = "Angle between 112.5° and 157.5°";
-}
+        if (angle < 22.5 || angle >= 157.5) {
+          value = 0;
+          rangeInfo = "Angle < 22.5° or ≥ 157.5°";
+        } else if (angle >= 22.5 && angle < 67.5) {
+          value = 45;
+          rangeInfo = "Angle between 22.5° and 67.5°";
+        } else if (angle >= 67.5 && angle < 112.5) {
+          value = 90;
+          rangeInfo = "Angle between 67.5° and 112.5°";
+        } else {
+          value = 135;
+          rangeInfo = "Angle between 112.5° and 157.5°";
+        }
 
-setQuantStepNumber((prev) => prev + 1);
+        setQuantStepNumber((prev) => prev + 1);
 
-setQuantSteps([
-  {
-    OriginalAngle: gradient[i][j] + "°",
-    Normalized: angle.toFixed(2) + "°",
-    RangeMatched: rangeInfo,
-    QuantizedTo: value + "°"
-  }
-]);
+        setQuantSteps([
+          {
+            OriginalAngle: gradient[i][j] + "°",
+            Normalized: angle.toFixed(2) + "°",
+            RangeMatched: rangeInfo,
+            QuantizedTo: value + "°",
+          },
+        ]);
 
+        setQuantize((prev) => {
+          const updated = prev.map((r) => [...r]);
+          updated[i][j] = value;
+          return updated;
+        });
 
-
-setQuantize((prev) => {
-  const updated = prev.map((r) => [...r]);
-  updated[i][j] = value;
-  return updated;
-});
-
-await new Promise((resolve) => setTimeout(resolve, 100));
-
-        
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
-    setActiveQuantPixel(null);   // remove highlight 
+    setActiveQuantPixel(null); // remove highlight
 
     enabledNext();
   }
@@ -624,34 +631,34 @@ await new Promise((resolve) => setTimeout(resolve, 100));
         // force React to render highlight first
         await new Promise((r) => setTimeout(r, 200));
 
-setNmsExplanation([
-  {
-    direction: angle + "°",
-    currentMagnitude: current,
-    neighbor1: neighbor1,
-    neighbor2: neighbor2,
-    decision: null,
-  },
-]);
+        setNmsExplanation([
+          {
+            direction: angle + "°",
+            currentMagnitude: current,
+            neighbor1: neighbor1,
+            neighbor2: neighbor2,
+            decision: null,
+          },
+        ]);
 
         await new Promise((r) => setTimeout(r, 800));
 
         if (current >= neighbor1 && current >= neighbor2) {
           suppressed[i][j] = current;
-           setNmsExplanation((prev) => [
-    {
-      ...prev[0],
-      decision: "KEPT (Local Maximum)",
-    },
-  ]);
+          setNmsExplanation((prev) => [
+            {
+              ...prev[0],
+              decision: "KEPT (Local Maximum)",
+            },
+          ]);
         } else {
           suppressed[i][j] = 0;
-           setNmsExplanation((prev) => [
-    {
-      ...prev[0],
-      decision: "SUPPRESSED (Not Maximum)",
-    },
-  ]);
+          setNmsExplanation((prev) => [
+            {
+              ...prev[0],
+              decision: "SUPPRESSED (Not Maximum)",
+            },
+          ]);
         }
 
         setAnimatedSuppressed((prev) => {
@@ -659,7 +666,7 @@ setNmsExplanation([
           copy[i][j] = suppressed[i][j];
           return copy;
         });
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 1));
       }
     }
 
@@ -670,81 +677,220 @@ setNmsExplanation([
 
     enabledNext();
   }
-  function doubleThresholdAndHysteresis() {
-    myThresButton.current.disabled = true;
+
+
+  async function animateDoubleThreshold() {
+    setIsBoxRunning(true);
+    setIsThresholdRunning(true);
+      setIsThresholdCompleted(false);
+       // myThresButton.current.disabled = true;
     setTLowSliderIsDisabled(true);
     setTHighSliderIsDisabled(true);
-
     if (!supressed) return;
-    // Convert all elements to float before setting supressed
-    for (let i = 0; i < supressed.length; i++) {
-      for (let j = 0; j < supressed[0].length; j++) {
-        supressed[i][j] = parseFloat(supressed[i][j]);
-      }
-    }
-    setSupressed(supressed);
-    let maxVal = Math.max(
-      0,
-      ...supressed
-        .flat()
-        .filter((val) => typeof val === "number" && !isNaN(val)),
-    );
-    console.log(maxVal);
-    let tLowVal = tlow * maxVal; // Set T_low to 10% of max gradient
-    let tHighVal = thigh * maxVal; // Set T_high to 20% of max gradient
+
+    const rows = supressed.length;
+    const cols = supressed[0].length;
+
+    let clean = supressed.map((row) => row.map((val) => parseFloat(val) || 0));
+
+    let maxVal = Math.max(...clean.flat());
+    setMaxGradientVal(maxVal);
+
+    let tLowVal = tlow * maxVal;
+    let tHighVal = thigh * maxVal;
+
+    setTLowHighExplanation([
+  { text1: `Max Gradient Value = ${maxVal.toFixed(2)}` },
+  { text2: `Selected T_low ratio = ${tlow}` },
+  { text3: `Selected T_high ratio = ${thigh}` },
+  { text4: `Final T_low = ${tlow} × ${maxVal.toFixed(2)} = ${tLowVal.toFixed(2)}` },
+  { text5: `Final T_high = ${thigh} × ${maxVal.toFixed(2)} = ${tHighVal.toFixed(2)}` },
+]);
 
     let strong = 255;
     let weak = 75;
 
-    let thresholded = Array(7)
-      .fill(0)
-      .map(() => Array(7).fill(0));
+    let tempGrid = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(null));
 
-    // Apply double thresholding
-    for (let i = 0; i < supressed.length; i++) {
-      for (let j = 0; j < supressed[0].length; j++) {
-        if (
-          supressed[i][j] !== null &&
-          typeof supressed[i][j] === "number" &&
-          supressed[i][j] >= tHighVal
-        ) {
-          thresholded[i][j] = strong;
-        } else if (supressed[i][j] >= tLowVal) {
-          thresholded[i][j] = weak;
+    setThresholdGrid(tempGrid);
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        let current = clean[i][j];
+
+        setActiveThreshPixel([i, j]);
+        setThresholdExplanation([]);
+
+        await new Promise((r) => setTimeout(r, 4));
+
+        setThresholdExplanation([
+          { text: `Current Magnitude: ${current}` },
+          { text: `T_low = ${tLowVal.toFixed(2)}` },
+          { text: `T_high = ${tHighVal.toFixed(2)}` },
+        ]);
+
+        await new Promise((r) => setTimeout(r, 8));
+
+        if (current >= tHighVal) {
+          tempGrid[i][j] = strong;
+          setThresholdExplanation((prev) => [
+            ...prev,
+            { text: "Classified as STRONG (255)" },
+          ]);
+        } else if (current >= tLowVal) {
+          tempGrid[i][j] = weak;
+          setThresholdExplanation((prev) => [
+            ...prev,
+            { text: "Classified as WEAK (75)" },
+          ]);
         } else {
-          thresholded[i][j] = 0;
+          tempGrid[i][j] = 0;
+          setThresholdExplanation((prev) => [
+            ...prev,
+            { text: "Below T_low → Suppressed (0)" },
+          ]);
         }
-      }
-    }
-    console.log("thresholded:", thresholded);
 
-    // Apply hysteresis
-    for (let i = 1; i < thresholded.length - 1; i++) {
-      for (let j = 1; j < thresholded[0].length - 1; j++) {
-        if (thresholded[i][j] === weak) {
+        setThresholdGrid(tempGrid.map((r) => [...r]));
+        await new Promise((r) => setTimeout(r, 7));
+        
+      }
+      
+    }
+    setIsThresholdRunning(false);
+setIsThresholdCompleted(true);
+  }
+  async function animateHysteresis() {
+  setIsHysteresisRunning(true);
+  setHystExplanation([]);
+
+  if (!thresholdGrid) return;
+
+  let strong = 255;
+  let weak = 75;
+
+  let temp = thresholdGrid.map((r) => [...r]);
+
+  const rows = temp.length;
+  const cols = temp[0].length;
+
+  //  Step 1: Final grid initially transparent
+  let progressiveFinal = Array(rows)
+    .fill(null)
+    .map(() => Array(cols).fill(null));
+
+  setFinalGrid(progressiveFinal);
+
+for (let i = 0; i < rows; i++) {
+  for (let j = 0; j < cols; j++) {
+
+    setActiveHystPixel([i, j]);
+    setActiveHystNeighbors([]);
+
+    await new Promise((r) => setTimeout(r, 500));
+
+    // 🔹 CASE 1: Strong pixel
+    if (temp[i][j] === strong) {
+
+      setHystExplanation([
+        { text: "Strong pixel (255)" },
+        { text: "Already strong → kept as edge" }
+      ]);
+
+      progressiveFinal[i][j] = strong;
+
+      setFinalGrid(progressiveFinal.map(r => [...r]));
+      await new Promise((r) => setTimeout(r, 800));
+      continue;
+    }
+
+    // 🔹 CASE 2: Weak pixel
+    if (temp[i][j] === weak) {
+
+      setHystExplanation([
+        { text: "Weak pixel (75) found" }
+      ]);
+
+      let neighbors = [];
+
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+
+          if (dx === 0 && dy === 0) continue;
+
+          let newX = i + dx;
+          let newY = j + dy;
+
           if (
-            thresholded[i - 1][j - 1] === strong ||
-            thresholded[i - 1][j] === strong ||
-            thresholded[i - 1][j + 1] === strong ||
-            thresholded[i][j - 1] === strong ||
-            thresholded[i][j + 1] === strong ||
-            thresholded[i + 1][j - 1] === strong ||
-            thresholded[i + 1][j] === strong ||
-            thresholded[i + 1][j + 1] === strong
+            newX >= 0 &&
+            newX < rows &&
+            newY >= 0 &&
+            newY < cols
           ) {
-            thresholded[i][j] = strong;
-          } else {
-            thresholded[i][j] = 0;
+            neighbors.push([newX, newY]);
           }
         }
       }
-    }
-    console.log("thresholdedAfterHysteresis:", thresholded);
 
-    setFinalGrid(thresholded);
-    
-    notifyS("Process Completed !!");
+      setActiveHystNeighbors(neighbors);
+
+      await new Promise((r) => setTimeout(r, 1000));
+
+      let connected = neighbors.some(
+        ([x, y]) => temp[x][y] === strong
+      );
+
+      if (connected) {
+        temp[i][j] = strong;
+        setHystExplanation((prev) => [
+          ...prev,
+          { text: "Connected to STRONG neighbor → PROMOTED to STRONG" }
+        ]);
+      } else {
+        temp[i][j] = 0;
+        setHystExplanation((prev) => [
+          ...prev,
+          { text: "No STRONG neighbor found" },
+          { text: "Pixel is SUPPRESSED (0)" }
+        ]);
+      }
+
+      await new Promise((r) => setTimeout(r, 1000));
+
+      progressiveFinal[i][j] = temp[i][j];
+      setFinalGrid(progressiveFinal.map(r => [...r]));
+
+      continue;
+    }
+
+    // 🔹 CASE 3: Already zero
+    if (temp[i][j] === 0) {
+
+      setHystExplanation([
+        { text: "Pixel value is 0" },
+        { text: "Already suppressed → remains 0" }
+      ]);
+
+      progressiveFinal[i][j] = 0;
+
+      setFinalGrid(progressiveFinal.map(r => [...r]));
+      await new Promise((r) => setTimeout(r, 600));
+    }
   }
+}
+
+  setActiveHystPixel(null);
+  setActiveHystNeighbors([]);
+
+  setHystExplanation([
+    { text: "Hysteresis Completed Successfully ✅" }
+  ]);
+
+  setIsHysteresisRunning(false);
+  notifyS( "Hysteresis Completed Successfully ✅");
+}
 
   function Previous() {
     prevSlide();
@@ -770,9 +916,9 @@ setNmsExplanation([
       myNextButton.current.disabled = false;
     } else if (index == 5 && myNonMaxButton.current.disabled == true) {
       myNextButton.current.disabled = false;
-    } else if (index == 6 && myThresButton.current.disabled == true) {
+    } else if (index == 6 ) {
       myNextButton.current.disabled = true;
-      handleClose2();
+      // handleClose2();
     } else {
       myNextButton.current.disabled = true;
       myNextButton.current.style.animation = "";
@@ -2084,10 +2230,8 @@ setNmsExplanation([
                       flexDirection: "column",
                       position: "relative",
                     }}
-                  > 
-                  <div>
-
-                  </div>
+                  >
+                    <div></div>
                     {/* {padBlur && (
                       <div id="convStepsX" className="conv-steps-box">
                         <h4>Kernel X Convolution Step</h4>
@@ -2170,7 +2314,6 @@ setNmsExplanation([
                       </div>
                     )}
                     </div> */}
-
                   </div>
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     <h2>Sobel Application</h2>
@@ -2210,7 +2353,6 @@ setNmsExplanation([
                               )}
                           </div>
                         </div>
-
                       </div>
 
                       <div
@@ -2278,7 +2420,6 @@ setNmsExplanation([
                   <div style={{ display: "flex", flexDirection: "column" }}>
                     {convolutedx && <h2>Applying Convolution</h2>}
                     <div id="convolution-sobel-canny">
-
                       <div id="sobel-x-canny">
                         {convolutedx && (
                           <h4 style={{ color: "#1f2937" }}> Sobel X</h4>
@@ -2454,12 +2595,8 @@ setNmsExplanation([
                       </div>
                     </div>
                   </div>
-                  
                 </div>
-                
-                
               )}
-              
             </Carousel.Item>
 
             {/* step6: quantise */}
@@ -2494,12 +2631,12 @@ setNmsExplanation([
                             <div
                               key={`${rowIndex}-${colIndex}`}
                               className={`padded-sobel-matrix ${
-            activeQuantPixel &&
-            activeQuantPixel[0] === rowIndex &&
-            activeQuantPixel[1] === colIndex
-              ? "active-quant-pixel"
-              : ""
-          }`}
+                                activeQuantPixel &&
+                                activeQuantPixel[0] === rowIndex &&
+                                activeQuantPixel[1] === colIndex
+                                  ? "active-quant-pixel"
+                                  : ""
+                              }`}
                             >
                               {cell}
                             </div>
@@ -2557,27 +2694,32 @@ setNmsExplanation([
                     </div>
                   </div>
                 </div>
-                
-                {quantStepNumber !== 0 && 
-                (
-                  <div id="convStepsQuant" className="conv-steps-quantise-container">
-  <h4>Gradient Direction Quantization Step</h4>
 
-  <div className="conv-steps-quantise-box">
-    <div className="conv-step-quantise-step">Step {quantStepNumber} :</div>
+                {quantStepNumber !== 0 && (
+                  <div
+                    id="convStepsQuant"
+                    className="conv-steps-quantise-container"
+                  >
+                    <h4>Gradient Direction Quantization Step</h4>
 
-{quantSteps.map((item, index) => (
-  <div className="conv-step-quantise-item-box" key={index}>
-    <div>Original Angle: {item.OriginalAngle}</div>
-    <div>Normalized: {item.Normalized}</div>
-    <div>{item.RangeMatched}</div>
-    <div>Quantized To: {item.QuantizedTo}</div>
-  </div>
-))}
+                    <div className="conv-steps-quantise-box">
+                      <div className="conv-step-quantise-step">
+                        Step {quantStepNumber} :
+                      </div>
 
-    
-  </div>
-</div>
+                      {quantSteps.map((item, index) => (
+                        <div
+                          className="conv-step-quantise-item-box"
+                          key={index}
+                        >
+                          <div>Original Angle: {item.OriginalAngle}</div>
+                          <div>Normalized: {item.Normalized}</div>
+                          <div>{item.RangeMatched}</div>
+                          <div>Quantized To: {item.QuantizedTo}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 <Button
@@ -2745,65 +2887,76 @@ setNmsExplanation([
                       </div>
                     </div>
                   </div>
-                  {animatedSuppressed  &&
-                  <div className="nms-live-explanation-container">
+                  {animatedSuppressed && (
+                    <div className="nms-live-explanation-container">
                       <h3 style={{ textAlign: "center", fontSize: "14px" }}>
-                          Non-Maximum Suppression Explanation
-                        </h3>
+                        Non-Maximum Suppression Explanation
+                      </h3>
                       <div className="nms-live-explanation">
-  <h4>
-    {activePixel &&
-      `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
-  </h4>
+                        <h4>
+                          {activePixel &&
+                            `Checking Pixel (${activePixel?.[0]}, ${activePixel?.[1]})`}
+                        </h4>
 
-  {nmsExplanation.map((item, index) => (
-    <div key={index} className="nms-step-box">
-      {item.direction && 
-      <div>
-        <strong>Direction:</strong> {item.direction}
-      </div> }
-      
-  {item.currentMagnitude && 
-      <div>
-        <strong>Current Magnitude:</strong> {item.currentMagnitude}
-      </div> }
-      
-  {item.neighbor1 && 
-      <div>
-        <strong>Neighbor 1:</strong> {item.neighbor1}
-      </div> }
-      
-  {item.neighbor2 && 
-      <div>
-        <strong>Neighbor 2:</strong> {item.neighbor2}
-      </div> }
-      
-       {item.decision && 
-      <div>
-  {item.currentMagnitude >= item.neighbor1 &&
-   item.currentMagnitude >= item.neighbor2
-    ? "Current pixel is LOCAL MAXIMUM (greater than both neighbors)"
-    : "Current pixel is NOT maximum (less than at least one neighbor)"}
-</div> }
+                        {nmsExplanation.map((item, index) => (
+                          <div key={index} className="nms-step-box">
+                            {item.direction && (
+                              <div>
+                                <strong>Direction:</strong> {item.direction}
+                              </div>
+                            )}
 
-      {item.decision && (
-        <div style={{ color: item.decision.includes("KEPT") ? "green" : "red" }}>
-          <strong>Result:</strong> {item.decision}
-        </div>
-      )}
+                            {item.currentMagnitude && (
+                              <div>
+                                <strong>Current Magnitude:</strong>{" "}
+                                {item.currentMagnitude}
+                              </div>
+                            )}
 
-    </div>
-  ))}
-</div>
-                  </div>
-                  }
+                            {item.neighbor1 && (
+                              <div>
+                                <strong>Neighbor 1:</strong> {item.neighbor1}
+                              </div>
+                            )}
+
+                            {item.neighbor2 && (
+                              <div>
+                                <strong>Neighbor 2:</strong> {item.neighbor2}
+                              </div>
+                            )}
+
+                            {item.decision && (
+                              <div>
+                                {item.currentMagnitude >= item.neighbor1 &&
+                                item.currentMagnitude >= item.neighbor2
+                                  ? "Current pixel is LOCAL MAXIMUM (greater than both neighbors)"
+                                  : "Current pixel is NOT maximum (less than at least one neighbor)"}
+                              </div>
+                            )}
+
+                            {item.decision && (
+                              <div
+                                style={{
+                                  color: item.decision.includes("KEPT")
+                                    ? "green"
+                                    : "red",
+                                }}
+                              >
+                                <strong>Result:</strong> {item.decision}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <Button
-                      className="btn"
-                      ref={myNonMaxButton}
-                      onClick={dnonmax}
-                    >
-                      Process
-                    </Button>
+                    className="btn"
+                    ref={myNonMaxButton}
+                    onClick={dnonmax}
+                  >
+                    Process
+                  </Button>
                 </div>
               )}
             </Carousel.Item>
@@ -2811,94 +2964,340 @@ setNmsExplanation([
             {/* step8: thresholding */}
             <Carousel.Item>
               {supressed && (
-                <div id="final-grid-canny">
-                  <h2>Double Threshold and Hysteresis</h2>
-                  <p>
-                    Final edge-detected image after applying double thresholding
-                    and hysteresis.
-                  </p>
-                  <div id="tLow_slider">
-                    <h4
-                      style={{
-                        margin: "5px 0px",
-                        textAlign: "left",
-                        color: "#444444",
-                      }}
-                    >
-                      Set T_low :{" "}
-                      <span style={{ color: "#FF2929" }}>{tlow}</span>
-                    </h4>
-                    <Slider
-                      sx={{ color: "#1D2A6D" }}
-                      value={tlow}
-                      min={0.1}
-                      max={0.3}
-                      step={0.01}
-                      marks
-                      valueLabelDisplay="auto"
-                      onChange={(e) => {
-                        setTlow(e.target.value);
-                      }}
-                      disabled={isTLowSliderDisabled}
-                    />
+                <div
+                  id="final-grid-canny"
+                  className="final-grid-canny-container"
+                >
+                  <div className="final-grid-header">
+                    <h2>Double Threshold and Hysteresis</h2>
+                    <p>
+                      Final edge-detected image after applying double
+                      thresholding and hysteresis.
+                    </p>
+                  </div>
+                  {/* slider */}
+                  <div className="final-grid-slider">
+                    <div id="tLow_slider">
+                      <h4
+                        style={{
+                          margin: "5px 0px",
+                          textAlign: "left",
+                          color: "#444444",
+                        }}
+                      >
+                        Set T_low :{" "}
+                        <span style={{ color: "#FF2929" }}>{tlow}</span>
+                      </h4>
+                      <Slider
+                        sx={{ color: "#1D2A6D" }}
+                        value={tlow}
+                        min={0.1}
+                        max={0.3}
+                        step={0.01}
+                        marks
+                        valueLabelDisplay="auto"
+                        onChange={(e) => {
+                          setTlow(e.target.value);
+                        }}
+                        disabled={isTLowSliderDisabled}
+                      />
+                    </div>
+
+                    <div id="tHigh_slider">
+                      <h4
+                        style={{
+                          margin: "5px 0px",
+                          textAlign: "left",
+                          color: "#444444",
+                        }}
+                      >
+                        Set T_High :{" "}
+                        <span style={{ color: "#FF2929" }}>{thigh}</span>
+                      </h4>
+                      <Slider
+                        sx={{ color: "#1D2A6D" }}
+                        value={thigh}
+                        min={0.1}
+                        max={0.3}
+                        step={0.01}
+                        marks
+                        valueLabelDisplay="auto"
+                        onChange={(e) => {
+                          setThigh(e.target.value);
+                        }}
+                        disabled={isTHighSliderDisabled}
+                      />
+                    </div>
+                  </div>
+                  { isBoxRunning && (
+                  <div className="dlLow-live-explanation-container">
+                    {tLowHighExplanation?.map((item) => (
+                      <div key={item.text1}>{item.text1}</div>
+                    ))}
+
+                    {tLowHighExplanation?.map((item) => (
+                      <div key={item.text4}>{item.text4}</div>
+                    ))}
+                    {tLowHighExplanation?.map((item) => (
+                      <div key={item.text5}>{item.text5}</div>
+                    ))}
+
+                  </div>
+                  )}
+                  {/* all matrix */}
+                  <div className="final-grid-matrix-container">
+                    {/* 🔹 SUPPRESSED GRID */}
+{supressed && (
+  <div className="final-grid-matrix">
+    <h3>Suppressed Gradient</h3>
+
+    {(() => {
+      const maxVal = Math.max(
+        0,
+        ...supressed.flat().filter(
+          (v) => typeof v === "number" && !isNaN(v)
+        )
+      );
+
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "1px",
+            marginBottom: "15px",
+          }}
+        >
+          {supressed.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+                            const isActive =
+                activeThreshPixel &&
+                activeThreshPixel[0] === rowIndex &&
+                activeThreshPixel[1] === colIndex;
+              const intensity =
+                maxVal === 0
+                  ? 0
+                  : (Math.abs(cell) / maxVal) * 255;
+
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={`threshold-cell ${
+                    isActive ? "active-current" : ""
+                  }`}
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    backgroundColor: `rgb(${intensity}, ${intensity}, ${intensity})`,
+                    border: "1px solid #ccc",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                  }}
+                > 
+                  {cell}
+                </div>
+              );
+            })
+          )}
+        </div>
+      );
+    })()}
+  </div>
+)}
+                    { isBoxRunning && (
+   <div id="quantised-canny-arrow">&#129066;</div>
+)}
+{/* 🔹 THRESHOLD GRID */}
+{thresholdGrid && (
+  <div className="final-grid-matrix">
+    <h3>After Double Threshold</h3>
+
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(7, 1fr)",
+        gap: "1px",
+        marginBottom: "15px",
+      }}
+    >
+      {thresholdGrid.map((row, rowIndex) =>
+        row.map((cell, colIndex) => {
+          
+          const isCurrent =
+                activeHystPixel &&
+                activeHystPixel[0] === rowIndex &&
+                activeHystPixel[1] === colIndex;
+
+          const isNeighbor =
+                activeHystNeighbors?.some(
+                  ([x, y]) => x === rowIndex && y === colIndex
+                );
+                console.log("isCurrent",isCurrent,"isNeighbor",isNeighbor);
+                
+          return (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              className={`threshold-cell 
+                ${
+                  isCurrent ? "active-current" : ""
+                 }
+                  ${
+                  isNeighbor ? "active-neighbour" : ""
+                 }`
+            }
+              style={{
+                width: "30px",
+                height: "30px",
+                backgroundColor:
+isCurrent
+                                   ? "#3cf7d2ff"        // 🔥 cyan for current pixel
+                                   : isNeighbor
+                                   ? "#ffcc00"        // 🔥 yellow for neighbors
+                                   : cell === 255
+                                   ? "white"
+                                   : cell === 75
+                    ? "rgb(150,150,150)"
+                    : cell === 0
+                    ? "black"
+                    : "transparent",
+
+                border: "1px solid #ccc",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "12px",
+              }}
+            >
+              {cell === 1 ? "" : cell}
+            </div>
+          );
+        })
+      )}
+    </div>
+  </div>
+)}
+                 { isBoxRunning && (
+   <div id="quantised-canny-arrow">&#129066;</div>
+)}
+{/* 🔹 FINAL GRID */}
+{finalGrid && (
+  <div className="final-grid-matrix">
+    <h3>Final Edge Map (After Hysteresis)</h3>
+
+    {(() => {
+
+
+      return (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "1px",
+            marginBottom: "15px",
+          }}
+        >
+          {finalGrid.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+
+
+              // const isCurrent =
+              //   activeHystPixel &&
+              //   activeHystPixel[0] === rowIndex &&
+              //   activeHystPixel[1] === colIndex;
+
+              // const isNeighbor =
+              //   activeHystNeighbors?.some(
+              //     ([x, y]) => x === rowIndex && y === colIndex
+              //   );
+
+              return (
+                <div
+                  key={`${rowIndex}-${colIndex}`}
+                  className={`threshold-cell
+
+                  `}
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    backgroundColor:
+  cell === null
+    ? "transparent"
+    : cell === 255
+    ? "white"
+    : cell === 75
+    ? "gray"
+    : "black",
+                    
+                    border: "1px solid #ccc",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "12px",
+                  }}
+                >
+                 
+                </div>
+              );
+            })
+          )}
+        </div>
+      );
+    })()}
+  </div>
+)}
                   </div>
 
-                  <div id="tHigh_slider">
-                    <h4
-                      style={{
-                        margin: "5px 0px",
-                        textAlign: "left",
-                        color: "#444444",
-                      }}
-                    >
-                      Set T_High :{" "}
-                      <span style={{ color: "#FF2929" }}>{thigh}</span>
-                    </h4>
-                    <Slider
-                      sx={{ color: "#1D2A6D" }}
-                      value={thigh}
-                      min={0.1}
-                      max={0.3}
-                      step={0.01}
-                      marks
-                      valueLabelDisplay="auto"
-                      onChange={(e) => {
-                        setThigh(e.target.value);
-                      }}
-                      disabled={isTHighSliderDisabled}
-                    />
+                  {/* 🔹 Buttons */}
+                  <div className="final-grid-btn-container">
+                    <Button
+  className="btn"
+  onClick={animateDoubleThreshold}
+  disabled={isThresholdRunning || isThresholdCompleted}
+>
+  Run Double Threshold
+</Button>
+
+<Button
+  className="btn"
+  onClick={animateHysteresis}
+   disabled={!isThresholdCompleted || isHysteresisRunning}
+>
+  Run Hysteresis
+</Button>
                   </div>
 
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(7, 1fr)",
-                      gap: "1px",
-                    }}
-                  >
-                    {finalGrid &&
-                      finalGrid.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            key={`${rowIndex}-${colIndex}`}
-                            style={{
-                              width: "30px",
-                              height: "30px",
-                              backgroundColor: `rgb(${(Math.abs(cell) / Math.max(...finalGrid.flat())) * 255},${(Math.abs(cell) / Math.max(...finalGrid.flat())) * 255},${(Math.abs(cell) / Math.max(...finalGrid.flat())) * 255})`,
-                              border: "1px solid #ccc",
-                            }}
-                          ></div>
-                        )),
-                      )}
-                  </div>
-                  <Button
-                    className="btn"
-                    ref={myThresButton}
-                    style={{ zIndex: "1000" }}
-                    onClick={doubleThresholdAndHysteresis}
-                  >
-                    Process
-                  </Button>
+                  {/* 🔹 Explanation Panel */}
+
+                   { (isBoxRunning ) && (
+                    <div className="dl-live-explanation-container">
+                    <h4>
+                      {activeThreshPixel &&
+                        `Checking Pixel (${activeThreshPixel[0]}, ${activeThreshPixel[1]})`}
+                    </h4>
+
+                    {thresholdExplanation.map((item, index) => (
+                      <div key={index}>{item.text}</div>
+                    ))}
+
+                    
+                  </div>)}
+                                     { (isBoxRunning && isHysteresisRunning ) && (
+                    <div className="dl-live-explanation-container">
+                    <h4>
+                      {activeHystPixel &&
+                        `Checking Pixel (${activeHystPixel[0]}, ${activeHystPixel[1]})`}
+                    </h4>
+
+                    
+
+                    {hystExplanation.map((item, index) => (
+                      <div key={`h-${index}`}>{item.text}</div>
+                    ))}
+                  </div>)}
+
+
                 </div>
               )}
             </Carousel.Item>

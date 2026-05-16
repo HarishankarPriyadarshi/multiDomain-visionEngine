@@ -402,12 +402,62 @@ h6 {
   align-items: center;
 }
 
-#final-grid-canny {
+.final-grid-canny-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
   justify-content: center;
   align-items: center;
+}
+.final-grid-header{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 5px;
+}
+.final-grid-slider{
+ 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap:20px;
+  width: 100vw;
+  margin-top: -30px;
+}
+.final-grid-matrix-container{
+    display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-direction: row;
+  
+}
+.final-grid-matrix{
+    display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.final-grid-btn-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap:10px;
+}
+
+@media (max-width: 768px) {
+  .final-grid-slider{
+  
+  flex-direction: column;
+  gap:0px;
+  width: 100vw;
+}
+.final-grid-matrix-container{
+    
+  flex-direction: column;
+}
 }
 
 .carousel__btns {
@@ -1283,3 +1333,55 @@ h6 {
     transform: translateY(0);
   }
 }
+
+.dl-live-explanation-container {
+  
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  background: #ffffff94;
+  font-size: 14px;
+  font-weight: 550;
+  width: 400px;
+  min-height: 140px;
+  border-radius: 10px;
+  border: 1px solid #dddddd !important;
+}
+.nms-live-explanation {
+  display: flex;
+  justify-content: center;
+  align-items:center;
+  flex-direction: column;
+}
+
+.dlLow-live-explanation-container {
+  
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  background: #ffffff94;
+  font-size: 14px;
+  font-weight: 550;
+  width: 300px;
+  min-height: 100px;
+  border-radius: 10px;
+  border: 1px solid #dddddd !important;
+}
+.threshold-cell {
+  transition: 
+    background-color 0.3s ease,
+    transform 0.3s ease,
+    border 0.3s ease;
+}
+.active-current {
+  border: 3px solid red !important;
+  transform: scale(1.15);
+}
+
+.active-neighbor {
+  border: 3px solid rgb(196, 12, 12) !important;
+  transform: scale(1.05);
+}
+
+
+/* final grid  */
