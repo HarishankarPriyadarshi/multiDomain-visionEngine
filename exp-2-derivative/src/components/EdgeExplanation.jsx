@@ -170,7 +170,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
           content:
             "Here you can see the detailed multiplication steps and running sum for Kernel X  during convolution.",
           targetId: "convStepsX",
-          placement: "left",
+          placement: "right",
           offset: [1, 12],
         },
         {
@@ -201,7 +201,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         {
           title: "Resultant  ΔG Calculation",
           content:
-            "The final edge strength is computed using ΔG = √((ΔX)² + (ΔY)²). This gives the overall magnitude of intensity change.",
+            "The final edge strength is computed using above formula. This gives the overall magnitude of intensity change.",
           targetId: "tutorResCalculationGrid",
           placement: "top",
           offset: [-10, 32],
@@ -219,7 +219,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
           content:
             "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
           targetId: "tutorResImageGrid",
-          placement: "top",
+          placement: "bottom",
           offset: [-10, 12],
         },
 

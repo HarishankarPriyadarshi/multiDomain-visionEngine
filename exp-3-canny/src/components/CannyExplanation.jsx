@@ -247,6 +247,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
 
   function padding() {
+    setIsSimPlaying(true);
     const totalRows = original.length + 2;
     const totalCols = original[0].length + 2;
 
@@ -284,6 +285,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
   async function blur() {
     if (isBlurring) return; // Prevent re-entry if already running
+    setIsSimPlaying(true);
     setIsBlurring(true); // Set the flag to true to lock execution
     setStartBlur(true);
     setGussianStep(0);
@@ -321,7 +323,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         rows[i - 1][j - 1] = sum.toFixed(2); // Update each value individually
         //console.log("sum at each step:", sum.toFixed(2));
         setBlurred([...rows]); // Update the state after each value is calculated
-        await new Promise((resolve) => setTimeout(resolve, 1));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
     // console.log(rows);
@@ -334,6 +336,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [padBlur, setPadBlur] = useState(null);
 
   function padblurred() {
+    setIsSimPlaying(true);
     myPadBlurButton.current.disabled = true;
 
     const totalRows = blurred.length + 2;
@@ -373,6 +376,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
   async function applySobelConvolution() {
     if (!padBlur || !sobelx || !sobely) return;
+    setIsSimPlaying(true);
     mySobelButton.current.disabled = true;
     //animation track
     setActiveSobelDX({ row: -1, col: -1 });
@@ -495,7 +499,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setConvolutedy([...convolutedY]);
         setGradient(grad);
         setGradientMag(totalGrad);
-        await new Promise((resolve) => setTimeout(resolve, 2));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
     enabledNext();
@@ -503,6 +507,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
   async function quantiseGrad() {
     if (!gradient) return;
+    setIsSimPlaying(true);
     myQuantButton.current.disabled = true;
 
     const rows = gradient.length;
@@ -562,7 +567,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
           return updated;
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     }
     setActiveQuantPixel(null); // remove highlight
@@ -570,6 +575,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     enabledNext();
   }
   async function dnonmax() {
+    setIsSimPlaying(true);
     if (!gradientMag || !gradient) return;
     myNonMaxButton.current.disabled = true;
     const rows = gradientMag.length;
@@ -629,7 +635,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setActiveNeighbors(neighbors);
         setNmsExplanation([]);
         // force React to render highlight first
-        await new Promise((r) => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 500));
 
         setNmsExplanation([
           {
@@ -641,7 +647,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
           },
         ]);
 
-        await new Promise((r) => setTimeout(r, 800));
+        await new Promise((r) => setTimeout(r, 1200));
 
         if (current >= neighbor1 && current >= neighbor2) {
           suppressed[i][j] = current;
@@ -666,7 +672,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
           copy[i][j] = suppressed[i][j];
           return copy;
         });
-        await new Promise((resolve) => setTimeout(resolve, 1));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 
@@ -679,6 +685,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
 
   async function animateDoubleThreshold() {
+    setIsSimPlaying(true);
     setIsBoxRunning(true);
     setIsThresholdRunning(true);
     setIsThresholdCompleted(false);
@@ -726,7 +733,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setActiveThreshPixel([i, j]);
         setThresholdExplanation([]);
 
-        await new Promise((r) => setTimeout(r, 4));
+        //  Highlight pixel
+    await new Promise((r) => setTimeout(r, 300));
 
         setThresholdExplanation([
           { text: `Current Magnitude: ${current}` },
@@ -734,7 +742,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
           { text: `T_high = ${tHighVal.toFixed(2)}` },
         ]);
 
-        await new Promise((r) => setTimeout(r, 8));
+        await new Promise((r) => setTimeout(r, 900));
 
         if (current >= tHighVal) {
           tempGrid[i][j] = strong;
@@ -756,14 +764,20 @@ export default function CannyExplanation({ handleClose3Modal }) {
           ]);
         }
 
-        setThresholdGrid(tempGrid.map((r) => [...r]));
-        await new Promise((r) => setTimeout(r, 7));
+        await new Promise((r) => setTimeout(r, 400));
+
+    // 4️⃣ Update grid visually
+    setThresholdGrid(tempGrid.map((r) => [...r]));
+
+    await new Promise((r) => setTimeout(r, 250));
+
       }
     }
     //setIsThresholdRunning(false);
     setIsThresholdCompleted(true);
   }
   async function animateHysteresis() {
+    setIsSimPlaying(true);
     setIsHysteresisRunning(true);
     setHystExplanation([]);
 
@@ -929,66 +943,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
     setIsSimPlaying,
     resetTutorSim,
   } = useContext(SimContext);
-  // Update isSimPlaying when any variable changes
-  useEffect(() => {
-    const variableMap = {
-      original,
-      gKernel,
-      myBlurButton,
-      myPadButton,
-      myPadBlurButton,
-      mySobelButton,
-      myQuantButton,
-      myNonMaxButton,
-      myThresButton,
-      myNextButton,
-      padded,
-      blurred,
-      sobelx,
-      sobely,
-      convolutedx,
-      convolutedy,
-      gradient,
-      quantize,
-      supressed,
-      finalGrid,
-    };
 
-    setIsSimPlaying((prev) => {
-      const updatedState = { ...prev };
-
-      Object.keys(variableMap).forEach((key) => {
-        if (variableMap[key]) {
-          updatedState[key] = true;
-        }
-      });
-
-      return updatedState;
-    });
-  }, [
-    original,
-    gKernel,
-    myBlurButton,
-    myPadButton,
-    myPadBlurButton,
-    mySobelButton,
-    myQuantButton,
-    myNonMaxButton,
-    myThresButton,
-    myNextButton,
-    padded,
-    blurred,
-    sobelx,
-    sobely,
-    convolutedx,
-    convolutedy,
-    gradient,
-    quantize,
-    supressed,
-    finalGrid,
-    setIsSimPlaying,
-  ]);
-  // Update tutor steps when isSimPlaying changes
+  // Update tutor steps when individual states change
   useEffect(() => {
     const baseSteps = [
       {
@@ -1030,7 +986,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       {
         title: "Original Image Matrix",
         content:
-          "This is the selected 7×7 image displayed in both graphical (black/white) and numerical (0/1) form. Edge detection begins from this input.",
+          "This is the selected 7×7 image displayed in both graphical (black and white) and numerical (0 and 1) form. Edge detection begins from this input.",
         targetId: "graphical-numerical",
         placement: "right",
         offset: [0, 20],
@@ -1047,7 +1003,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       {
         title: "Adjust Sigma",
         content:
-          "Use the Sigma slider to generate the Gaussian kernel matrix. Sigma controls the amount of smoothing. Higher σ → stronger blur → less noise but softer edges. Lower σ → sharper but more noise-sensitive.",
+          "Use the Sigma slider to generate the Gaussian kernel matrix. Sigma controls the amount of smoothing. Higher σ value results in stronger blur and less noise but softer edges. Lower σ value results in sharper but more noise-sensitive.",
         targetId: "sigma_slider",
         placement: "right",
         offset: [0, 10],
@@ -1347,7 +1303,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
             {
           title: "Sliding Window Operation",
           content:
-            "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+            "The highlighted orange window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
           targetId: "kernel-sliding-box",
           placement: "top",
           offset: [-10, 12],
@@ -1534,20 +1490,20 @@ export default function CannyExplanation({ handleClose3Modal }) {
     
   }   
     );
-    if (!supressed) {
-      console.log("supressed", supressed);
-      console.log(baseSteps.length);
-      baseSteps.push({
-        title: "Action Required",
-        content:
-          "Click 'Process' to apply Non-Maximum Suppression.",
-        targetId: "step-seven-process-btn",
-        placement: "bottom",
-      });
+    // if (!supressed) {
+    //   console.log("supressed", supressed);
+    //   console.log(baseSteps.length);
+    //   baseSteps.push({
+    //     title: "Action Required",
+    //     content:
+    //       "Click 'Process' to apply Non-Maximum Suppression.",
+    //     targetId: "step-seven-process-btn",
+    //     placement: "bottom",
+    //   });
 
-      setTutorStepsSim(baseSteps);
-      return;
-    }
+    //   setTutorStepsSim(baseSteps);
+    //   return;
+    // }
     baseSteps.push(
  {
     title: "Non-Maximum Suppression Explanation",
@@ -1602,7 +1558,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
   {
     title: "Set Threshold Ratios (T_low and T_high)",
     content:
-      "Adjust the T_low and T_high sliders. These ratios are multiplied with the maximum gradient magnitude to compute the actual threshold values. T_high identifies strong edges, while T_low determines potential weak edges.",
+      "Adjust the T low and T high sliders. These ratios are multiplied with the maximum gradient magnitude to compute the actual threshold values. T high identifies strong edges, while T low determines potential weak edges.",
     targetId: "step-eight-thresholding-container",
     placement: "bottom",
     offset: [0, 10],
@@ -1689,7 +1645,7 @@ baseSteps.push(
     content:
       "After hysteresis, only strong and connected edge pixels remain. This final binary edge map represents the complete output of the Canny Edge Detection algorithm.",
     targetId: "step-eight-final-grid-matrix",
-    placement: "bottom",
+    placement: "top",
     offset: [0, 10],
   },
 
@@ -1706,11 +1662,11 @@ baseSteps.push(
     setTutorStepsSim(baseSteps);
   }, [
     original,
-    isSimPlaying,
+   
     image,
     gKernel,
     padded,
-    startBlur,
+   startBlur,
     padBlur,
     convolutedx,
     gradient,

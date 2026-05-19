@@ -8,37 +8,14 @@ export const SimContextProvider = ({ children }) => {
   // Sim State
   const [tutorStepsSim, setTutorStepsSim] = useState([]); //Tutor steps list
   const [tutorStepSim, setTutorStepSim] = useState(0);
-  const [isSimPlaying, setIsSimPlaying] = useState({
-    original: false,
-    image: false,
-    gKernel: false,
-    myBlurButton: false,
-    myPadButton: false,
-    myPadBlurButton: false,
-    mySobelButton: false,
-    myQuantButton: false,
-    myNonMaxButton: false,
-    myThresButton: false,
-    myNextButton: false,
-    padded: false,
-    startBlur: false,
-    padBlur: false,
-    blurred: false,
-    sobelx: false,
-    sobely: false,
-    convolutedx: false,
-    convolutedy: false,
-    gradient: false,
-    quantize: false,
-    supressed: false,
-    finalGrid: false,
-  });
+  const [isSimPlaying, setIsSimPlaying] = useState(false);
   const [prevStepSim, setPrevStepSim] = useState(0);
   const [isTutorOpenSim, setIsTutorOpenSim] = useState(false);
   const tutorBtnRefSim = useRef(null);
   const [showWelcomeSim, setShowWelcomeSim] = useState(true);
 
   const previousSpeechKeyRef = useRef("");
+  const lastSpokenKeyRef = useRef("");
   const previousPlayStateRef = useRef(true);
   const {
     speak,
@@ -66,6 +43,7 @@ export const SimContextProvider = ({ children }) => {
   const startTutorSim = () => {
     setTutorStepSim(0);
     setIsTutorOpenSim(true);
+    setIsSimPlaying(true);
   };
 
   const handleTutorNextSim = () => {
@@ -118,30 +96,39 @@ export const SimContextProvider = ({ children }) => {
 
     if (isSpeaking && !isPaused) {
       setIsSimPlaying(false);
-      return;
-    }
-
-    if (isPaused) {
+    } else if (isPaused) {
       setIsSimPlaying(true);
-      return;
+    } else {
+      // If neither speaking nor paused (e.g. finished or not started)
+      // Reset the key ref to force a fresh speak() call in the useEffect
+      lastSpokenKeyRef.current = "";
+      setIsSimPlaying(true);
     }
-
-    setIsSimPlaying(true);
-    speak(activeSpeechText);
   };
 
   useEffect(() => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {
       stop();
       previousSpeechKeyRef.current = activeSpeechKey;
+      lastSpokenKeyRef.current = ""; // Reset when key changes
     }
 
-    if (!activeSpeechText || (!isTutorOpenSim && !isSimPlaying) || isPaused) {
+    if (!activeSpeechText || !isSimPlaying || isPaused) {
       return;
     }
 
-    speak(activeSpeechText);
-  }, [activeSpeechKey, activeSpeechText, isPaused, isSimPlaying, speak, stop]);
+    if (lastSpokenKeyRef.current !== activeSpeechKey) {
+      speak(activeSpeechText);
+      lastSpokenKeyRef.current = activeSpeechKey;
+    }
+  }, [
+    activeSpeechKey,
+    activeSpeechText,
+    isPaused,
+    isSimPlaying,
+    speak,
+    stop,
+  ]);
 
   useEffect(() => {
     const wasPlaying = previousPlayStateRef.current;
