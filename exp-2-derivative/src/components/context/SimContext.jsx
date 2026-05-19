@@ -43,6 +43,7 @@ export const SimContextProvider = ({ children }) => {
   const startTutorSim = () => {
     setTutorStepSim(0);
     setIsTutorOpenSim(true);
+     setIsSimPlaying(true);
   };
 
   const handleTutorNextSim = () => {
@@ -96,16 +97,14 @@ export const SimContextProvider = ({ children }) => {
 
     if (isSpeaking && !isPaused) {
       setIsSimPlaying(false);
-      return;
-    }
-
-    if (isPaused) {
+    } else if (isPaused) {
       setIsSimPlaying(true);
-      return;
-    }
+    } else {
+      // If neither speaking nor paused (e.g. finished or not started)
+      // Reset the key ref to force a fresh speak() call in the useEffect
 
-    setIsSimPlaying(true);
-    speak(activeSpeechText);
+      setIsSimPlaying(true);
+    }
   };
 
   useEffect(() => {
@@ -114,7 +113,7 @@ export const SimContextProvider = ({ children }) => {
       previousSpeechKeyRef.current = activeSpeechKey;
     }
 
-    if (!activeSpeechText || (!isTutorOpenSim && !isSimPlaying)  || isPaused) {
+    if (!activeSpeechText ||  !isSimPlaying || isPaused) {
       return;
     }
 
