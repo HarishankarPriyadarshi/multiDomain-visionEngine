@@ -247,7 +247,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
 
   function padding() {
-    setIsSimPlaying(true);
     const totalRows = original.length + 2;
     const totalCols = original[0].length + 2;
 
@@ -285,7 +284,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
   async function blur() {
     if (isBlurring) return; // Prevent re-entry if already running
-    setIsSimPlaying(true);
     setIsBlurring(true); // Set the flag to true to lock execution
     setStartBlur(true);
     setGussianStep(0);
@@ -336,7 +334,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
   const [padBlur, setPadBlur] = useState(null);
 
   function padblurred() {
-    setIsSimPlaying(true);
     myPadBlurButton.current.disabled = true;
 
     const totalRows = blurred.length + 2;
@@ -376,7 +373,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
   async function applySobelConvolution() {
     if (!padBlur || !sobelx || !sobely) return;
-    setIsSimPlaying(true);
     mySobelButton.current.disabled = true;
     //animation track
     setActiveSobelDX({ row: -1, col: -1 });
@@ -507,7 +503,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
   async function quantiseGrad() {
     if (!gradient) return;
-    setIsSimPlaying(true);
     myQuantButton.current.disabled = true;
 
     const rows = gradient.length;
@@ -575,7 +570,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
     enabledNext();
   }
   async function dnonmax() {
-    setIsSimPlaying(true);
     if (!gradientMag || !gradient) return;
     myNonMaxButton.current.disabled = true;
     const rows = gradientMag.length;
@@ -685,7 +679,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
   }
 
   async function animateDoubleThreshold() {
-    setIsSimPlaying(true);
     setIsBoxRunning(true);
     setIsThresholdRunning(true);
     setIsThresholdCompleted(false);
@@ -777,7 +770,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
     setIsThresholdCompleted(true);
   }
   async function animateHysteresis() {
-    setIsSimPlaying(true);
     setIsHysteresisRunning(true);
     setHystExplanation([]);
 
