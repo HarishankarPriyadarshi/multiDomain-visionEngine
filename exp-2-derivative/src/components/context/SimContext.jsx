@@ -16,6 +16,8 @@ export const SimContextProvider = ({ children }) => {
   const [showWelcomeSim, setShowWelcomeSim] = useState(true);
 
   const previousSpeechKeyRef = useRef("");
+  const lastSpokenKeyRef = useRef("");
+
   const previousPlayStateRef = useRef(true);
   const {
     speak,
@@ -102,7 +104,7 @@ export const SimContextProvider = ({ children }) => {
     } else {
       // If neither speaking nor paused (e.g. finished or not started)
       // Reset the key ref to force a fresh speak() call in the useEffect
-
+      lastSpokenKeyRef.current = "";
       setIsSimPlaying(true);
     }
   };
@@ -111,13 +113,18 @@ export const SimContextProvider = ({ children }) => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {
       stop();
       previousSpeechKeyRef.current = activeSpeechKey;
+      lastSpokenKeyRef.current = ""; // Reset when key changes
     }
 
     if (!activeSpeechText ||  !isSimPlaying || isPaused) {
       return;
     }
 
-    speak(activeSpeechText);
+    if (lastSpokenKeyRef.current !== activeSpeechKey) {
+      speak(activeSpeechText);
+      lastSpokenKeyRef.current = activeSpeechKey;
+    }
+
   }, [activeSpeechKey, activeSpeechText, isPaused, isSimPlaying, speak, stop]);
 
   useEffect(() => {
