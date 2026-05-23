@@ -10,8 +10,10 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
-    gap: 20px;
+    gap: -100px;
     overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
 }
 
 #explanation-dialog {
@@ -263,4 +265,57 @@ textarea{
         width:20px;
         height:20px;
     }
+}
+
+/* top container */
+.top-container{
+    
+    
+}
+
+#instructions-dialog-title {
+  padding: 8px 16px;
+  display: flex;
+  background-color: #1d2a6d;
+  color: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media screen and (max-width: 768px) {
+  #instructions-dialog-title {
+    font-size: 16px;
+    padding: 5px 10px;
+  }
+}
+
+/* for instructions */
+#inst_div_edge {
+  width: 80%;
+  margin: auto;
+  text-align: center;
+  padding: 10px;
+}
+@media screen and (max-width: 768px) {
+  #inst_div_edge {
+    width: 95%;
+    margin: 10px;
+  }
+}
+
+#inst_content_edge {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.prev-icon, .next-icon {
+  font-size: 20px;
+  background-color: rgb(0, 0, 0);
+}
+#inst_content_edge button{
+  background-color: black;
+  color: white;
+  border: none;
+  cursor: pointer;
 }

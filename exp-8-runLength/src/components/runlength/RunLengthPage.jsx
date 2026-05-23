@@ -276,7 +276,7 @@ export default function RunLengthPage() {
 
       // setProgress(100);
       setText("Old Entropy | New Entropy | Compressed Image");
-       setLoading(false);
+      setLoading(false);
 
       myCanvas.current.style.display = "block";
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -288,14 +288,14 @@ export default function RunLengthPage() {
         setIsImageProcessed(true);
         setIsAnimationPlaying(true);
         setTimeout(() => {
-           setIsAnimationPlaying(false);
+          setIsAnimationPlaying(false);
         }, 1000);
         notifyS("Process Completed !!");
         // myProcess1Button.current.disabled=true
         // setProgress(0);
       }, 50); // Reset after showing 100%
       setTimeout(() => {
-                setLoading(false);
+        setLoading(false);
       }, 50000);
     }
   }
@@ -327,7 +327,7 @@ export default function RunLengthPage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
-            setUploadedImageName(file.name);
+      setUploadedImageName(file.name);
       setIsInputImageAnimationPlaying(true);
       setTimeout(() => {
         setIsInputImageAnimationPlaying(false);
@@ -511,7 +511,7 @@ export default function RunLengthPage() {
               <div class="flex-item-left">
                 <div id="left_bar">
                   <Box
-                                        sx={{
+                    sx={{
                       width: "100%",
                       height: "85%",
                       display: "flex",
@@ -657,7 +657,7 @@ export default function RunLengthPage() {
                             </div>
                           </div>
                         </div>
-                                                <div style={{ marginTop: "15px", textAlign: "center" }}>
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
                           <label
                             htmlFor="file-upload"
                             className="upload-btn"
@@ -689,7 +689,6 @@ export default function RunLengthPage() {
                             {uploadedImageName} image uploaded
                           </p>
                         )}
-
                       </div>
 
                       <div>
@@ -703,7 +702,7 @@ export default function RunLengthPage() {
                           Minimum Run Length:
                         </h4>
                         <input
-                        className="input-btn"
+                          className="input-btn"
                           type="text"
                           value={mrl}
                           onChange={(e) => setMrl(e.target.value)}
@@ -795,12 +794,12 @@ export default function RunLengthPage() {
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
-                           style={{ maxWidth: "190px", minHeight: "190px" }}
+                          style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
                       </Box>
                     </Box>
                     <Box
-sx={{
+                      sx={{
                         width: "auto",
                         height: "100%",
                         display: "flex",
@@ -892,7 +891,7 @@ sx={{
                           id="outputCanvas"
                           style={{ display: "none" }}
                         />
-                          {isImageProcessed === false && (
+                        {isImageProcessed === false && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
@@ -917,7 +916,7 @@ sx={{
                             </div>
                           </div>
                         )}
-                        
+
                         {rleresult && (
                           <>
                             <h3
@@ -946,7 +945,6 @@ sx={{
                 alignContent: "center",
                 paddingTop: "30px",
               }}
-
             >
               <Button
                 ref={myProcess1Button}
@@ -961,7 +959,6 @@ sx={{
                 </svg>
               </Button>
 
-
               <Button
                 class="tool_btn print_btn"
                 onClick={handlePrint}
@@ -973,7 +970,7 @@ sx={{
                   <path d="M6 8V5c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v3h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h2zm2-3h8V5H8v3zM4 10v8h16V10H4zm8 10h-2v2h2v-2z" />
                 </svg>
               </Button>
-              
+
               <Button
                 class="tool_btn"
                 onClick={exp}
@@ -995,6 +992,8 @@ sx={{
             </div>
 
             {/* ToastContainer must be placed somewhere in the component tree */}
+            {/* Explanation Modal */}
+
             <ToastContainer />
             <Dialog
               open={openRunLengthModal}
@@ -1005,7 +1004,7 @@ sx={{
                 id: "explanation-dialog",
               }}
             >
-              <DialogTitle id="instructions-dialog-title">
+              {/* <DialogTitle id="instructions-dialog-title">
                 <div style={{ width: "50%" }}>Run Length Encode Concept</div>
                 <div
                   style={{
@@ -1026,15 +1025,19 @@ sx={{
                     Close
                   </Button>
                 </div>
-              </DialogTitle>
+              </DialogTitle> */}
 
               <DialogContent
-                sx={{ padding: "0px", height: "1200px", overflow: "clip" }}
+                sx={{ padding: "0px", height: "1100px", overflow: "clip" }}
               >
-                {openRunLengthModal && <RLEanimation />}
+                {openRunLengthModal && (
+                  <RLEanimation handleClose2Modal={handleClose2Modal} />
+                )}
                 {/* {RLEanimation()} */}
               </DialogContent>
             </Dialog>
+            {/* tutor modal */}
+            {/* <Tutor /> */}
           </TabPanel>
         </div>
       </div>

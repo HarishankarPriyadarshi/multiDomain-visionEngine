@@ -191,7 +191,7 @@ h4 {
 @media (min-width: 1200px) {
   #main-box {
     width: 1200px; /* Maintain original width for large screens */
-    height: 910px; /* Maintain original height for large screens */
+    height: 870px; /* Maintain original height for large screens */
   }
   /* .MuiDialog-container {
     height: 75%;
