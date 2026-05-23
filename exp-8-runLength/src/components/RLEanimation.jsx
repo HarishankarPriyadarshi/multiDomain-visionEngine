@@ -1,351 +1,741 @@
 import "../template.css";
 
-import { use, useEffect, useRef, useState } from "react";
-import { OpenCvProvider } from "opencv-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Button,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Slider,
+  TextField,
+  Tooltip,
+} from "@mui/material";
+import {
+  Close,
+  Pause,
+  PlayArrow,
+  RestartAlt,
+  Shuffle,
+} from "@mui/icons-material";
 import divide from "../assets/images/divide_sign.png";
 import multiply from "../assets/images/x_sign.png";
 import minus from "../assets/images/minus_sign.png";
 import plus from "../assets/images/plus_sign.png";
-import { Button, DialogTitle } from "@mui/material";
-import Box from "@mui/material/Box";
 
-export default function RLEanimation({ handleClose2Modal }) {
-  const [image, setImage] = useState(0);
-  const [original, setOriginal] = useState(null);
-  const [tdata, setTdata] = useState("");
-  const [runLength, setRunLength] = useState(1);
-  const [textEncoded, setTextEncoded] = useState("");
-  const [imageEncoded, setImageEncoded] = useState([]);
-  const encodeRunLength = (data, minRunLength) => {
-    const encoded = [];
-    let count = 1;
+const PATTERNS = [
+  {
+    name: "Plus",
+    icon: plus,
+    matrix: [
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+    ],
+  },
+  {
+    name: "Bar",
+    icon: minus,
+    matrix: [
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+    ],
+  },
+  {
+    name: "Cross",
+    icon: multiply,
+    matrix: [
+      [1, 0, 0, 0, 0, 0, 1],
+      [0, 1, 0, 0, 0, 1, 0],
+      [0, 0, 1, 0, 1, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 1, 0, 1, 0, 0],
+      [0, 1, 0, 0, 0, 1, 0],
+      [1, 0, 0, 0, 0, 0, 1],
+    ],
+  },
+  {
+    name: "Divide",
+    icon: divide,
+    matrix: [
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+      [1, 1, 1, 1, 1, 1, 1],
+      [0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 1, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0],
+    ],
+  },
+];
 
-    for (let i = 1; i <= data.length; i++) {
-      if (data[i] === data[i - 1]) {
-        count++;
-      } else {
-        if (count >= minRunLength) {
-          encoded.push(`${data[i - 1]}:${count}`);
-        } else {
-          encoded.push(...Array(count).fill(data[i - 1]));
-        }
-        count = 1;
+const copyMatrix = (matrix) => matrix.map((row) => [...row]);
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function flattenMatrix(matrix, direction) {
+  const rows = matrix.length;
+  const cols = matrix[0]?.length || 0;
+  const cells = [];
+
+  if (direction === "vertical") {
+    for (let col = 0; col < cols; col += 1) {
+      for (let row = 0; row < rows; row += 1) {
+        cells.push({ value: matrix[row][col], row, col, order: cells.length });
       }
     }
+    return cells;
+  }
 
-    return encoded.join(" ");
+  for (let row = 0; row < rows; row += 1) {
+    for (let col = 0; col < cols; col += 1) {
+      cells.push({ value: matrix[row][col], row, col, order: cells.length });
+    }
+  }
+
+  return cells;
+}
+
+function encodeCells(cells, minRunLength) {
+  if (!cells.length) return [];
+
+  const encoded = [];
+  let currentValue = cells[0].value;
+  let positions = [cells[0]];
+
+  const pushRun = () => {
+    if (positions.length >= minRunLength) {
+      encoded.push({
+        id: encoded.length,
+        value: currentValue,
+        count: positions.length,
+        positions,
+      });
+    } else {
+      positions.forEach((position) => {
+        encoded.push({
+          id: encoded.length,
+          value: currentValue,
+          count: 1,
+          positions: [position],
+        });
+      });
+    }
   };
 
-  function rowl() {
-    // Run-length encoding for text data
-    const textEncoded = encodeRunLength(tdata, runLength);
-    console.log("Encoded Text Data:", textEncoded);
-    setTextEncoded(textEncoded);
+  cells.slice(1).forEach((cell) => {
+    if (cell.value === currentValue) {
+      positions = [...positions, cell];
+    } else {
+      pushRun();
+      currentValue = cell.value;
+      positions = [cell];
+    }
+  });
 
-    // Run-length encoding for binary image data
-    const imageEncoded = original.map((row) => encodeRunLength(row, runLength));
-    console.log("Encoded Image Data:", imageEncoded);
-    setImageEncoded(imageEncoded);
+  pushRun();
+  return encoded;
+}
 
-    // You can set the encoded data to state or handle it as needed
-  }
-  function handleImage(x) {
-    setImage(x);
-    const signs = [
-      [
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-      ], // Plus
-      [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-      ], // Minus
-      [
-        [1, 0, 0, 0, 0, 0, 1],
-        [0, 1, 0, 0, 0, 1, 0],
-        [0, 0, 1, 0, 1, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 1, 0, 1, 0, 0],
-        [0, 1, 0, 0, 0, 1, 0],
-        [1, 0, 0, 0, 0, 0, 1],
-      ], // Multiply
-      [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-      ], // Divide
-    ];
-    setOriginal(signs[x]);
-  }
-  useEffect(() => {
-    handleImage(0);
+function encodeText(data, minRunLength) {
+  if (!data) return [];
+
+  const chars = [...data];
+  const runs = [];
+  let value = chars[0];
+  let count = 1;
+
+  const pushRun = () => {
+    if (count >= minRunLength) {
+      runs.push({ value, count });
+    } else {
+      Array.from({ length: count }).forEach(() =>
+        runs.push({ value, count: 1 }),
+      );
+    }
+  };
+
+  chars.slice(1).forEach((char) => {
+    if (char === value) {
+      count += 1;
+    } else {
+      pushRun();
+      value = char;
+      count = 1;
+    }
+  });
+
+  pushRun();
+  return runs;
+}
+
+function makeRandomNoise(rows = 7, cols = 7) {
+  return Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => (Math.random() > 0.5 ? 1 : 0)),
+  );
+}
+
+export default function RLEanimation({ handleClose2Modal }) {
+  const [matrix, setMatrix] = useState(() => copyMatrix(PATTERNS[0].matrix));
+  const [selectedPattern, setSelectedPattern] = useState("Plus");
+  const [textData, setTextData] = useState("000111100001111000");
+  const [minRunLength, setMinRunLength] = useState(1);
+  const [scanDirection, setScanDirection] = useState("horizontal");
+  const [activeCell, setActiveCell] = useState(null);
+  const [currentRunValue, setCurrentRunValue] = useState(null);
+  const [currentRunCount, setCurrentRunCount] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationSpeed, setAnimationSpeed] = useState(450);
+  const [visibleRunCount, setVisibleRunCount] = useState(0);
+  const [hasAnimationProgress, setHasAnimationProgress] = useState(false);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [hoveredRunId, setHoveredRunId] = useState(null);
+  const [explanation, setExplanation] = useState(
+    "Choose a pattern or edit pixels, then play the scan to watch RLE form runs.",
+  );
+
+  const isAnimatingRef = useRef(false);
+  const resetRequestedRef = useRef(false);
+
+  const scannedCells = useMemo(
+    () => flattenMatrix(matrix, scanDirection),
+    [matrix, scanDirection],
+  );
+
+  const encodedRuns = useMemo(
+    () => encodeCells(scannedCells, Math.max(1, Number(minRunLength) || 1)),
+    [scannedCells, minRunLength],
+  );
+
+  const textEncodedRuns = useMemo(
+    () => encodeText(textData, Math.max(1, Number(minRunLength) || 1)),
+    [textData, minRunLength],
+  );
+
+  const visibleRuns = hasAnimationProgress
+    ? encodedRuns.slice(0, visibleRunCount)
+    : encodedRuns;
+
+  const highlightedPositions = useMemo(() => {
+    if (hoveredRunId === null) return new Set();
+    const run = encodedRuns.find((item) => item.id === hoveredRunId);
+    return new Set(
+      run?.positions.map((cell) => `${cell.row}-${cell.col}`) || [],
+    );
+  }, [encodedRuns, hoveredRunId]);
+
+  const stats = useMemo(() => {
+    const originalSize = scannedCells.length;
+    const encodedSize = encodedRuns.length * 2;
+    const compressionRatio = originalSize ? encodedSize / originalSize : 0;
+    const spaceSaved = originalSize
+      ? ((originalSize - encodedSize) / originalSize) * 100
+      : 0;
+
+    return {
+      originalSize,
+      encodedSize,
+      compressionRatio,
+      spaceSaved,
+    };
+  }, [encodedRuns.length, scannedCells.length]);
+
+  const resetAnimation = useCallback(() => {
+    resetRequestedRef.current = true;
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
+    setActiveCell(null);
+    setCurrentRunValue(null);
+    setCurrentRunCount(0);
+    setVisibleRunCount(0);
+    setHasAnimationProgress(false);
+    setStepIndex(0);
+    setHoveredRunId(null);
+    setExplanation("Animation reset. Press Play to begin.");
   }, []);
 
-  // instructions
+  const commitRunAtCell = useCallback(
+    (cellOrder) => {
+      const completedRuns = encodedRuns.filter(
+        (run) => run.positions[run.positions.length - 1].order <= cellOrder,
+      );
+      const latestRun = completedRuns[completedRuns.length - 1];
 
-  const instructions = [
-    "1. Choose an image.",
-    "2. Choose a filter type.",
-    "3. Click on 'Play' button at the bottom.",
-  ];
+      setVisibleRunCount(completedRuns.length);
+      if (latestRun) {
+        setExplanation(`Run encoded as ${latestRun.value}:${latestRun.count}.`);
+      }
+    },
+    [encodedRuns],
+  );
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const applyStep = useCallback(
+    (index) => {
+      const cell = scannedCells[index];
+      if (!cell) {
+        setExplanation(
+          "Encoding complete. Compare the encoded blocks and statistics.",
+        );
+        return false;
+      }
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % instructions.length);
-    // console.log(instructions);
-    // console.log(currentIndex);
-  };
+      setActiveCell({ row: cell.row, col: cell.col, order: cell.order });
+      setStepIndex(index + 1);
 
-  const prevSlide = () => {
-    setCurrentIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + instructions.length) % instructions.length,
+      const runStart =
+        index === 0 || scannedCells[index - 1]?.value !== cell.value;
+      const nextCell = scannedCells[index + 1];
+      let count = 1;
+
+      for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+        if (scannedCells[cursor].value !== cell.value) break;
+        count += 1;
+      }
+
+      setCurrentRunValue(cell.value);
+      setCurrentRunCount(count);
+
+      if (runStart) {
+        setExplanation(`New run started with pixel value ${cell.value}.`);
+      } else {
+        setExplanation(`${count} consecutive ${cell.value}s detected.`);
+      }
+
+      if (!nextCell || nextCell.value !== cell.value) {
+        commitRunAtCell(cell.order);
+      }
+
+      return true;
+    },
+    [commitRunAtCell, scannedCells],
+  );
+
+  const playAnimation = useCallback(
+    async (startAt = stepIndex) => {
+      if (isAnimatingRef.current) return;
+
+      resetRequestedRef.current = false;
+      isAnimatingRef.current = true;
+      setIsAnimating(true);
+      setHasAnimationProgress(true);
+      setVisibleRunCount(startAt === 0 ? 0 : visibleRunCount);
+      let completed = true;
+
+      for (let index = startAt; index < scannedCells.length; index += 1) {
+        if (!isAnimatingRef.current || resetRequestedRef.current) {
+          completed = false;
+          break;
+        }
+        applyStep(index);
+        await wait(animationSpeed);
+      }
+
+      if (!resetRequestedRef.current) {
+        isAnimatingRef.current = false;
+        setIsAnimating(false);
+        if (completed) {
+          setActiveCell(null);
+          setExplanation(
+            "Encoding complete. Hover any run to see its source pixels.",
+          );
+        }
+      }
+    },
+    [
+      animationSpeed,
+      applyStep,
+      scannedCells.length,
+      stepIndex,
+      visibleRunCount,
+    ],
+  );
+
+  const pauseAnimation = useCallback(() => {
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
+    setExplanation("Paused. Continue with Play or inspect encoded runs.");
+  }, []);
+
+  const toggleCell = useCallback(
+    (rowIndex, colIndex) => {
+      pauseAnimation();
+      setMatrix((prev) =>
+        prev.map((row, r) =>
+          row.map((value, c) =>
+            r === rowIndex && c === colIndex ? Number(!value) : value,
+          ),
+        ),
+      );
+      setSelectedPattern("Custom");
+      setExplanation("Pixel edited. Encoding updated automatically.");
+      setVisibleRunCount(0);
+      setHasAnimationProgress(false);
+      setStepIndex(0);
+      setActiveCell(null);
+    },
+    [pauseAnimation],
+  );
+
+  const selectPattern = useCallback(
+    (patternName) => {
+      const pattern = PATTERNS.find((item) => item.name === patternName);
+      if (!pattern) return;
+      pauseAnimation();
+      setSelectedPattern(pattern.name);
+      setMatrix(copyMatrix(pattern.matrix));
+      resetAnimation();
+      setExplanation(`${pattern.name} pattern loaded.`);
+    },
+    [pauseAnimation, resetAnimation],
+  );
+
+  const generateNoise = useCallback(() => {
+    pauseAnimation();
+    setSelectedPattern("Random Noise");
+    setMatrix(makeRandomNoise());
+    resetAnimation();
+    setExplanation(
+      "Random noise generated. RLE usually compresses this poorly.",
     );
-  };
-  return (
-    <OpenCvProvider>
-      <div id="main-box-temp">
-        <div className="top-container">
-          <DialogTitle id="instructions-dialog-title">
-            <div
-              style={{
-                width: "50%",
-                justifyContent: "flex-start",
-                display: "flex",
-              }}
-            >
-              Run-Length Encoding Concept
-            </div>
-            <div
-              style={{
-                width: "50%",
+  }, [pauseAnimation, resetAnimation]);
 
-                display: "flex",
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
+  useEffect(() => {
+    resetAnimation();
+  }, [minRunLength, resetAnimation, scanDirection]);
+
+  useEffect(() => {
+    return () => {
+      isAnimatingRef.current = false;
+      resetRequestedRef.current = true;
+    };
+  }, []);
+
+  return (
+    <div id="main-box-temp" className="rle-visualizer">
+      <DialogTitle id="instructions-dialog-title" className="rle-titlebar">
+        <span>Run Length Encoding Visualizer</span>
+        <div className="rle-title-actions">
+          <Tooltip title="Close">
+            <Button
+              onClick={handleClose2Modal}
+              aria-label="Close visualizer"
+              className="rle-icon-button"
             >
-              <Button
-                id="guided-tutor-btn-sim"
-               // ref={tutorBtnRefSim}
-                style={{
-                  color: "#1D2A6D",
-                  backgroundColor: "#FFD700",
-                  fontWeight: "bold",
-                  margin: "auto auto",
-                  marginRight: "10px",
-                  borderRadius: "20px",
-                  padding: "5px 15px",
-                  height: "40px",
-                }}
-             //   onClick={startTutorSim}
-             >
-             Guided Tutor
-              </Button>
-              <Button
-                id="sound-btn"
-               //title={isSpeaking && !isPaused ? "Pause" : "Play"}
-               //onClick={handleSpeechToggleSim}
+              <Close />
+            </Button>
+          </Tooltip>
+        </div>
+      </DialogTitle>
+      <div className="ParentContainer">
+        <div className="leftContainer">
+          <div className="choosePanel">
+            <div className="coolinput_comp rle-choose-box">
+              <label htmlFor="rle-image-grid" className="text">
+                Choose:
+              </label>
+              <div
+                id="rle-image-grid"
+                className="rle-classic-image-grid"
+                role="group"
+                aria-label="Binary image examples"
               >
-                <img
-                 // src={isSpeaking && !isPaused ? voice_pause : voice}
-                  alt="voice"
-                  style={{ width: "40px", height: "auto", marginRight: "10px" }}
-                />
-              </Button>
-              <Button
-                onClick={() => {
-                  // resetTutorSim();
-                  handleClose2Modal();
-                }}
-                color="primary"
-                style={{ backgroundColor: "beige", marginRight: "10px" }}
-              >
-                Close
-              </Button>
-            </div>
-          </DialogTitle>
-          <div id="inst_div_edge">
-            <div
-              id="inst_content_container"
-              style={{
-                padding: "2px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                minHeight: "30px",
-                backgroundColor: "black",
-                color: "white",
-              }}
-            >
-              <div id="inst_content_edge">
-                <button onClick={prevSlide} style={{ marginRight: "10px" }}>
-                  <span className="prev-icon" aria-hidden="true">
-                    ⮜
-                  </span>
-                </button>
-                <span>{instructions[currentIndex]}</span>
-                <button onClick={nextSlide} style={{ zIndex: 10001 }}>
-                  <span className="next-icon" aria-hidden="true">
-                    ⮞
-                  </span>
-                </button>
+                {PATTERNS.map((pattern) => (
+                  <button
+                    key={pattern.name}
+                    type="button"
+                    className={`rle-image-choice ${
+                      selectedPattern === pattern.name ? "active" : ""
+                    }`}
+                    onClick={() => selectPattern(pattern.name)}
+                    aria-label={`Select ${pattern.name} image`}
+                    aria-pressed={selectedPattern === pattern.name}
+                  >
+                    <img src={pattern.icon} alt="" aria-hidden="true" />
+                  </button>
+                ))}
               </div>
+            </div>
+            <p>OR</p>
+            <Button
+              variant="contained"
+              onClick={generateNoise}
+              aria-label="Generate random noise pattern"
+              className="rle-noise-button"
+            >
+              Generate Random Image
+            </Button>
+            <p>OR</p>
+            <div>
+              <div className="rle-section-heading">
+                <h3>Text RLE</h3>
+                <p>Text encoding updates with the same minimum run length.</p>
+              </div>
+              <TextField
+                multiline
+                minRows={3}
+                value={textData}
+                onChange={(event) => setTextData(event.target.value)}
+                label="Text input"
+                aria-label="Text input for run length encoding"
+              />
+            </div>
+          </div>
+          <div className="rle-InputPanel">
+            <div>
+              <TextField
+                label="Minimum run length"
+                type="number"
+                value={minRunLength}
+                onChange={(event) =>
+                  setMinRunLength(Math.max(1, Number(event.target.value) || 1))
+                }
+                inputProps={{ min: 1, "aria-label": "Minimum run length" }}
+                size="small"
+              />
+            </div>
+          </div>
+          <div
+            className="rle-input-panel rle-control-panel"
+            aria-label="RLE controls"
+          >
+            <div className="rle-section-heading">
+              <h3>Controls</h3>
+            </div>
+
+            <FormControl size="small">
+              <InputLabel id="scan-direction-label">Scan direction</InputLabel>
+              <Select
+                labelId="scan-direction-label"
+                label="Scan direction"
+                value={scanDirection}
+                onChange={(event) => setScanDirection(event.target.value)}
+                aria-label="Scan direction"
+              >
+                <MenuItem value="horizontal">Horizontal Scan</MenuItem>
+                <MenuItem value="vertical">Vertical Scan</MenuItem>
+              </Select>
+            </FormControl>
+
+            <div
+              className="rle-animation-buttons"
+              role="group"
+              aria-label="Animation controls"
+            >
+              <Tooltip title="Play">
+                <span>
+                  <Button
+                    variant="contained"
+                    onClick={() => playAnimation()}
+                    disabled={isAnimating}
+                    aria-label="Play animation"
+                  >
+                    <PlayArrow />
+                  </Button>
+                </span>
+              </Tooltip>
+              <Tooltip title="Pause">
+                <span>
+                  <Button
+                    variant="outlined"
+                    onClick={pauseAnimation}
+                    disabled={!isAnimating}
+                    aria-label="Pause animation"
+                  >
+                    <Pause />
+                  </Button>
+                </span>
+              </Tooltip>
+              <Tooltip title="Reset">
+                <Button
+                  variant="outlined"
+                  onClick={resetAnimation}
+                  aria-label="Reset animation"
+                >
+                  <RestartAlt />
+                </Button>
+              </Tooltip>
+            </div>
+
+            <div className="rle-speed-control">
+              <label htmlFor="rle-speed-slider">Speed</label>
+              <Slider
+                id="rle-speed-slider"
+                value={animationSpeed}
+                min={120}
+                max={900}
+                step={30}
+                onChange={(_, value) => setAnimationSpeed(Number(value))}
+                valueLabelDisplay="auto"
+                valueLabelFormat={(value) => `${value} ms`}
+                aria-label="Animation speed"
+              />
             </div>
           </div>
         </div>
-
-        <div id="grid-box-temp">
-          <div id="row1-temp">
-            <div id="Choose_box_comp">
-              <div className="coolinput_comp">
-                <label htmlFor="input" className="text">
-                  Choose:
-                </label>
-                <Box
-                  sx={{
-                    width: "100%",
-                    height: "85%",
-                    display: "flex",
-                    flexDirection: "row",
-                    border: 1,
-                    borderRadius: 2,
-                    justifyContent: "space-around",
-                  }}
-                >
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    <div id="image-box-comp">
-                      <div onClick={() => handleImage(0)}>
-                        <img src={plus} id="image" />
-                      </div>
-                      <div onClick={() => handleImage(1)}>
-                        <img src={minus} id="image" />
-                      </div>
-                      <div onClick={() => handleImage(2)}>
-                        <img src={multiply} id="image" />
-                      </div>
-                      <div onClick={() => handleImage(3)}>
-                        <img src={divide} id="image" />
-                      </div>
-                    </div>
-                  </div>
-                </Box>
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "10px",
-              }}
+        <div className="rightContainer">
+          <div className="matrixPanel">
+            <section
+              className="rle-stage"
+              aria-label="Binary image encoding stage"
             >
-              <h4 style={{ margin: "0px" }}>Enter minimum run length: </h4>
-              <input
-                class="input"
-                placeholder="Enter min run length"
-                value={runLength}
-                onChange={(e) => {
-                  setRunLength(e.target.value);
-                }}
-                style={{ width: "100px" }}
-              ></input>
-              <Button
-                class="tool_btn"
-                onClick={rowl}
-                style={{ width: "100px" }}
-              >
-                Process
-              </Button>
-            </div>
-          </div>
-          <div id="row2-temp">
-            <div className="box">
-              <textarea
-                class="text_box"
-                placeholder="Enter data here"
-                value={tdata}
-                onChange={(e) => {
-                  setTdata(e.target.value);
-                }}
-              ></textarea>
-            </div>
-            <div className="box">
-              <h4 style={{ textAlign: "center" }}>Encoded Text Data</h4>
-              <textarea
-                class="text_box"
-                value={textEncoded}
-                readOnly
-              ></textarea>
-            </div>
-          </div>
-          <div id="row3-temp">
-            <div className="box">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  gap: "2px",
-                }}
-              >
-                {original &&
-                  original.map((row, rowIndex) =>
-                    row.map((cell, cellIndex) => (
-                      <div
-                        key={`${rowIndex}-${cellIndex}`}
-                        id="rle_matrix"
-                        style={{
-                          backgroundColor: cell === 0 ? "black" : "white",
-                        }}
-                      ></div>
-                    )),
+              <div className="rle-panel rle-matrix-panel">
+                <div className="rle-section-heading">
+                  <h3>Binary Matrix</h3>
+                  <p>
+                    {scanDirection === "horizontal"
+                      ? "Rows are scanned left to right."
+                      : "Columns are scanned top to bottom."}
+                  </p>
+                </div>
+
+                <div
+                  className="rle-matrix"
+                  style={{
+                    gridTemplateColumns: `repeat(${matrix[0].length}, 1fr)`,
+                  }}
+                  role="grid"
+                  aria-label="Editable binary pixel matrix"
+                >
+                  {matrix.map((row, rowIndex) =>
+                    row.map((cell, colIndex) => {
+                      const key = `${rowIndex}-${colIndex}`;
+                      const isActive =
+                        activeCell?.row === rowIndex &&
+                        activeCell?.col === colIndex;
+                      const isHighlighted = highlightedPositions.has(key);
+
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          role="gridcell"
+                          className={`rle-cell value-${cell} ${isActive ? "active" : ""} ${
+                            isHighlighted ? "highlighted" : ""
+                          }`}
+                          onClick={() => toggleCell(rowIndex, colIndex)}
+                          aria-label={`Pixel row ${rowIndex + 1}, column ${
+                            colIndex + 1
+                          }, value ${cell}. Click to toggle.`}
+                        >
+                          {cell}
+                        </button>
+                      );
+                    }),
                   )}
+                </div>
               </div>
-            </div>
-            <div className="box">
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr",
-                  gap: "10px",
-                }}
-              >
-                {imageEncoded &&
-                  imageEncoded.map((row, rowIndex) => (
-                    <div
-                      key={rowIndex}
-                      style={{
-                        padding: "5px",
-                        backgroundColor: "#f0f0f0",
-                        border: "1px solid #ccc",
-                        borderRadius: "5px",
-                        fontFamily: "monospace",
-                        whiteSpace: "pre-wrap",
-                      }}
-                    >
-                      {row}
-                    </div>
-                  ))}
+            </section>
+          </div>
+          <div className="rle-explanation-panel">
+            <section
+              className="rle-panel rle-explanation-panel"
+              aria-live="polite"
+            >
+              <div className="rle-section-heading compact">
+                <h3>Explanation</h3>
+                <div className="rle-live-run" aria-live="polite">
+                  <div>
+                    <span>Current value</span>
+                    <strong>{currentRunValue ?? "-"}</strong>
+                  </div>
+                  <div>
+                    <span>Current count</span>
+                    <strong>{currentRunCount}</strong>
+                  </div>
+                  <div>
+                    <span>Step</span>
+                    <strong>
+                      {Math.min(stepIndex, scannedCells.length)} /{" "}
+                      {scannedCells.length}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+              <p>{explanation}</p>
+            </section>
+            <div className="rle-panel rle-output-panel">
+              <div className="rle-section-heading">
+                <h3>Encoded Runs</h3>
+                <p>Hover a run to highlight its matching pixels.</p>
+              </div>
+              <div className="rle-runs" aria-label="Encoded run blocks">
+                {visibleRuns.map((run) => (
+                  <button
+                    key={run.id}
+                    type="button"
+                    className={`rle-run-pill run-${run.value}`}
+                    onMouseEnter={() => setHoveredRunId(run.id)}
+                    onMouseLeave={() => setHoveredRunId(null)}
+                    onFocus={() => setHoveredRunId(run.id)}
+                    onBlur={() => setHoveredRunId(null)}
+                    aria-label={`Run value ${run.value}, count ${run.count}`}
+                  >
+                    {run.value}:{run.count}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
+          <div
+            className="rle-panel rle-stats-panel"
+            aria-label="Compression statistics"
+          >
+            <div className="rle-section-heading">
+              <h3>Statistics</h3>
+            </div>
+            <div className="rle-stat-grid">
+              <div className="rle-stat-card">
+                <span>Original Pixels</span>
+                <strong>{stats.originalSize}</strong>
+              </div>
+              <div className="rle-stat-card">
+                <span>Encoded Symbols</span>
+                <strong>{stats.encodedSize}</strong>
+              </div>
+              <div className="rle-stat-card">
+                <span>Compression Ratio</span>
+                <strong>{stats.compressionRatio.toFixed(2)}</strong>
+              </div>
+              <div className="rle-stat-card">
+                <span>Space Saved</span>
+                <strong>{stats.spaceSaved.toFixed(1)}%</strong>
+              </div>
+            </div>
+          </div>
+          <main className="rle-workspace">
+            <aside className="rle-side-stack"></aside>
+
+            <section
+              className="rle-panel rle-text-panel"
+              aria-label="Text RLE encoder"
+            >
+              <div
+                className="rle-runs text-runs"
+                aria-label="Encoded text output"
+              >
+                {textEncodedRuns.map((run, index) => (
+                  <span
+                    key={`${run.value}-${index}`}
+                    className="rle-run-pill text-run"
+                  >
+                    {run.value === " " ? "space" : run.value}:{run.count}
+                  </span>
+                ))}
+              </div>
+            </section>
+          </main>
         </div>
       </div>
-    </OpenCvProvider>
+    </div>
   );
 }
