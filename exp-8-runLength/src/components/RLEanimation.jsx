@@ -83,30 +83,51 @@ const copyMatrix = (matrix) => matrix.map((row) => [...row]);
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-function flattenMatrix(matrix, direction) {
+function buildScanGroups(matrix, direction) {
   const rows = matrix.length;
   const cols = matrix[0]?.length || 0;
-  const cells = [];
+  const groups = [];
+  let order = 0;
 
   if (direction === "vertical") {
     for (let col = 0; col < cols; col += 1) {
+      const cells = [];
       for (let row = 0; row < rows; row += 1) {
-        cells.push({ value: matrix[row][col], row, col, order: cells.length });
+        cells.push({
+          value: matrix[row][col],
+          row,
+          col,
+          order,
+          groupIndex: col,
+          groupLabel: `Column ${col + 1}`,
+        });
+        order += 1;
       }
+      groups.push({ groupLabel: `Column ${col + 1}`, runs: [], cells });
     }
-    return cells;
+    return groups;
   }
 
   for (let row = 0; row < rows; row += 1) {
+    const cells = [];
     for (let col = 0; col < cols; col += 1) {
-      cells.push({ value: matrix[row][col], row, col, order: cells.length });
+      cells.push({
+        value: matrix[row][col],
+        row,
+        col,
+        order,
+        groupIndex: row,
+        groupLabel: `Row ${row + 1}`,
+      });
+      order += 1;
     }
+    groups.push({ groupLabel: `Row ${row + 1}`, runs: [], cells });
   }
 
-  return cells;
+  return groups;
 }
 
-function encodeCells(cells, minRunLength) {
+function encodeCells(cells, minRunLength, startId = 0) {
   if (!cells.length) return [];
 
   const encoded = [];
@@ -116,7 +137,7 @@ function encodeCells(cells, minRunLength) {
   const pushRun = () => {
     if (positions.length >= minRunLength) {
       encoded.push({
-        id: encoded.length,
+        id: startId + encoded.length,
         value: currentValue,
         count: positions.length,
         positions,
@@ -124,7 +145,7 @@ function encodeCells(cells, minRunLength) {
     } else {
       positions.forEach((position) => {
         encoded.push({
-          id: encoded.length,
+          id: startId + encoded.length,
           value: currentValue,
           count: 1,
           positions: [position],
@@ -145,6 +166,19 @@ function encodeCells(cells, minRunLength) {
 
   pushRun();
   return encoded;
+}
+
+function encodeScanGroups(scanGroups, minRunLength) {
+  let nextId = 0;
+
+  return scanGroups.map((group) => {
+    const runs = encodeCells(group.cells, minRunLength, nextId);
+    nextId += runs.length;
+    return {
+      groupLabel: group.groupLabel,
+      runs,
+    };
+  });
 }
 
 function encodeText(data, minRunLength) {
@@ -188,14 +222,14 @@ function makeRandomNoise(rows = 7, cols = 7) {
 export default function RLEanimation({ handleClose2Modal }) {
   const [matrix, setMatrix] = useState(() => copyMatrix(PATTERNS[0].matrix));
   const [selectedPattern, setSelectedPattern] = useState("Plus");
-  const [textData, setTextData] = useState("000111100001111000");
+  const [textData, setTextData] = useState("");
   const [minRunLength, setMinRunLength] = useState(1);
   const [scanDirection, setScanDirection] = useState("horizontal");
   const [activeCell, setActiveCell] = useState(null);
   const [currentRunValue, setCurrentRunValue] = useState(null);
   const [currentRunCount, setCurrentRunCount] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(450);
+  const [animationSpeed, setAnimationSpeed] = useState(500);
   const [visibleRunCount, setVisibleRunCount] = useState(0);
   const [hasAnimationProgress, setHasAnimationProgress] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -207,14 +241,24 @@ export default function RLEanimation({ handleClose2Modal }) {
   const isAnimatingRef = useRef(false);
   const resetRequestedRef = useRef(false);
 
-  const scannedCells = useMemo(
-    () => flattenMatrix(matrix, scanDirection),
+  const scanGroups = useMemo(
+    () => buildScanGroups(matrix, scanDirection),
     [matrix, scanDirection],
   );
 
+  const scannedCells = useMemo(
+    () => scanGroups.flatMap((group) => group.cells),
+    [scanGroups],
+  );
+
+  const encodedRunGroups = useMemo(
+    () => encodeScanGroups(scanGroups, Math.max(1, Number(minRunLength) || 1)),
+    [scanGroups, minRunLength],
+  );
+
   const encodedRuns = useMemo(
-    () => encodeCells(scannedCells, Math.max(1, Number(minRunLength) || 1)),
-    [scannedCells, minRunLength],
+    () => encodedRunGroups.flatMap((group) => group.runs),
+    [encodedRunGroups],
   );
 
   const textEncodedRuns = useMemo(
@@ -225,6 +269,14 @@ export default function RLEanimation({ handleClose2Modal }) {
   const visibleRuns = hasAnimationProgress
     ? encodedRuns.slice(0, visibleRunCount)
     : encodedRuns;
+
+  const visibleRunGroups = useMemo(() => {
+    const visibleRunIds = new Set(visibleRuns.map((run) => run.id));
+    return encodedRunGroups.map((group) => ({
+      ...group,
+      runs: group.runs.filter((run) => visibleRunIds.has(run.id)),
+    }));
+  }, [encodedRunGroups, visibleRuns]);
 
   const highlightedPositions = useMemo(() => {
     if (hoveredRunId === null) return new Set();
@@ -292,12 +344,16 @@ export default function RLEanimation({ handleClose2Modal }) {
       setActiveCell({ row: cell.row, col: cell.col, order: cell.order });
       setStepIndex(index + 1);
 
-      const runStart =
-        index === 0 || scannedCells[index - 1]?.value !== cell.value;
+      const previousCell = scannedCells[index - 1];
       const nextCell = scannedCells[index + 1];
+      const groupChanged =
+        index > 0 && previousCell?.groupIndex !== cell.groupIndex;
+      const runStart =
+        index === 0 || groupChanged || previousCell?.value !== cell.value;
       let count = 1;
 
       for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+        if (scannedCells[cursor].groupIndex !== cell.groupIndex) break;
         if (scannedCells[cursor].value !== cell.value) break;
         count += 1;
       }
@@ -305,19 +361,28 @@ export default function RLEanimation({ handleClose2Modal }) {
       setCurrentRunValue(cell.value);
       setCurrentRunCount(count);
 
-      if (runStart) {
+      if (groupChanged) {
+        const groupName = scanDirection === "horizontal" ? "row" : "column";
+        setExplanation(
+          `Moving to next ${groupName}. New run started with pixel value ${cell.value}.`,
+        );
+      } else if (runStart) {
         setExplanation(`New run started with pixel value ${cell.value}.`);
       } else {
         setExplanation(`${count} consecutive ${cell.value}s detected.`);
       }
 
-      if (!nextCell || nextCell.value !== cell.value) {
+      if (
+        !nextCell ||
+        nextCell.groupIndex !== cell.groupIndex ||
+        nextCell.value !== cell.value
+      ) {
         commitRunAtCell(cell.order);
       }
 
       return true;
     },
-    [commitRunAtCell, scannedCells],
+    [commitRunAtCell, scanDirection, scannedCells],
   );
 
   const playAnimation = useCallback(
@@ -439,9 +504,10 @@ export default function RLEanimation({ handleClose2Modal }) {
       <div className="ParentContainer">
         <div className="leftContainer">
           <div className="choosePanel">
+            <h2 className="rle-input-heading">Input Source</h2>
             <div className="coolinput_comp rle-choose-box">
               <label htmlFor="rle-image-grid" className="text">
-                Choose:
+                Choose Binary Image:
               </label>
               <div
                 id="rle-image-grid"
@@ -477,46 +543,47 @@ export default function RLEanimation({ handleClose2Modal }) {
             <p>OR</p>
             <div>
               <div className="rle-section-heading">
-                <h3>Text RLE</h3>
-                <p>Text encoding updates with the same minimum run length.</p>
+                <h3>Enter Text Data:</h3>
               </div>
               <TextField
                 multiline
-                minRows={3}
+                minRows={1}
                 value={textData}
                 onChange={(event) => setTextData(event.target.value)}
-                label="Text input"
                 aria-label="Text input for run length encoding"
               />
             </div>
-          </div>
-          <div className="rle-InputPanel">
-            <div>
-              <TextField
-                label="Minimum run length"
-                type="number"
-                value={minRunLength}
-                onChange={(event) =>
-                  setMinRunLength(Math.max(1, Number(event.target.value) || 1))
-                }
-                inputProps={{ min: 1, "aria-label": "Minimum run length" }}
-                size="small"
-              />
+            <div className="rle-section-heading compact">
+              <h3>Minimum Run Length:</h3>
             </div>
+            <TextField
+              id="rle-section-input"
+              type="number"
+              value={minRunLength}
+              onChange={(event) =>
+                setMinRunLength(Math.max(1, Number(event.target.value) || 1))
+              }
+              inputProps={{ min: 1, "aria-label": "Minimum run length" }}
+              size="small"
+            />
           </div>
+
           <div
             className="rle-input-panel rle-control-panel"
             aria-label="RLE controls"
           >
             <div className="rle-section-heading">
-              <h3>Controls</h3>
+              <h2 className="rle-input-heading">Simulation Control</h2>
             </div>
 
             <FormControl size="small">
-              <InputLabel id="scan-direction-label">Scan direction</InputLabel>
+              <div className="rle-section-heading">
+                <h3>Scan direction:</h3>
+              </div>
+
               <Select
                 labelId="scan-direction-label"
-                label="Scan direction"
+                // label="Scan direction"
                 value={scanDirection}
                 onChange={(event) => setScanDirection(event.target.value)}
                 aria-label="Scan direction"
@@ -567,16 +634,16 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
 
             <div className="rle-speed-control">
-              <label htmlFor="rle-speed-slider">Speed</label>
+              <label htmlFor="rle-speed-slider">Speed:</label>
               <Slider
                 id="rle-speed-slider"
                 value={animationSpeed}
-                min={120}
-                max={900}
+                min={100}
+                max={2000}
                 step={30}
                 onChange={(_, value) => setAnimationSpeed(Number(value))}
                 valueLabelDisplay="auto"
-                valueLabelFormat={(value) => `${value} ms`}
+                valueLabelFormat={(value) => `${value} ms delay`}
                 aria-label="Animation speed"
               />
             </div>
@@ -588,130 +655,224 @@ export default function RLEanimation({ handleClose2Modal }) {
               className="rle-stage"
               aria-label="Binary image encoding stage"
             >
-              <div className="rle-panel rle-matrix-panel">
-                <div className="rle-section-heading">
-                  <h3>Binary Matrix</h3>
-                  <p>
-                    {scanDirection === "horizontal"
-                      ? "Rows are scanned left to right."
-                      : "Columns are scanned top to bottom."}
-                  </p>
+              <div
+                className="rle-matrix-encoded-container"
+                style={{
+                  display: "flex",
+                  gap: "5px",
+                  flexWrap: "wrap",
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                  width: "100%",
+                  padding: "5px",
+                  overflowX: "auto", // Responsive section
+                }}
+              >
+                <div
+                  className="rle-panel rle-matrix-panel"
+                  style={{ flex: "0 0 auto", minWidth: "fit-content" }}
+                >
+                  <div className="rle-section-heading">
+                    <h3>Choosen Binary Image</h3>
+                  </div>
+
+                  <div
+                    className="rle-matrix"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${matrix[0].length}, 36px)`,
+                      gridAutoRows: "36px",
+                      gap: "4px",
+                    }}
+                    role="grid"
+                    aria-label="Editable binary pixel matrix"
+                  >
+                    {matrix.map((row, rowIndex) =>
+                      row.map((cell, colIndex) => {
+                        const key = `${rowIndex}-${colIndex}`;
+                        const isActive =
+                          activeCell?.row === rowIndex &&
+                          activeCell?.col === colIndex;
+                        const isHighlighted = highlightedPositions.has(key);
+
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            role="gridcell"
+                            className={`rle-cell value-${cell} ${isActive ? "active" : ""} ${
+                              isHighlighted ? "highlighted" : ""
+                            }`}
+                            onClick={() => toggleCell(rowIndex, colIndex)}
+                            style={{
+                              width: "36px",
+                              height: "36px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: 0,
+                            }}
+                            aria-label={`Pixel row ${rowIndex + 1}, column ${
+                              colIndex + 1
+                            }, value ${cell}. Click to toggle.`}
+                          >
+                            {cell}
+                          </button>
+                        );
+                      }),
+                    )}
+                  </div>
                 </div>
 
                 <div
-                  className="rle-matrix"
+                  className="rle-output-panel rle-output-panel-inline"
                   style={{
-                    gridTemplateColumns: `repeat(${matrix[0].length}, 1fr)`,
+                    flex: "1 1 300px",
+                    minWidth: "280px",
+                    display: "flex",
+                    flexDirection: "column",
                   }}
-                  role="grid"
-                  aria-label="Editable binary pixel matrix"
                 >
-                  {matrix.map((row, rowIndex) =>
-                    row.map((cell, colIndex) => {
-                      const key = `${rowIndex}-${colIndex}`;
-                      const isActive =
-                        activeCell?.row === rowIndex &&
-                        activeCell?.col === colIndex;
-                      const isHighlighted = highlightedPositions.has(key);
+                  <div className="rle-section-heading">
+                    <h3>Encoded Runs</h3>
+                    <p>Hover a run to highlight its matching pixels.</p>
+                  </div>
+                  <div
+                    className="rle-grouped-runs"
+                    style={{
+                      display: "flex",
+                      gridAutoRows: "36px",
+                      gap: "4px",
+                      paddingTop: "0px",
+                    }}
+                    aria-label="Encoded run blocks grouped by scan line"
+                  >
+                    {/* Map through each row of the matrix to align runs with rows */}
+                    {matrix.map((_, rowIndex) => {
+                      const groupLabel =
+                        scanDirection === "horizontal"
+                          ? `Row ${rowIndex + 1}`
+                          : `Column ${rowIndex + 1}`;
+                      const group = visibleRunGroups.find(
+                        (g) => g.groupLabel === groupLabel,
+                      );
 
                       return (
-                        <button
-                          key={key}
-                          type="button"
-                          role="gridcell"
-                          className={`rle-cell value-${cell} ${isActive ? "active" : ""} ${
-                            isHighlighted ? "highlighted" : ""
-                          }`}
-                          onClick={() => toggleCell(rowIndex, colIndex)}
-                          aria-label={`Pixel row ${rowIndex + 1}, column ${
-                            colIndex + 1
-                          }, value ${cell}. Click to toggle.`}
+                        <div
+                          key={rowIndex}
+                          className="rle-run-group"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0px",
+                            height: "36px",
+                          }}
                         >
-                          {cell}
-                        </button>
+                          <div
+                            style={{
+                              minWidth: "70px",
+                              fontSize: "12px",
+                              fontWeight: "600",
+                              color: "#24963fff",
+                            }}
+                          >
+                            <span className="rle-run-group-label">
+                              {groupLabel}:
+                            </span>
+                          </div>
+
+                          <div
+                            className="rle-runs"
+                            style={{
+                              display: "flex",
+                              gap: "4px",
+                              alignItems: "center",
+                              minHeight: "24px",
+                              flexWrap: "nowrap",
+                              overflow: "hidden",
+                            }}
+                          >
+                            {group?.runs.map((run) => (
+                              <button
+                                key={run.id}
+                                type="button"
+                                className={`rle-run-pill run-${run.value}`}
+                                onMouseEnter={() => setHoveredRunId(run.id)}
+                                onMouseLeave={() => setHoveredRunId(null)}
+                                onFocus={() => setHoveredRunId(run.id)}
+                                onBlur={() => setHoveredRunId(null)}
+                                style={{
+                                  padding: "2px 8px",
+                                  fontSize: "13px",
+                                  fontWeight: "500",
+                            
+                                  height: "24px",
+                                  minWidth: "fit-content",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                                aria-label={`${groupLabel}, run value ${run.value}, count ${run.count}`}
+                              >
+                                {run.value}:{run.count}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       );
-                    }),
-                  )}
+                    })}
+                  </div>
                 </div>
               </div>
             </section>
           </div>
-          <div className="rle-explanation-panel">
-            <section
-              className="rle-panel rle-explanation-panel"
-              aria-live="polite"
-            >
-              <div className="rle-section-heading compact">
-                <h3>Explanation</h3>
-                <div className="rle-live-run" aria-live="polite">
-                  <div>
-                    <span>Current value</span>
-                    <strong>{currentRunValue ?? "-"}</strong>
-                  </div>
-                  <div>
-                    <span>Current count</span>
-                    <strong>{currentRunCount}</strong>
-                  </div>
-                  <div>
-                    <span>Step</span>
-                    <strong>
-                      {Math.min(stepIndex, scannedCells.length)} /{" "}
-                      {scannedCells.length}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-              <p>{explanation}</p>
-            </section>
-            <div className="rle-panel rle-output-panel">
-              <div className="rle-section-heading">
-                <h3>Encoded Runs</h3>
-                <p>Hover a run to highlight its matching pixels.</p>
-              </div>
-              <div className="rle-runs" aria-label="Encoded run blocks">
-                {visibleRuns.map((run) => (
-                  <button
-                    key={run.id}
-                    type="button"
-                    className={`rle-run-pill run-${run.value}`}
-                    onMouseEnter={() => setHoveredRunId(run.id)}
-                    onMouseLeave={() => setHoveredRunId(null)}
-                    onFocus={() => setHoveredRunId(run.id)}
-                    onBlur={() => setHoveredRunId(null)}
-                    aria-label={`Run value ${run.value}, count ${run.count}`}
-                  >
-                    {run.value}:{run.count}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div
-            className="rle-panel rle-stats-panel"
-            aria-label="Compression statistics"
+
+          <section
+            className="rle-panel rle-live-explanation-box"
+            aria-live="polite"
           >
-            <div className="rle-section-heading">
-              <h3>Statistics</h3>
+            <div className="rle-live-heading">
+              <h3>Encoding Progress (Live scanning information and algorithm explanation.)</h3>
             </div>
-            <div className="rle-stat-grid">
-              <div className="rle-stat-card">
-                <span>Original Pixels</span>
-                <strong>{stats.originalSize}</strong>
+            <div className="rle-live-content">
+              <span className="rle-step-badge">
+                Step :{" "}
+                <strong>{Math.min(stepIndex, scannedCells.length)}</strong>
+                <span>/ {scannedCells.length}</span>
+              </span>
+              <span>Current Value: <span style={{color: "red"}}> {currentRunValue ?? "-"}</span></span>
+              <span>Run Count: {currentRunCount}</span>
+              <span className="rle-explanation">{explanation}</span>
+            </div>
+
+            <div
+              className="rle-panel rle-stats-panel"
+              aria-label="Compression statistics"
+            >
+              <div className="rle-section-heading">
+                <h3>Statistics</h3>
               </div>
-              <div className="rle-stat-card">
-                <span>Encoded Symbols</span>
-                <strong>{stats.encodedSize}</strong>
-              </div>
-              <div className="rle-stat-card">
-                <span>Compression Ratio</span>
-                <strong>{stats.compressionRatio.toFixed(2)}</strong>
-              </div>
-              <div className="rle-stat-card">
-                <span>Space Saved</span>
-                <strong>{stats.spaceSaved.toFixed(1)}%</strong>
+              <div className="rle-stat-grid">
+                <div className="rle-stat-card">
+                  <span>Original Pixels</span>
+                  <strong>{stats.originalSize}</strong>
+                </div>
+                <div className="rle-stat-card">
+                  <span>Encoded Symbols</span>
+                  <strong>{stats.encodedSize}</strong>
+                </div>
+                <div className="rle-stat-card">
+                  <span>Compression Ratio</span>
+                  <strong>{stats.compressionRatio.toFixed(2)}</strong>
+                </div>
+                <div className="rle-stat-card">
+                  <span>Space Saved</span>
+                  <strong>{stats.spaceSaved.toFixed(1)}%</strong>
+                </div>
               </div>
             </div>
-          </div>
+          </section>
+
           <main className="rle-workspace">
             <aside className="rle-side-stack"></aside>
 
