@@ -17,7 +17,7 @@ import Tab from "@mui/material/Tab";
 import Button from "../styledbutton";
 import Select from "../styledselect";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
@@ -30,6 +30,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import RLEanimation from "../RLEanimation";
+import Tutor from "../features/tutor/Tutor";
+import { HomeContext } from "../context/HomeContext";
 
 import { OpenCvProvider } from "opencv-react";
 
@@ -51,6 +53,27 @@ function TabPanel(props) {
 }
 
 export default function RunLengthPage() {
+  const {
+    isMobile,
+    setIsImageProcessed: setTutorImageProcessed,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
+    isSpeaking,
+    isPaused,
+    sentences,
+    currentSentenceIndex,
+    instructionsList,
+    closeInstructions,
+    setIsTutorOpen,
+    setTutorStep,
+    setShowWelcome,
+    stop,
+  } = useContext(HomeContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
@@ -303,13 +326,13 @@ export default function RunLengthPage() {
   //sets variable which defines which tab is active
   const [tabValue, setTabValue] = useState(0);
 
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
+  //const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
   const [openRunLengthModal, setOpenRunLengthModal] = useState(false);
 
   var indexTabValue = tabValue;
 
   const instr = () => {
-    setOpenInstructionsModal(true);
+     setIsInstructionOpen(true);
   };
 
   const exp = () => {
@@ -362,79 +385,142 @@ export default function RunLengthPage() {
     setImageName(`Sample ${index + 1}`);
   };
 
-  const handleCloseModal = () => {
-    setOpenInstructionsModal(false); // Close the modal
-  };
+
 
   const handleClose2Modal = () => {
     setOpenRunLengthModal(false); // Close the modal
+    // Reset tutor state
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    // Stop speech completely
+    stop();
   };
 
-  const instructionsList = {
-    0: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Enter the value for minimum run length.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Enter the value for Quantization Factor.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-    2: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Set the function you want to use: sine/cosine.",
-      "Set the Quantization Factor.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-    ],
-    3: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Set the Quality Factor between 0-100.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-    ],
-  };
+  
+  // tutor code
+  useEffect(() => {
+    setTutorImageProcessed(isImageProcessed);
+  }, [isImageProcessed, setTutorImageProcessed]);
+  // Tutor steps
+  useEffect(() => {
+    const steps = [
+  {
+      title: "Welcome",
+      content:
+        "Welcome to the Run Length Encoding experiment. This simulation demonstrates how Run Length Encoding compresses image data by storing repeated pixel values as runs.",
+      targetId: "guided-tutor-btn",
+      placement: "bottom",
+    },
 
-  const getInstructions = () => {
-    const steps = instructionsList[indexTabValue];
-    if (!steps) return <p>No instructions available.</p>;
+      {
+        title: "Read Instructions",
+        content:
+          "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Mute or Unmute",
+        content:
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content:
+          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content:
+          "Alternatively, you may also upload your own image to observe how different image patterns affect compression performance and run statistics.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+          {
+      title: "Minimum Run Length",
+      content:
+        "Enter the minimum run length value. This parameter controls which continuous pixel sequences are considered significant during compression.",
+      targetId: "minimum-run-length-zone",
+      placement: "right",
+      offset: [0, 10],
+    },
+    {
+      title:"Click Process Button",
+      content:"Click the Process button to start the Run Length Encoding analysis.",
+      targetId: "process-button-zone",
+      placement: "top",
+      offset: [-60, 12],
+    },
 
-    const normalSteps = [];
-    const notes = [];
+    {
+  title: "Observe Output Analysis",
+  content:
+    "The output panel displays three different visual results generated after Run Length Encoding compression. The first section shows the entropy map of the original grayscale image, representing the randomness and information distribution before compression. The second section shows the entropy map after applying Run Length Encoding, allowing you to compare how compression affects local image entropy and data redundancy. The third section displays the reconstructed compressed image generated from the encoded run-length pairs. Observe how different minimum run length values influence compression ratio, entropy distribution, and preservation of image structures.",
+  targetId: "output-image-zone",
+  placement: "top",
+  offset: [0, 12],
+},
+{
+      title: "Print Results",
+      content:
+        "Click the Print button to save or document the experimental observations and compression results.",
+      targetId: "print-button-zone",
+      placement: "top",
+      offset: [-60, 12],
+    },
 
-    steps.forEach((step) => {
-      if (step.trim().startsWith("Note:")) {
-        const noteHtml = step
-          .replace(/(Concept)/g, "<b>$1</b>")
-          .replace(/^Note:/, '<b style="color:blue">Note:</b>');
-        notes.push(noteHtml);
-      } else {
-        const stepHtml = step.replace(
-          /(Upload File|Process|Print)/g,
-          "<b>$1</b>",
-        );
-        normalSteps.push(stepHtml);
-      }
+    {
+      title: "Explore Concept",
+      content:
+        "Must click the Concept button to understand the theory of Run Length Encoding, including binary scanning, run generation, and compression efficiency.",
+      targetId: "concept-button-zone",
+      placement: "top",
+      offset: [-60, 12],
+    },
+
+
+    ];
+
+
+    setTutorSteps(steps);
+  }, [setTutorSteps]);
+  // Instructions list
+  useEffect(() => {
+    setInstructionsList({
+      0: [
+        "Step 1: Select an image from the available options or upload one using the Upload File button.",
+        "Step 2: Enter the value for minimum run length.",
+        "Step 3: Click the Process button to continue.",
+        "Step 4: Click the Print button to print the result.",
+        "Step 5: Click the Concept button to get a detailed explanation.",
+      ],
     });
-
-    return (
-      <div>
-        <ol>
-          {normalSteps.map((html, idx) => (
-            <li key={idx} dangerouslySetInnerHTML={{ __html: html }} />
-          ))}
-        </ol>
-        {notes.map((note, idx) => (
-          <p key={`note-${idx}`} dangerouslySetInnerHTML={{ __html: note }} />
-        ))}
-      </div>
-    );
-  };
+  }, [setInstructionsList]);
+  const boldKeywords = [
+    "Upload File",
+    "Process",
+    "Print",
+    "Concept",
+    "minimum run length",
+    "Step",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "Note",
+  ];
 
   return (
     <OpenCvProvider>
@@ -450,55 +536,106 @@ export default function RunLengthPage() {
 
           <h2 className="header-heading">Run Length Encoding</h2>
           <div id="header_button">
-            <Button title="Play">
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={voice}
+                src={isSpeaking && !isPaused ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                //  onClick={speak}
               />
             </Button>
 
-            <Button title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                // onClick={speak}
-              />
-            </Button>
-
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#ffffffff",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={instr}
+            >
               Instructions
             </Button>
-          </div>
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
 
+              onClick={startTutor}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
+            </Button>
+          </div>
           {/* Instructions Modal */}
           <Dialog
-            open={openInstructionsModal}
-            onClose={handleCloseModal}
+            open={isInstructionOpen}
+            onClose={closeInstructions}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
             style={{ height: "80%" }}
           >
             <DialogTitle id="instructions-dialog-title">
-              Instructions
+              Instructions – Run Length Encoding
             </DialogTitle>
+
             <DialogContent style={{ paddingTop: "10px" }}>
-              <p style={{ color: "#1D2A6D", fontWeight: "bold" }}>
-                {tabValue === 0
-                  ? "Run Length Encoding"
-                  : tabValue === 1
-                    ? "Lossy Huffman"
-                    : tabValue === 2
-                      ? "Sine and Cosine"
-                      : "JPEG Compression"}
-                :
-              </p>
-              {getInstructions()}
+              <ul style={{ lineHeight: "1.8", listStyleType: "none" }}>
+                {instructionsList[0]?.map((step, index) => {
+                  // Find if this step contains the currently spoken sentence
+                  // This is a bit tricky because useSpeechController splits by sentences
+                  // but each step in instructionsList might be one or more sentences.
+                  // For simplicity, we'll check if the current sentence is part of this step.
+                  const isCurrentStepSpeaking =
+                    isSpeaking &&
+                    !isPaused &&
+                    isInstructionOpen &&
+                    sentences[currentSentenceIndex] &&
+                    step.includes(sentences[currentSentenceIndex]);
+
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
+                      style={{
+                        transition: "background-color 0.3s ease",
+                        borderRadius: "4px",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
+                    </li>
+                  );
+                })}
+              </ul>
             </DialogContent>
+
             <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button
+                onClick={closeInstructions}
+                color="primary"
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#162882ff",
+                  color: "#ffffffff",
+                  width: "10%",
+                  height: "40px",
+                }}
+              >
                 Close
               </Button>
             </DialogActions>
@@ -586,6 +723,7 @@ export default function RunLengthPage() {
                         </h4>
 
                         <div
+                          id="image-selection-zone"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -702,11 +840,12 @@ export default function RunLengthPage() {
                           Minimum Run Length:
                         </h4>
                         <input
+                          id="minimum-run-length-zone"
                           className="input-btn"
                           type="text"
                           value={mrl}
                           onChange={(e) => setMrl(e.target.value)}
-                          placeholder="e.g., 20,20,20,0"
+                          placeholder="example: 1"
                           // style={{
                           //   padding: "5px",
                           //   border: "1px solid #1D2A6D",
@@ -799,6 +938,7 @@ export default function RunLengthPage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -947,6 +1087,7 @@ export default function RunLengthPage() {
               }}
             >
               <Button
+                id="process-button-zone"
                 ref={myProcess1Button}
                 class="tool_btn"
                 onClick={processImage}
@@ -960,6 +1101,7 @@ export default function RunLengthPage() {
               </Button>
 
               <Button
+                id="print-button-zone"
                 class="tool_btn print_btn"
                 onClick={handlePrint}
                 variant="outlined"
@@ -972,6 +1114,7 @@ export default function RunLengthPage() {
               </Button>
 
               <Button
+                id="concept-button-zone"
                 class="tool_btn"
                 onClick={exp}
                 variant="outlined"
@@ -1037,7 +1180,7 @@ export default function RunLengthPage() {
               </DialogContent>
             </Dialog>
             {/* tutor modal */}
-            {/* <Tutor /> */}
+            <Tutor />
           </TabPanel>
         </div>
       </div>

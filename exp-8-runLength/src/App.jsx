@@ -8,7 +8,8 @@ import {
   Navigate,
 } from "react-router-dom";
 
-
+import { HomeContextProvider } from "./components/context/HomeContext";
+import {SimContextProvider} from "./components/context/SimContext"; 
 import ErrorPage from "./components/ErrorPage";
 
 import RunLengthPage from "./components/runlength/RunLengthPage";
@@ -32,7 +33,11 @@ function App() {
 
   return (
     <OpenCvProvider>
-      <RouterProvider router={router} />
+      <HomeContextProvider>
+        <SimContextProvider>
+          <RouterProvider router={router} />
+        </SimContextProvider>
+      </HomeContextProvider>
     </OpenCvProvider>
   );
 }
