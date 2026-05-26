@@ -1,6 +1,13 @@
 import "../template.css";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useContext,
+} from "react";
 import {
   Button,
   DialogTitle,
@@ -26,6 +33,11 @@ import plus from "../assets/images/plus_sign.png";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { SimContext } from "./context/SimContext";
+
+import voice from "../assets/images/voice-play.png";
+import voice_pause from "../assets/images/voice-pause.png";
+import TutorSim from "./features/tutor/TutorSim";
 
 const PATTERNS = [
   {
@@ -769,11 +781,384 @@ export default function RLEanimation({ handleClose2Modal }) {
     );
   };
 
+  // tutor implimentation
+
+  // tutor implementation
+  const {
+    isMobile,
+    startTutorSim,
+    handleSpeechToggleSim,
+    tutorBtnRefSim,
+    isSpeaking,
+    isPaused,
+    setTutorStepsSim,
+    isSimPlaying,
+    setIsSimPlaying,
+    resetTutorSim,
+  } = useContext(SimContext);
+
+  // Dynamic Tutor Steps for Run Length Encoding Simulation
+  useEffect(() => {
+    const baseSteps = [
+      {
+        title: "Welcome to Run Length Encoding Simulation",
+        content:
+          "This guided walkthrough demonstrates Run Length Encoding (RLE), a lossless compression technique that replaces consecutive repeated values with compact (value, count) pairs.",
+        targetId: "guided-tutor-btn-sim",
+        placement: "bottom",
+      },
+
+      {
+        title: "Instruction Panel",
+        content:
+          "Use the navigation arrows here to read step-by-step instructions for performing the experiment correctly.",
+        targetId: "inst_content_container",
+        placement: "bottom",
+      },
+
+      {
+        title: "Choose Input Type",
+        content:
+          "Select whether you want to perform Run Length Encoding on an image matrix or textual data.",
+        targetId: "rle-mode-selection",
+        placement: "right",
+        offset: [-12, 10],
+      },
+    ];
+
+    // STEP 1 — INPUT VALIDATION
+
+    // IMAGE MODE
+    if (simulationMode === "image") {
+      baseSteps.push(
+        {
+          title: "Choose Binary Image",
+          content:
+            "This binary image acts as the input signal for Run Length Encoding. ",
+          targetId: "rle-image-grid",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Generate Random Binary Image",
+          content:
+            "Alternatively, you can generate a random binary image pattern. ",
+          targetId: "generate-random-binary-image-btn",
+          placement: "right",
+          offset: [0, 10],
+        },
+      );
+      if (!isMatrixVisible) {
+        baseSteps.push({
+          title: "Action Required",
+          content:
+            "Please first choose a binary image pattern or generate a random one.",
+          targetId: "generate-random-binary-image-btn",
+          placement: "left",
+          offset: [0, 10],
+        });
+
+        setTutorStepsSim(baseSteps);
+        return;
+      }
+      baseSteps.push(
+        {
+          title: "Chosen Binary Image",
+          content:
+            "This binary image acts as the input matrix for Run Length Encoding. ",
+          targetId: "chosen-image-matrix-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Minimum Run Length",
+          content:
+            "The Minimum Run Length decides when repeated values should be compressed. If the same value repeats enough times to meet the selected limit, it is stored as a compact (value, count) pair. Smaller repeated groups are stored normally without compression.",
+          targetId: "rle-section-input",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Select Scan Direction",
+          content:
+            "Choose how the encoder will process the matrix. Horizontal scanning processes rows left-to-right, while vertical scanning processes columns top-to-bottom.",
+          targetId: "scan-direction-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Pause Animation",
+          content:
+            "During Encoding, You can click the Pause button to temporarily stop the Run Length Encoding animation. ",
+          targetId: "pause-btn-zone",
+          placement: "left",
+          offset: [0, 10],
+        },
+        {
+          title: "Reset Simulation",
+          content:
+            " You can click the Reset button to return to its initial state .",
+          targetId: "reset-btn-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Animation Speed Control",
+          content:
+            "Use the speed slider to control how fast the Run Length Encoding animation runs. ",
+          targetId: "rle-speed-slider",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Start Run Length Encoding",
+          content:
+            "Click the 'Play' button to begin animated scanning and run detection.",
+          targetId: "play-rle-btn-zone",
+          placement: "left",
+          offset: [0, 10],
+        },
+      );
+      if (!isEncodedVisible) {
+        baseSteps.push({
+          title: "Action Required",
+          content:
+            "Please first click the 'Play' button to start the Run Length Encoding animation. ",
+          targetId: "play-rle-btn-zone",
+          placement: "left",
+          offset: [0, 10],
+        });
+      }
+      baseSteps.push(
+        {
+          title: "Current Scanned Cell",
+          content:
+            "The highlighted red cell shows the current pixel being processed by the Run Length Encoding algorithm. The encoder scans the matrix one value at a time according to the selected scan direction and checks whether consecutive values are repeating.",
+          targetId: "chosen-image-matrix-heading-zone",
+          placement: "left",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Encoded Run Output",
+          content:
+            "Whenever a sequence of repeated values is completed, the encoder stores it as a compact (value, count) pair inside this encoded run box. For example, four consecutive 1s are stored as (1,4).",
+          targetId: "encoded-runs-box-zone",
+          placement: "top",
+          offset: [130, 10],
+        },
+
+        {
+          title: "Live Encoding Progress",
+          content:
+            "This section displays the current encoding process in real time. It shows the current pixel value being scanned, the active run value, and the number of consecutive repetitions detected so far.",
+          targetId: "rle-live-progress-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+      );
+      if(!isStatsVisible){
+                baseSteps.push({
+          title: "Action Required",
+          content:
+            "Please wait for the encoding process to complete.",
+          targetId: "rle-live-progress-zone",
+          placement: "left",
+          offset: [0, 10],
+        });
+      }
+      baseSteps.push(
+        {
+          title: "Compression Statistics",
+          content:
+            "These statistics summarize the compression performance after encoding. The compression ratio compares the encoded data size with the original data size. Better compression occurs when longer repeated runs are present.",
+          targetId: "rle-statistics-zone",
+          placement: "top",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Binary Image Encoding Completed",
+          content:
+            "Congratulations! The binary image has been successfully encoded using Run Length Encoding. You can now switch to Text RLE mode to observe how the same compression technique works on character sequences.",
+          targetId: "rle-statistics-zone",
+          placement: "bottom",
+          offset: [0, 10],
+        },
+      )
+      setTutorStepsSim(baseSteps);
+    }
+
+    // TEXT MODE
+    if (simulationMode === "text") {
+      baseSteps.push({
+        title: "Input Text Sequence",
+        content:
+          "This text string will be scanned sequentially. Consecutive repeated characters will be grouped into runs.",
+        targetId: "input-text-sequence-zone",
+        placement: "right",
+        offset: [0, 10],
+      });
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    // STEP 5 — LIVE SCANNING
+
+    if (isAnimating) {
+      baseSteps.push(
+        {
+          title: "Live Pixel Traversal",
+          content:
+            "The highlighted cell represents the current symbol being scanned. The encoder compares it with previous values to determine whether the current run should continue or terminate.",
+          targetId: "rle-live-scan-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Current Run Formation",
+          content:
+            "The current run stores two values: the symbol being tracked and its repetition count. Every matching symbol increments the count.",
+          targetId: "current-run-zone",
+          placement: "left",
+          offset: [0, 10],
+        },
+      );
+
+      // MIN RUN LENGTH FAILURE
+      if (currentRunCount < minRunLength && minRunLength > 1) {
+        baseSteps.push({
+          title: "Run Below Threshold",
+          content:
+            "This run length is smaller than the selected minimum threshold, so the encoder stores each symbol individually instead of compressing it.",
+          targetId: "current-run-zone",
+          placement: "bottom",
+        });
+        setTutorStepsSim(baseSteps);
+        return;
+      }
+
+      // SUCCESSFUL COMPRESSION
+      if (currentRunCount >= minRunLength && currentRunCount > 1) {
+        baseSteps.push({
+          title: "Compressed Run Generated",
+          content:
+            "The run satisfies the minimum threshold condition and is stored compactly as a (value, count) pair.",
+          targetId: "encoded-output-zone",
+          placement: "top",
+        });
+        setTutorStepsSim(baseSteps);
+        return;
+      }
+    }
+
+    // STEP 6 — ENCODED OUTPUT
+
+    if (isEncodedVisible) {
+      baseSteps.push(
+        {
+          title: "Encoded Run Sequence",
+          content:
+            "Each encoded block represents a compressed run in the format (value, count). Consecutive repeated symbols are replaced by a single compact representation.",
+          targetId: "encoded-output-zone",
+          placement: "top",
+        },
+
+        {
+          title: "Compression Principle",
+          content:
+            "Instead of storing repeated symbols multiple times, Run Length Encoding stores the symbol once along with the number of repetitions.",
+          targetId: "encoded-output-zone",
+          placement: "bottom",
+        },
+      );
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    // HOVER EXPLANATION
+    if (hoveredRunId !== null) {
+      baseSteps.push({
+        title: "Run Highlight Visualization",
+        content:
+          "Hovering over an encoded run highlights the corresponding pixels or characters in the original input that belong to that compressed sequence.",
+        targetId: "encoded-output-zone",
+        placement: "left",
+      });
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    // RANDOM NOISE CASE
+
+    if (selectedPattern === "random") {
+      baseSteps.push({
+        title: "Poor Compression Scenario",
+        content:
+          "Random noise contains very few repeated consecutive values. Since runs are short, Run Length Encoding achieves poor compression efficiency on such data.",
+        targetId: "main-image-box-rle",
+        placement: "right",
+      });
+    }
+    // STEP 8 — COMPRESSION STATISTICS
+
+    // if (rleresult) {
+    //   baseSteps.push(
+    //     {
+    //       title: "Compression Ratio",
+    //       content:
+    //         "The compression ratio compares encoded data size with original data size. Smaller ratios indicate better compression efficiency.",
+    //       targetId: "compression-ratio-zone",
+    //       placement: "top",
+    //     },
+
+    //     {
+    //       title: "Compression Interpretation",
+    //       content:
+    //         "Images with large continuous regions compress efficiently, while noisy images produce minimal compression because of frequent run interruptions.",
+    //       targetId: "compression-ratio-zone",
+    //       placement: "bottom",
+    //     },
+    //   );
+    // }
+
+    // FINAL STEP
+
+    // if (true===true) {
+    //   baseSteps.push({
+    //     title: "Simulation Completed",
+    //     content:
+    //       "Congratulations! You have successfully completed the Run Length Encoding simulation including scanning, run formation, conditional compression, and compression analysis.",
+    //     targetId: "outputCanvas",
+    //     placement: "bottom",
+    //     offset: [0, 10],
+    //   });
+    // }
+
+    setTutorStepsSim(baseSteps);
+  }, [
+    simulationMode,
+    matrix,
+    textData,
+    scanDirection,
+    minRunLength,
+    isAnimating,
+    visibleRunCount,
+    isEncodedVisible,
+    hoveredRunId,
+    selectedPattern,
+    activeCell,
+    currentRunValue,
+    currentRunCount,
+    stepIndex,
+  ]);
+
   return (
     <div id="main-box-temp" className="rle-visualizer">
       <ToastContainer position="bottom-left" />
       <DialogTitle id="instructions-dialog-title" className="rle-titlebar">
-        <span>Run Length Encoding Visualizer</span>
+        {/* <span>Run Length Encoding Visualizer</span>
         <div className="rle-title-actions">
           <Tooltip title="Close">
             <Button
@@ -784,6 +1169,63 @@ export default function RLEanimation({ handleClose2Modal }) {
               <Close />
             </Button>
           </Tooltip>
+        </div> */}
+        <div
+          style={{
+            width: "50%",
+            justifyContent: "flex-start",
+            display: "flex",
+          }}
+        >
+          Canny Edge Detection Concept
+        </div>
+        <div
+          style={{
+            width: "50%",
+
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            id="guided-tutor-btn-sim"
+            ref={tutorBtnRefSim}
+            style={{
+              color: "#1D2A6D",
+              backgroundColor: "#FFD700",
+              fontWeight: "bold",
+              margin: "auto auto",
+              marginRight: "10px",
+              borderRadius: "20px",
+              padding: "5px 15px",
+              height: "40px",
+            }}
+            onClick={startTutorSim}
+          >
+            {isMobile ? "Tutor" : "Guided Tutor"}
+          </Button>
+          <Button
+            id="sound-btn-sim"
+            title={isSpeaking && !isPaused ? "Pause" : "Play"}
+            onClick={handleSpeechToggleSim}
+          >
+            <img
+              src={isSpeaking && !isPaused ? voice_pause : voice}
+              alt="voice"
+              style={{ width: "40px", height: "auto", marginRight: "10px" }}
+            />
+          </Button>
+          <Button
+            onClick={() => {
+              resetTutorSim();
+              handleClose2Modal();
+            }}
+            color="primary"
+            style={{ backgroundColor: "beige", marginRight: "10px" }}
+          >
+            Close
+          </Button>
         </div>
       </DialogTitle>
       <div id="inst_div_edge">
@@ -817,7 +1259,11 @@ export default function RLEanimation({ handleClose2Modal }) {
         <div className="leftContainer">
           <div className="choosePanel">
             <h2 className="rle-input-heading">Input Source</h2>
-            <div className="rle-mode-selector" aria-label="Simulation mode">
+            <div
+              id="rle-mode-selection"
+              className="rle-mode-selector"
+              aria-label="Simulation mode"
+            >
               <button
                 type="button"
                 className={`rle-mode-option ${
@@ -902,12 +1348,13 @@ export default function RLEanimation({ handleClose2Modal }) {
                 </div>
                 <p>OR</p>
                 <Button
+                  id="generate-random-binary-image-btn"
                   variant="contained"
                   onClick={generateNoise}
                   aria-label="Generate random noise pattern"
                   className="rle-noise-button"
                 >
-                  Generate Random Image
+                  Generate Random Binary Image
                 </Button>
               </>
             ) : (
@@ -915,6 +1362,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 <div className="rle-section-heading">
                   <h3>Enter Text Data:</h3>
                 </div>
+
                 <TextField
                   multiline
                   minRows={1}
@@ -963,6 +1411,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 </div>
 
                 <Select
+                  id="scan-direction-zone"
                   labelId="scan-direction-label"
                   value={scanDirection}
                   onChange={(event) => setScanDirection(event.target.value)}
@@ -982,6 +1431,7 @@ export default function RLEanimation({ handleClose2Modal }) {
               <Tooltip title="Play">
                 <span>
                   <Button
+                    id="play-rle-btn-zone"
                     variant="contained"
                     onClick={handlePlayAnimation}
                     // disabled={isAnimating || !isInputValid}
@@ -995,6 +1445,7 @@ export default function RLEanimation({ handleClose2Modal }) {
               <Tooltip title="Pause">
                 <span>
                   <Button
+                    id="pause-btn-zone"
                     variant="outlined"
                     onClick={handlePauseAnimation}
                     disabled={!isAnimating}
@@ -1006,6 +1457,7 @@ export default function RLEanimation({ handleClose2Modal }) {
               </Tooltip>
               <Tooltip title="Reset">
                 <Button
+                  id="reset-btn-zone"
                   variant="outlined"
                   onClick={handleResetAnimation}
                   disabled={!isInputValid}
@@ -1066,11 +1518,12 @@ export default function RLEanimation({ handleClose2Modal }) {
                     className="rle-panel rle-matrix-panel"
                     style={{ flex: "0 0 auto", minWidth: "fit-content" }}
                   >
-                    <div className="rle-section-heading">
-                      <h3>Choosen Binary Image</h3>
+                    <div id="chosen-image-matrix-heading-zone" className="rle-section-heading">
+                      <h3>Chosen Binary Image</h3>
                     </div>
-
+                     
                     <div
+                      id="chosen-image-matrix-zone"
                       className="rle-matrix"
                       style={{
                         display: "grid",
@@ -1135,6 +1588,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                       <p>Hover a run to highlight its matching pixels.</p>
                     </div>
                     <div
+                      id="encoded-runs-box-zone"
                       className="rle-grouped-runs"
                       style={{
                         display: "flex",
@@ -1227,6 +1681,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           )}
 
           <section
+           id="rle-live-progress-zone"
             className="rle-panel rle-live-explanation-box"
             aria-live="polite"
             style={{ display: isEncodingLiveVisible ? "block" : "none" }}
@@ -1252,6 +1707,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
 
             <div
+            id="rle-statistics-zone"
               className="rle-panel rle-stats-panel"
               aria-label="Compression statistics"
               style={{ display: isStatsVisible ? "block" : "none" }}
@@ -1361,6 +1817,8 @@ export default function RLEanimation({ handleClose2Modal }) {
           )}
         </div>
       </div>
+      {/* tutor modal */}
+      <TutorSim />
     </div>
   );
 }

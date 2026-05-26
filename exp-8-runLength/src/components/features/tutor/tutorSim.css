@@ -138,16 +138,11 @@
   }
 }
 
-.tutor-highlight {
+.tutor-highlight-sim {
   position: relative;
-
-  animation: highlightPulse 1.5s infinite;
+  animation: highlightPulse 1.5s linear;
   border: 3px solid orange !important;
-
-  position: relative;
-
-  animation: highlightPulse 1.5s infinite;
-
+  animation: highlightPulse 1.5s linear;
   box-shadow: 0 0 0 6px rgba(255, 215, 0, 0.4);
 }
 

@@ -67,14 +67,14 @@ export const TutorSim = () => {
       return undefined;
     }
 
-    targetElement.classList.add("tutor-highlight");
+    targetElement.classList.add("tutor-highlight-sim");
     targetElement.scrollIntoView({
       behavior: "smooth",
       block: "center",
     });
 
     return () => {
-      targetElement.classList.remove("tutor-highlight");
+      targetElement.classList.remove("tutor-highlight-sim");
     };
   }, [isTutorOpenSim, tutorStepSim, tutorStepsSim]);
 
