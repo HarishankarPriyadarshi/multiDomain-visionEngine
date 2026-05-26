@@ -397,6 +397,10 @@ textarea {
   padding: 12px;
 }
 
+.rightContainer.text-mode .rle-workspace {
+  order: -1;
+}
+
 .choosePanel,
 .rle-InputPanel,
 .rle-input-panel,
@@ -425,6 +429,46 @@ textarea {
   flex-direction: column;
   gap: 10px;
   justify-content: flex-start;
+}
+
+.rle-mode-selector {
+  background: #f7f9fc;
+  border: 1px solid #dbe4ef;
+  border-radius: 9px;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 5px;
+}
+
+.rle-mode-option {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--rle-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  min-height: 34px;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.rle-mode-option:hover,
+.rle-mode-option:focus-visible {
+  background: #eef3f8;
+  border-color: #c9d5e5;
+  outline: none;
+}
+
+.rle-mode-option.active {
+  background: #ffffff;
+  border-color: var(--rle-navy);
+  box-shadow: 0 2px 8px rgba(29, 42, 109, 0.1);
+  color: var(--rle-navy);
 }
 .rle-input-heading {
   display: flex;
@@ -945,8 +989,81 @@ width: 100%;
   min-width: 0;
 }
 
+.rle-text-character-row {
+  align-content: flex-start;
+  background: #f7f9fc;
+  border: 1px solid #e0e7f0;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 48px;
+  padding: 10px;
+}
+
+.rle-text-cell {
+  align-items: center;
+  aspect-ratio: 1;
+  background: #ffffff;
+  border: 1px solid #c8d2df;
+  border-radius: 6px;
+  color: #14213d;
+  display: inline-flex;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: center;
+  min-width: 30px;
+  padding: 4px;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.rle-text-cell.completed {
+  background: #eef3f8;
+  opacity: 0.62;
+}
+
+.rle-text-cell.active {
+  animation: rleTextCursor 0.8s ease-in-out infinite alternate;
+  border-color: var(--rle-blue);
+  box-shadow:
+    0 0 0 3px rgba(57, 95, 159, 0.16),
+    0 3px 10px rgba(57, 95, 159, 0.18);
+  transform: scale(1.04);
+}
+
+.rle-text-cell.highlighted {
+  border-color: #59759f;
+  box-shadow: 0 0 0 3px rgba(89, 117, 159, 0.14);
+  opacity: 1;
+}
+
+.rle-text-empty {
+  color: var(--rle-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .text-runs {
   min-height: 44px;
+}
+
+.text-run {
+  cursor: pointer;
+}
+
+@keyframes rleTextCursor {
+  from {
+    background: #ffffff;
+  }
+  to {
+    background: #edf4ff;
+  }
 }
 
 @keyframes rleRunEnter {

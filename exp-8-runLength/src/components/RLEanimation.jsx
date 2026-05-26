@@ -188,24 +188,41 @@ function encodeText(data, minRunLength) {
   const runs = [];
   let value = chars[0];
   let count = 1;
+  let startIndex = 0;
 
   const pushRun = () => {
+    const positions = Array.from(
+      { length: count },
+      (_, offset) => startIndex + offset,
+    );
+
     if (count >= minRunLength) {
-      runs.push({ value, count });
+      runs.push({
+        id: runs.length,
+        value,
+        count,
+        positions,
+      });
     } else {
-      Array.from({ length: count }).forEach(() =>
-        runs.push({ value, count: 1 }),
-      );
+      positions.forEach((position) => {
+        runs.push({
+          id: runs.length,
+          value,
+          count: 1,
+          positions: [position],
+        });
+      });
     }
   };
 
-  chars.slice(1).forEach((char) => {
+  chars.slice(1).forEach((char, offset) => {
     if (char === value) {
       count += 1;
     } else {
       pushRun();
       value = char;
       count = 1;
+      startIndex = offset + 1;
     }
   });
 
@@ -221,6 +238,7 @@ function makeRandomNoise(rows = 7, cols = 7) {
 
 export default function RLEanimation({ handleClose2Modal }) {
   const [matrix, setMatrix] = useState(() => copyMatrix(PATTERNS[0].matrix));
+  const [simulationMode, setSimulationMode] = useState("image");
   const [selectedPattern, setSelectedPattern] = useState("Plus");
   const [textData, setTextData] = useState("");
   const [minRunLength, setMinRunLength] = useState(1);
@@ -233,6 +251,13 @@ export default function RLEanimation({ handleClose2Modal }) {
   const [visibleRunCount, setVisibleRunCount] = useState(0);
   const [hasAnimationProgress, setHasAnimationProgress] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
+  const [imageStepIndex, setImageStepIndex] = useState(0);
+  const [activeTextIndex, setActiveTextIndex] = useState(null);
+  const [visibleTextRunCount, setVisibleTextRunCount] = useState(0);
+  const [textHasAnimationProgress, setTextHasAnimationProgress] =
+    useState(false);
+  const [textStepIndex, setTextStepIndex] = useState(0);
+  const [hoveredTextRunId, setHoveredTextRunId] = useState(null);
   const [hoveredRunId, setHoveredRunId] = useState(null);
   const [explanation, setExplanation] = useState(
     "Choose a pattern or edit pixels, then play the scan to watch RLE form runs.",
@@ -266,6 +291,11 @@ export default function RLEanimation({ handleClose2Modal }) {
     [textData, minRunLength],
   );
 
+  const textCells = useMemo(
+    () => [...textData].map((value, index) => ({ value, index })),
+    [textData],
+  );
+
   const visibleRuns = hasAnimationProgress
     ? encodedRuns.slice(0, visibleRunCount)
     : encodedRuns;
@@ -278,6 +308,10 @@ export default function RLEanimation({ handleClose2Modal }) {
     }));
   }, [encodedRunGroups, visibleRuns]);
 
+  const visibleTextRuns = textHasAnimationProgress
+    ? textEncodedRuns.slice(0, visibleTextRunCount)
+    : [];
+
   const highlightedPositions = useMemo(() => {
     if (hoveredRunId === null) return new Set();
     const run = encodedRuns.find((item) => item.id === hoveredRunId);
@@ -286,7 +320,13 @@ export default function RLEanimation({ handleClose2Modal }) {
     );
   }, [encodedRuns, hoveredRunId]);
 
-  const stats = useMemo(() => {
+  const highlightedTextPositions = useMemo(() => {
+    if (hoveredTextRunId === null) return new Set();
+    const run = textEncodedRuns.find((item) => item.id === hoveredTextRunId);
+    return new Set(run?.positions || []);
+  }, [hoveredTextRunId, textEncodedRuns]);
+
+  const imageStats = useMemo(() => {
     const originalSize = scannedCells.length;
     const encodedSize = encodedRuns.length * 2;
     const compressionRatio = originalSize ? encodedSize / originalSize : 0;
@@ -302,6 +342,37 @@ export default function RLEanimation({ handleClose2Modal }) {
     };
   }, [encodedRuns.length, scannedCells.length]);
 
+  const textStats = useMemo(() => {
+    const originalSize = textCells.length;
+    const encodedSize = textEncodedRuns.length * 2;
+    const compressionRatio = originalSize ? encodedSize / originalSize : 0;
+    const spaceSaved = originalSize
+      ? ((originalSize - encodedSize) / originalSize) * 100
+      : 0;
+
+    return {
+      originalSize,
+      encodedSize,
+      compressionRatio,
+      spaceSaved,
+    };
+  }, [textCells.length, textEncodedRuns.length]);
+
+  const stats = simulationMode === "image" ? imageStats : textStats;
+  const statLabels =
+    simulationMode === "image"
+      ? {
+          original: "Original Pixels",
+          encoded: "Encoded Symbols",
+        }
+      : {
+          original: "Original Characters",
+          encoded: "Encoded Character Runs",
+        };
+  const activeStepIndex = stepIndex;
+  const activeStepTotal =
+    simulationMode === "image" ? scannedCells.length : textCells.length;
+
   const resetAnimation = useCallback(() => {
     resetRequestedRef.current = true;
     isAnimatingRef.current = false;
@@ -312,8 +383,11 @@ export default function RLEanimation({ handleClose2Modal }) {
     setVisibleRunCount(0);
     setHasAnimationProgress(false);
     setStepIndex(0);
+    setImageStepIndex(0);
     setHoveredRunId(null);
-    setExplanation("Animation reset. Press Play to begin.");
+    setExplanation(
+      "Scanning pixels row-wise and grouping consecutive binary values.",
+    );
   }, []);
 
   const commitRunAtCell = useCallback(
@@ -343,6 +417,7 @@ export default function RLEanimation({ handleClose2Modal }) {
 
       setActiveCell({ row: cell.row, col: cell.col, order: cell.order });
       setStepIndex(index + 1);
+      setImageStepIndex(index + 1);
 
       const previousCell = scannedCells[index - 1];
       const nextCell = scannedCells[index + 1];
@@ -386,7 +461,7 @@ export default function RLEanimation({ handleClose2Modal }) {
   );
 
   const playAnimation = useCallback(
-    async (startAt = stepIndex) => {
+    async (startAt = imageStepIndex) => {
       if (isAnimatingRef.current) return;
 
       resetRequestedRef.current = false;
@@ -419,8 +494,8 @@ export default function RLEanimation({ handleClose2Modal }) {
     [
       animationSpeed,
       applyStep,
+      imageStepIndex,
       scannedCells.length,
-      stepIndex,
       visibleRunCount,
     ],
   );
@@ -430,6 +505,136 @@ export default function RLEanimation({ handleClose2Modal }) {
     setIsAnimating(false);
     setExplanation("Paused. Continue with Play or inspect encoded runs.");
   }, []);
+
+  const resetTextAnimation = useCallback(() => {
+    resetRequestedRef.current = true;
+    isAnimatingRef.current = false;
+    setIsAnimating(false);
+    setActiveTextIndex(null);
+    setVisibleTextRunCount(0);
+    setTextHasAnimationProgress(false);
+    setTextStepIndex(0);
+    setStepIndex(0);
+    setCurrentRunValue(null);
+    setCurrentRunCount(0);
+    setHoveredTextRunId(null);
+    setExplanation(
+      "Scanning characters sequentially and grouping repeated symbols.",
+    );
+  }, []);
+
+  const commitTextRunAtIndex = useCallback(
+    (textIndex) => {
+      const completedRuns = textEncodedRuns.filter(
+        (run) => run.positions[run.positions.length - 1] <= textIndex,
+      );
+      const latestRun = completedRuns[completedRuns.length - 1];
+
+      setVisibleTextRunCount(completedRuns.length);
+      if (latestRun) {
+        setExplanation(`Run encoded as ${latestRun.value}:${latestRun.count}.`);
+      }
+    },
+    [textEncodedRuns],
+  );
+
+  const applyTextStep = useCallback(
+    (index) => {
+      const cell = textCells[index];
+      if (!cell) {
+        setExplanation("Text encoding complete.");
+        return false;
+      }
+
+      setActiveTextIndex(index);
+      setTextStepIndex(index + 1);
+      setStepIndex(index + 1);
+
+      const previousCell = textCells[index - 1];
+      const nextCell = textCells[index + 1];
+      const runStart = index === 0 || previousCell?.value !== cell.value;
+      let count = 1;
+
+      for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+        if (textCells[cursor].value !== cell.value) break;
+        count += 1;
+      }
+
+      setCurrentRunValue(cell.value);
+      setCurrentRunCount(count);
+
+      if (runStart) {
+        setExplanation(`New run started with character ${cell.value}.`);
+      } else {
+        setExplanation(`${count} consecutive ${cell.value}s detected.`);
+      }
+
+      if (!nextCell || nextCell.value !== cell.value) {
+        commitTextRunAtIndex(index);
+      }
+
+      return true;
+    },
+    [commitTextRunAtIndex, textCells],
+  );
+
+  const playTextAnimation = useCallback(
+    async (startAt = textStepIndex) => {
+      if (isAnimatingRef.current) return;
+      if (!textCells.length) {
+        setExplanation("Enter text to animate Text RLE.");
+        return;
+      }
+
+      resetRequestedRef.current = false;
+      isAnimatingRef.current = true;
+      setIsAnimating(true);
+      setTextHasAnimationProgress(true);
+      setVisibleTextRunCount(startAt === 0 ? 0 : visibleTextRunCount);
+      let completed = true;
+
+      for (let index = startAt; index < textCells.length; index += 1) {
+        if (!isAnimatingRef.current || resetRequestedRef.current) {
+          completed = false;
+          break;
+        }
+        applyTextStep(index);
+        await wait(animationSpeed);
+      }
+
+      if (!resetRequestedRef.current) {
+        isAnimatingRef.current = false;
+        setIsAnimating(false);
+        if (completed) {
+          setActiveTextIndex(null);
+          setExplanation("Text encoding complete. Hover any run to see its source characters.");
+        }
+      }
+    },
+    [
+      animationSpeed,
+      applyTextStep,
+      textCells.length,
+      textStepIndex,
+      visibleTextRunCount,
+    ],
+  );
+
+  const handlePlayAnimation = useCallback(() => {
+    if (simulationMode === "image") {
+      playAnimation();
+    } else {
+      playTextAnimation();
+    }
+  }, [playAnimation, playTextAnimation, simulationMode]);
+
+  const handleResetAnimation = useCallback(() => {
+    if (simulationMode === "image") {
+      resetAnimation();
+    } else {
+      resetTextAnimation();
+    }
+  }, [resetAnimation, resetTextAnimation, simulationMode]);
 
   const toggleCell = useCallback(
     (rowIndex, colIndex) => {
@@ -479,6 +684,10 @@ export default function RLEanimation({ handleClose2Modal }) {
   }, [minRunLength, resetAnimation, scanDirection]);
 
   useEffect(() => {
+    resetTextAnimation();
+  }, [minRunLength, resetTextAnimation]);
+
+  useEffect(() => {
     return () => {
       isAnimatingRef.current = false;
       resetRequestedRef.current = true;
@@ -505,54 +714,104 @@ export default function RLEanimation({ handleClose2Modal }) {
         <div className="leftContainer">
           <div className="choosePanel">
             <h2 className="rle-input-heading">Input Source</h2>
-            <div className="coolinput_comp rle-choose-box">
-              <label htmlFor="rle-image-grid" className="text">
-                Choose Binary Image:
-              </label>
-              <div
-                id="rle-image-grid"
-                className="rle-classic-image-grid"
-                role="group"
-                aria-label="Binary image examples"
+            <div className="rle-mode-selector" aria-label="Simulation mode">
+              <button
+                type="button"
+                className={`rle-mode-option ${
+                  simulationMode === "image" ? "active" : ""
+                }`}
+                onClick={() => {
+                  pauseAnimation();
+                  setSimulationMode("image");
+                  setStepIndex(imageStepIndex);
+                  setExplanation(
+                    "Scanning pixels row-wise and grouping consecutive binary values.",
+                  );
+                }}
+                aria-pressed={simulationMode === "image"}
               >
-                {PATTERNS.map((pattern) => (
-                  <button
-                    key={pattern.name}
-                    type="button"
-                    className={`rle-image-choice ${
-                      selectedPattern === pattern.name ? "active" : ""
-                    }`}
-                    onClick={() => selectPattern(pattern.name)}
-                    aria-label={`Select ${pattern.name} image`}
-                    aria-pressed={selectedPattern === pattern.name}
+                Binary Image
+              </button>
+              <button
+                type="button"
+                className={`rle-mode-option ${
+                  simulationMode === "text" ? "active" : ""
+                }`}
+                onClick={() => {
+                  pauseAnimation();
+                  setSimulationMode("text");
+                  setStepIndex(textStepIndex);
+                  setExplanation(
+                    "Scanning characters sequentially and grouping repeated symbols.",
+                  );
+                }}
+                aria-pressed={simulationMode === "text"}
+              >
+                Text RLE
+              </button>
+            </div>
+
+            {simulationMode === "image" ? (
+              <>
+                <div className="coolinput_comp rle-choose-box">
+                  <label htmlFor="rle-image-grid" className="text">
+                    Choose Binary Image:
+                  </label>
+                  <div
+                    id="rle-image-grid"
+                    className="rle-classic-image-grid"
+                    role="group"
+                    aria-label="Binary image examples"
                   >
-                    <img src={pattern.icon} alt="" aria-hidden="true" />
-                  </button>
-                ))}
+                    {PATTERNS.map((pattern) => (
+                      <button
+                        key={pattern.name}
+                        type="button"
+                        className={`rle-image-choice ${
+                          selectedPattern === pattern.name ? "active" : ""
+                        }`}
+                        onClick={() => selectPattern(pattern.name)}
+                        aria-label={`Select ${pattern.name} image`}
+                        aria-pressed={selectedPattern === pattern.name}
+                      >
+                        <img src={pattern.icon} alt="" aria-hidden="true" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <p>OR</p>
+                <Button
+                  variant="contained"
+                  onClick={generateNoise}
+                  aria-label="Generate random noise pattern"
+                  className="rle-noise-button"
+                >
+                  Generate Random Image
+                </Button>
+              </>
+            ) : (
+              <div>
+                <div className="rle-section-heading">
+                  <h3>Enter Text Data:</h3>
+                </div>
+                <TextField
+                  multiline
+                  minRows={1}
+                  value={textData}
+                  onChange={(event) => {
+                    setTextData(event.target.value);
+                    resetTextAnimation();
+                    setCurrentRunValue(null);
+                    setCurrentRunCount(0);
+                    setStepIndex(0);
+                    setExplanation(
+                      "Text updated. Press Play to animate Text RLE.",
+                    );
+                  }}
+                  aria-label="Text input for run length encoding"
+                />
               </div>
-            </div>
-            <p>OR</p>
-            <Button
-              variant="contained"
-              onClick={generateNoise}
-              aria-label="Generate random noise pattern"
-              className="rle-noise-button"
-            >
-              Generate Random Image
-            </Button>
-            <p>OR</p>
-            <div>
-              <div className="rle-section-heading">
-                <h3>Enter Text Data:</h3>
-              </div>
-              <TextField
-                multiline
-                minRows={1}
-                value={textData}
-                onChange={(event) => setTextData(event.target.value)}
-                aria-label="Text input for run length encoding"
-              />
-            </div>
+            )}
             <div className="rle-section-heading compact">
               <h3>Minimum Run Length:</h3>
             </div>
@@ -576,22 +835,23 @@ export default function RLEanimation({ handleClose2Modal }) {
               <h2 className="rle-input-heading">Simulation Control</h2>
             </div>
 
-            <FormControl size="small">
-              <div className="rle-section-heading">
-                <h3>Scan direction:</h3>
-              </div>
+            {simulationMode === "image" && (
+              <FormControl size="small">
+                <div className="rle-section-heading">
+                  <h3>Scan direction:</h3>
+                </div>
 
-              <Select
-                labelId="scan-direction-label"
-                // label="Scan direction"
-                value={scanDirection}
-                onChange={(event) => setScanDirection(event.target.value)}
-                aria-label="Scan direction"
-              >
-                <MenuItem value="horizontal">Horizontal Scan</MenuItem>
-                <MenuItem value="vertical">Vertical Scan</MenuItem>
-              </Select>
-            </FormControl>
+                <Select
+                  labelId="scan-direction-label"
+                  value={scanDirection}
+                  onChange={(event) => setScanDirection(event.target.value)}
+                  aria-label="Scan direction"
+                >
+                  <MenuItem value="horizontal">Horizontal Scan</MenuItem>
+                  <MenuItem value="vertical">Vertical Scan</MenuItem>
+                </Select>
+              </FormControl>
+            )}
 
             <div
               className="rle-animation-buttons"
@@ -602,7 +862,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 <span>
                   <Button
                     variant="contained"
-                    onClick={() => playAnimation()}
+                    onClick={handlePlayAnimation}
                     disabled={isAnimating}
                     aria-label="Play animation"
                   >
@@ -625,7 +885,7 @@ export default function RLEanimation({ handleClose2Modal }) {
               <Tooltip title="Reset">
                 <Button
                   variant="outlined"
-                  onClick={resetAnimation}
+                  onClick={handleResetAnimation}
                   aria-label="Reset animation"
                 >
                   <RestartAlt />
@@ -649,7 +909,12 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
           </div>
         </div>
-        <div className="rightContainer">
+        <div
+          className={`rightContainer ${
+            simulationMode === "text" ? "text-mode" : "image-mode"
+          }`}
+        >
+          {simulationMode === "image" && (
           <div className="matrixPanel">
             <section
               className="rle-stage"
@@ -826,6 +1091,7 @@ export default function RLEanimation({ handleClose2Modal }) {
               </div>
             </section>
           </div>
+          )}
 
           <section
             className="rle-panel rle-live-explanation-box"
@@ -837,8 +1103,8 @@ export default function RLEanimation({ handleClose2Modal }) {
             <div className="rle-live-content">
               <span className="rle-step-badge">
                 Step :{" "}
-                <strong>{Math.min(stepIndex, scannedCells.length)}</strong>
-                <span>/ {scannedCells.length}</span>
+                <strong>{Math.min(activeStepIndex, activeStepTotal)}</strong>
+                <span>/ {activeStepTotal}</span>
               </span>
               <span>Current Value: <span style={{color: "red"}}> {currentRunValue ?? "-"}</span></span>
               <span>Run Count: {currentRunCount}</span>
@@ -854,11 +1120,11 @@ export default function RLEanimation({ handleClose2Modal }) {
               </div>
               <div className="rle-stat-grid">
                 <div className="rle-stat-card">
-                  <span>Original Pixels</span>
+                  <span>{statLabels.original}</span>
                   <strong>{stats.originalSize}</strong>
                 </div>
                 <div className="rle-stat-card">
-                  <span>Encoded Symbols</span>
+                  <span>{statLabels.encoded}</span>
                   <strong>{stats.encodedSize}</strong>
                 </div>
                 <div className="rle-stat-card">
@@ -873,6 +1139,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
           </section>
 
+          {simulationMode === "text" && (
           <main className="rle-workspace">
             <aside className="rle-side-stack"></aside>
 
@@ -880,21 +1147,75 @@ export default function RLEanimation({ handleClose2Modal }) {
               className="rle-panel rle-text-panel"
               aria-label="Text RLE encoder"
             >
+              <div className="rle-section-heading">
+                <h3>Text RLE Visualization</h3>
+                <p>Focus the text input, then press Play to scan characters.</p>
+              </div>
+
+              <div
+                className="rle-text-character-row"
+                aria-label="Animated text scan characters"
+              >
+                {textCells.length === 0 && (
+                  <span className="rle-text-empty">
+                    Enter text to visualize character runs.
+                  </span>
+                )}
+                {textCells.map((cell) => {
+                  const isActive = activeTextIndex === cell.index;
+                  const isCompleted =
+                    textHasAnimationProgress &&
+                    cell.index < textStepIndex &&
+                    !isActive;
+                  const isHighlighted = highlightedTextPositions.has(
+                    cell.index,
+                  );
+
+                  return (
+                    <span
+                      key={`${cell.value}-${cell.index}`}
+                      className={`rle-text-cell ${
+                        isActive ? "active" : ""
+                      } ${isCompleted ? "completed" : ""} ${
+                        isHighlighted ? "highlighted" : ""
+                      }`}
+                      aria-label={`Character ${cell.value === " " ? "space" : cell.value} at position ${
+                        cell.index + 1
+                      }`}
+                    >
+                      {cell.value === " " ? "space" : cell.value}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <div className="rle-section-heading compact">
+                <h3>Encoded Text Runs</h3>
+              </div>
               <div
                 className="rle-runs text-runs"
                 aria-label="Encoded text output"
               >
-                {textEncodedRuns.map((run, index) => (
-                  <span
-                    key={`${run.value}-${index}`}
+                {visibleTextRuns.map((run) => (
+                  <button
+                    key={run.id}
+                    type="button"
                     className="rle-run-pill text-run"
+                    onMouseEnter={() => setHoveredTextRunId(run.id)}
+                    onMouseLeave={() => setHoveredTextRunId(null)}
+                    onFocus={() => setHoveredTextRunId(run.id)}
+                    onBlur={() => setHoveredTextRunId(null)}
+                    aria-label={`Text run value ${
+                      run.value === " " ? "space" : run.value
+                    }, count ${run.count}`}
                   >
                     {run.value === " " ? "space" : run.value}:{run.count}
-                  </span>
+                  </button>
                 ))}
               </div>
             </section>
           </main>
+          )}
         </div>
       </div>
     </div>
