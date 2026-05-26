@@ -24,6 +24,9 @@ import multiply from "../assets/images/x_sign.png";
 import minus from "../assets/images/minus_sign.png";
 import plus from "../assets/images/plus_sign.png";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const PATTERNS = [
   {
     name: "Plus",
@@ -237,9 +240,9 @@ function makeRandomNoise(rows = 7, cols = 7) {
 }
 
 export default function RLEanimation({ handleClose2Modal }) {
-  const [matrix, setMatrix] = useState(() => copyMatrix(PATTERNS[0].matrix));
+  const [matrix, setMatrix] = useState(null);
   const [simulationMode, setSimulationMode] = useState("image");
-  const [selectedPattern, setSelectedPattern] = useState("Plus");
+  const [selectedPattern, setSelectedPattern] = useState("");
   const [textData, setTextData] = useState("");
   const [minRunLength, setMinRunLength] = useState(1);
   const [scanDirection, setScanDirection] = useState("horizontal");
@@ -265,6 +268,24 @@ export default function RLEanimation({ handleClose2Modal }) {
 
   const isAnimatingRef = useRef(false);
   const resetRequestedRef = useRef(false);
+
+  const [isMatrixVisible, setIsMatrixVisible] = useState(false);
+  const [isEncodedVisible, setIsEncodedVisible] = useState(false);
+  const[isEncodingLiveVisible, setIsEncodingLiveVisible]=useState(false);
+  const[isStatsVisible, setIsStatsVisible]=useState(false); 
+
+  const notifyS = (msg) => {
+      toast.success(msg, {
+        theme: "dark",
+        position: "bottom-left", // Set toast position
+        autoClose: 2000, // Toast auto-closes after 3 seconds
+        hideProgressBar: false, // Show progress bar
+        closeOnClick: true, // Close toast when clicked
+        pauseOnHover: true, // Pause when hovered
+        draggable: true, // Enable dragging
+      });
+    };
+  
 
   const scanGroups = useMemo(
     () => buildScanGroups(matrix, scanDirection),
@@ -385,6 +406,9 @@ export default function RLEanimation({ handleClose2Modal }) {
     setStepIndex(0);
     setImageStepIndex(0);
     setHoveredRunId(null);
+    setIsEncodedVisible(false);
+    setIsEncodingLiveVisible(false);
+    setIsStatsVisible(false);
     setExplanation(
       "Scanning pixels row-wise and grouping consecutive binary values.",
     );
@@ -468,6 +492,8 @@ export default function RLEanimation({ handleClose2Modal }) {
       isAnimatingRef.current = true;
       setIsAnimating(true);
       setHasAnimationProgress(true);
+      setIsEncodingLiveVisible(true); // Show live encoding on start
+      setIsEncodedVisible(true); // Show encoded run on play
       setVisibleRunCount(startAt === 0 ? 0 : visibleRunCount);
       let completed = true;
 
@@ -485,6 +511,7 @@ export default function RLEanimation({ handleClose2Modal }) {
         setIsAnimating(false);
         if (completed) {
           setActiveCell(null);
+          setIsStatsVisible(true); // Show stats on completion
           setExplanation(
             "Encoding complete. Hover any run to see its source pixels.",
           );
@@ -518,6 +545,8 @@ export default function RLEanimation({ handleClose2Modal }) {
     setCurrentRunValue(null);
     setCurrentRunCount(0);
     setHoveredTextRunId(null);
+    setIsEncodingLiveVisible(false);
+    setIsStatsVisible(false);
     setExplanation(
       "Scanning characters sequentially and grouping repeated symbols.",
     );
@@ -590,6 +619,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       isAnimatingRef.current = true;
       setIsAnimating(true);
       setTextHasAnimationProgress(true);
+      setIsEncodingLiveVisible(true); // Show live encoding on start
       setVisibleTextRunCount(startAt === 0 ? 0 : visibleTextRunCount);
       let completed = true;
 
@@ -607,6 +637,7 @@ export default function RLEanimation({ handleClose2Modal }) {
         setIsAnimating(false);
         if (completed) {
           setActiveTextIndex(null);
+          setIsStatsVisible(true); // Show stats on completion
           setExplanation("Text encoding complete. Hover any run to see its source characters.");
         }
       }
@@ -663,6 +694,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       pauseAnimation();
       setSelectedPattern(pattern.name);
       setMatrix(copyMatrix(pattern.matrix));
+      setIsMatrixVisible(true); // Show matrix on selection
       resetAnimation();
       setExplanation(`${pattern.name} pattern loaded.`);
     },
@@ -673,6 +705,7 @@ export default function RLEanimation({ handleClose2Modal }) {
     pauseAnimation();
     setSelectedPattern("Random Noise");
     setMatrix(makeRandomNoise());
+    setIsMatrixVisible(true); // Show matrix on noise generation
     resetAnimation();
     setExplanation(
       "Random noise generated. RLE usually compresses this poorly.",
@@ -727,6 +760,9 @@ export default function RLEanimation({ handleClose2Modal }) {
                   setExplanation(
                     "Scanning pixels row-wise and grouping consecutive binary values.",
                   );
+                  setIsStatsVisible(false);
+                  setIsEncodedVisible(false);
+                  setIsEncodingLiveVisible(false);
                 }}
                 aria-pressed={simulationMode === "image"}
               >
@@ -909,10 +945,10 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
           </div>
         </div>
-        <div
-          className={`rightContainer ${
+        <div className={`rightContainer ${
             simulationMode === "text" ? "text-mode" : "image-mode"
           }`}
+          style={{ visibility: simulationMode === "image" && !isMatrixVisible ? "hidden" : "visible" }}
         >
           {simulationMode === "image" && (
           <div className="matrixPanel">
@@ -994,7 +1030,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                   style={{
                     flex: "1 1 300px",
                     minWidth: "280px",
-                    display: "flex",
+                    display: isEncodedVisible ? "flex" : "none",
                     flexDirection: "column",
                   }}
                 >
@@ -1096,6 +1132,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           <section
             className="rle-panel rle-live-explanation-box"
             aria-live="polite"
+            style={{ display: isEncodingLiveVisible ? "block" : "none" }}
           >
             <div className="rle-live-heading">
               <h3>Encoding Progress (Live scanning information and algorithm explanation.)</h3>
@@ -1114,6 +1151,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             <div
               className="rle-panel rle-stats-panel"
               aria-label="Compression statistics"
+              style={{ display: isStatsVisible ? "block" : "none" }}
             >
               <div className="rle-section-heading">
                 <h3>Statistics</h3>
