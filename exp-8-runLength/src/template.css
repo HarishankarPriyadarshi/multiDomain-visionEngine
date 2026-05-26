@@ -64,6 +64,22 @@
   right: 0px;
 }
 
+/* for instructions */
+#inst_div_edge
+{
+    width: 80%; margin: auto; text-align: center; padding: 10px;
+}
+@media (max-width: 768px) {
+  #inst_div_edge {
+    width: 97%;
+  }
+}
+@media (max-width: 480px) {
+  #inst_div_edge {
+    width: 95%;
+  }
+}
+
 #original-image-temp {
   display: flex;
   flex-direction: column;
