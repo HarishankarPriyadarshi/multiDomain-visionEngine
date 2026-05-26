@@ -274,26 +274,15 @@ export default function RLEanimation({ handleClose2Modal }) {
   const[isEncodingLiveVisible, setIsEncodingLiveVisible]=useState(false);
   const[isStatsVisible, setIsStatsVisible]=useState(false); 
 
-  const notifyS = (msg) => {
-      toast.success(msg, {
-        theme: "dark",
-        position: "bottom-left", // Set toast position
-        autoClose: 2000, // Toast auto-closes after 3 seconds
-        hideProgressBar: false, // Show progress bar
-        closeOnClick: true, // Close toast when clicked
-        pauseOnHover: true, // Pause when hovered
-        draggable: true, // Enable dragging
-      });
-    };
   
 
   const scanGroups = useMemo(
-    () => buildScanGroups(matrix, scanDirection),
+    () => (matrix ? buildScanGroups(matrix, scanDirection) : []),
     [matrix, scanDirection],
   );
 
   const scannedCells = useMemo(
-    () => scanGroups.flatMap((group) => group.cells),
+    () => (scanGroups.length ? scanGroups.flatMap((group) => group.cells) : []),
     [scanGroups],
   );
 
@@ -380,6 +369,7 @@ export default function RLEanimation({ handleClose2Modal }) {
   }, [textCells.length, textEncodedRuns.length]);
 
   const stats = simulationMode === "image" ? imageStats : textStats;
+  const isInputValid = simulationMode === "image" ? !!matrix : !!textData.trim();
   const statLabels =
     simulationMode === "image"
       ? {
@@ -653,19 +643,50 @@ export default function RLEanimation({ handleClose2Modal }) {
 
   const handlePlayAnimation = useCallback(() => {
     if (simulationMode === "image") {
+      if (!matrix) {
+        toast.error("Please select an image first");
+        return;
+      }
       playAnimation();
     } else {
+      if (!textData.trim()) {
+        toast.error("Please enter the text first");
+        return;
+      }
       playTextAnimation();
     }
-  }, [playAnimation, playTextAnimation, simulationMode]);
+  }, [playAnimation, playTextAnimation, simulationMode, matrix, textData]);
+
+  const handlePauseAnimation = useCallback(() => {
+    if (simulationMode === "image") {
+      if (!matrix) {
+        toast.error("Please select an image first");
+        return;
+      }
+    } else {
+      if (!textData.trim()) {
+        toast.error("Please enter the text first");
+        return;
+      }
+    }
+    pauseAnimation();
+  }, [pauseAnimation, simulationMode, matrix, textData]);
 
   const handleResetAnimation = useCallback(() => {
     if (simulationMode === "image") {
+      if (!matrix) {
+        toast.error("Please select an image first");
+        return;
+      }
       resetAnimation();
     } else {
+      if (!textData.trim()) {
+        toast.error("Please enter the text first");
+        return;
+      }
       resetTextAnimation();
     }
-  }, [resetAnimation, resetTextAnimation, simulationMode]);
+  }, [resetAnimation, resetTextAnimation, simulationMode, matrix, textData]);
 
   const toggleCell = useCallback(
     (rowIndex, colIndex) => {
@@ -729,6 +750,7 @@ export default function RLEanimation({ handleClose2Modal }) {
 
   return (
     <div id="main-box-temp" className="rle-visualizer">
+      <ToastContainer position="bottom-left" />
       <DialogTitle id="instructions-dialog-title" className="rle-titlebar">
         <span>Run Length Encoding Visualizer</span>
         <div className="rle-title-actions">
@@ -757,12 +779,18 @@ export default function RLEanimation({ handleClose2Modal }) {
                   pauseAnimation();
                   setSimulationMode("image");
                   setStepIndex(imageStepIndex);
+                  // Reset states for mode switch
+                  setMatrix(null);
+                  setSelectedPattern("");
+                  setTextData("");
+                  setIsMatrixVisible(false);
+                  setIsEncodedVisible(false);
+                  setIsEncodingLiveVisible(false);
+                  setIsStatsVisible(false);
+                  resetAnimation();
                   setExplanation(
                     "Scanning pixels row-wise and grouping consecutive binary values.",
                   );
-                  setIsStatsVisible(false);
-                  setIsEncodedVisible(false);
-                  setIsEncodingLiveVisible(false);
                 }}
                 aria-pressed={simulationMode === "image"}
               >
@@ -777,6 +805,15 @@ export default function RLEanimation({ handleClose2Modal }) {
                   pauseAnimation();
                   setSimulationMode("text");
                   setStepIndex(textStepIndex);
+                  // Reset states for mode switch
+                  setMatrix(null);
+                  setSelectedPattern("");
+                  setTextData("");
+                  setIsMatrixVisible(false);
+                  setIsEncodedVisible(false);
+                  setIsEncodingLiveVisible(false);
+                  setIsStatsVisible(false);
+                  resetTextAnimation();
                   setExplanation(
                     "Scanning characters sequentially and grouping repeated symbols.",
                   );
@@ -899,6 +936,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                   <Button
                     variant="contained"
                     onClick={handlePlayAnimation}
+                    // disabled={isAnimating || !isInputValid}
                     disabled={isAnimating}
                     aria-label="Play animation"
                   >
@@ -910,7 +948,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 <span>
                   <Button
                     variant="outlined"
-                    onClick={pauseAnimation}
+                    onClick={handlePauseAnimation}
                     disabled={!isAnimating}
                     aria-label="Pause animation"
                   >
@@ -922,6 +960,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 <Button
                   variant="outlined"
                   onClick={handleResetAnimation}
+                  disabled={!isInputValid}
                   aria-label="Reset animation"
                 >
                   <RestartAlt />
@@ -981,14 +1020,14 @@ export default function RLEanimation({ handleClose2Modal }) {
                     className="rle-matrix"
                     style={{
                       display: "grid",
-                      gridTemplateColumns: `repeat(${matrix[0].length}, 36px)`,
+                      gridTemplateColumns: matrix ? `repeat(${matrix[0].length}, 36px)` : "none",
                       gridAutoRows: "36px",
                       gap: "4px",
                     }}
                     role="grid"
                     aria-label="Editable binary pixel matrix"
                   >
-                    {matrix.map((row, rowIndex) =>
+                    {matrix && matrix.map((row, rowIndex) =>
                       row.map((cell, colIndex) => {
                         const key = `${rowIndex}-${colIndex}`;
                         const isActive =
@@ -1049,7 +1088,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                     aria-label="Encoded run blocks grouped by scan line"
                   >
                     {/* Map through each row of the matrix to align runs with rows */}
-                    {matrix.map((_, rowIndex) => {
+                    {matrix && matrix.map((_, rowIndex) => {
                       const groupLabel =
                         scanDirection === "horizontal"
                           ? `Row ${rowIndex + 1}`
