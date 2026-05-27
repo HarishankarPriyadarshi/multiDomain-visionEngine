@@ -285,32 +285,27 @@ export default function RLEanimation({ handleClose2Modal }) {
   const [isEncodedVisible, setIsEncodedVisible] = useState(false);
   const [isEncodingLiveVisible, setIsEncodingLiveVisible] = useState(false);
   const [isStatsVisible, setIsStatsVisible] = useState(false);
-
+  const [isEncodingTextVisible, setIsEncodingTextVisible] = useState(false);
   const scanGroups = useMemo(
     () => (matrix ? buildScanGroups(matrix, scanDirection) : []),
     [matrix, scanDirection],
   );
-
   const scannedCells = useMemo(
     () => (scanGroups.length ? scanGroups.flatMap((group) => group.cells) : []),
     [scanGroups],
   );
-
   const encodedRunGroups = useMemo(
     () => encodeScanGroups(scanGroups, Math.max(1, Number(minRunLength) || 1)),
     [scanGroups, minRunLength],
   );
-
   const encodedRuns = useMemo(
     () => encodedRunGroups.flatMap((group) => group.runs),
     [encodedRunGroups],
   );
-
   const textEncodedRuns = useMemo(
     () => encodeText(textData, Math.max(1, Number(minRunLength) || 1)),
     [textData, minRunLength],
   );
-
   const textCells = useMemo(
     () => [...textData].map((value, index) => ({ value, index })),
     [textData],
@@ -662,6 +657,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       }
       playAnimation();
     } else {
+      setIsEncodingTextVisible(true);
       if (!textData.trim()) {
         toast.error("Please enter the text first");
         return;
@@ -693,6 +689,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       }
       resetAnimation();
     } else {
+      setIsEncodingTextVisible(false);
       if (!textData.trim()) {
         toast.error("Please enter the text first");
         return;
@@ -792,8 +789,6 @@ export default function RLEanimation({ handleClose2Modal }) {
     isSpeaking,
     isPaused,
     setTutorStepsSim,
-    isSimPlaying,
-    setIsSimPlaying,
     resetTutorSim,
   } = useContext(SimContext);
 
@@ -826,8 +821,6 @@ export default function RLEanimation({ handleClose2Modal }) {
       },
     ];
 
-    // STEP 1 — INPUT VALIDATION
-
     // IMAGE MODE
     if (simulationMode === "image") {
       baseSteps.push(
@@ -859,7 +852,6 @@ export default function RLEanimation({ handleClose2Modal }) {
         });
 
         setTutorStepsSim(baseSteps);
-        return;
       }
       baseSteps.push(
         {
@@ -928,6 +920,8 @@ export default function RLEanimation({ handleClose2Modal }) {
           placement: "left",
           offset: [0, 10],
         });
+        setTutorStepsSim(baseSteps);
+        return;
       }
       baseSteps.push(
         {
@@ -957,15 +951,16 @@ export default function RLEanimation({ handleClose2Modal }) {
           offset: [0, 10],
         },
       );
-      if(!isStatsVisible){
-                baseSteps.push({
+      if (!isStatsVisible) {
+        baseSteps.push({
           title: "Action Required",
-          content:
-            "Please wait for the encoding process to complete.",
+          content: "Please wait for the encoding process to complete.",
           targetId: "rle-live-progress-zone",
           placement: "left",
           offset: [0, 10],
         });
+        setTutorStepsSim(baseSteps);
+        return;
       }
       baseSteps.push(
         {
@@ -985,156 +980,156 @@ export default function RLEanimation({ handleClose2Modal }) {
           placement: "bottom",
           offset: [0, 10],
         },
-      )
+      );
       setTutorStepsSim(baseSteps);
     }
 
     // TEXT MODE
     if (simulationMode === "text") {
       baseSteps.push({
-        title: "Input Text Sequence",
+        title: "Enter Text Input",
         content:
-          "This text string will be scanned sequentially. Consecutive repeated characters will be grouped into runs.",
-        targetId: "input-text-sequence-zone",
-        placement: "right",
+          "Type any sequence of characters here. Run Length Encoding will compress consecutive repeated characters into compact (character, count) pairs.",
+        targetId: "text-input-zone",
+        placement: "left",
         offset: [0, 10],
       });
-      setTutorStepsSim(baseSteps);
-      return;
-    }
 
-    // STEP 5 — LIVE SCANNING
+      if (textCells.length === 0) {
+        baseSteps.push({
+          title: "Action Required",
+          content: "Please first enter a text sequence to compress it.",
+          targetId: "text-input-zone",
+          placement: "left",
+          offset: [0, 10],
+        });
 
-    if (isAnimating) {
+        setTutorStepsSim(baseSteps);
+        return;
+      }
       baseSteps.push(
         {
-          title: "Live Pixel Traversal",
+          title: "Input Text Sequence",
           content:
-            "The highlighted cell represents the current symbol being scanned. The encoder compares it with previous values to determine whether the current run should continue or terminate.",
-          targetId: "rle-live-scan-zone",
+            "This is the original input text that will be scanned character-by-character during the Run Length Encoding process.",
+          targetId: "text-rle-visualization-zone",
+          placement: "top",
+          offset: [0, 10],
+        },
+        {
+          title: "Minimum Run Length",
+          content:
+            "The Minimum Run Length decides when repeated values should be compressed. If the same value repeats enough times to meet the selected limit, it is stored as a compact (value, count) pair. Smaller repeated groups are stored normally without compression.",
+          targetId: "rle-section-input",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Pause Animation",
+          content:
+            "During Encoding, You can click the Pause button to temporarily stop the Run Length Encoding animation. ",
+          targetId: "pause-btn-zone",
+          placement: "left",
+          offset: [0, 10],
+        },
+        {
+          title: "Reset Simulation",
+          content:
+            " You can click the Reset button to return to its initial state .",
+          targetId: "reset-btn-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+        {
+          title: "Animation Speed Control",
+          content:
+            "Use the speed slider to control how fast the Run Length Encoding animation runs. ",
+          targetId: "rle-speed-slider",
           placement: "right",
           offset: [0, 10],
         },
 
         {
-          title: "Current Run Formation",
+          title: "Start Text Encoding",
           content:
-            "The current run stores two values: the symbol being tracked and its repetition count. Every matching symbol increments the count.",
-          targetId: "current-run-zone",
+            "Click the 'Play' button to begin animated Run Length Encoding on the entered text sequence.",
+          targetId: "play-rle-btn-zone",
           placement: "left",
           offset: [0, 10],
         },
       );
 
-      // MIN RUN LENGTH FAILURE
-      if (currentRunCount < minRunLength && minRunLength > 1) {
+      if (!isEncodingTextVisible) {
         baseSteps.push({
-          title: "Run Below Threshold",
-          content:
-            "This run length is smaller than the selected minimum threshold, so the encoder stores each symbol individually instead of compressing it.",
-          targetId: "current-run-zone",
-          placement: "bottom",
+          title: "Action Required",
+          content: "Please, click the Run button to continue encoding.",
+          targetId: "play-rle-btn-zone",
+          placement: "left",
+          offset: [0, 10],
         });
         setTutorStepsSim(baseSteps);
         return;
       }
 
-      // SUCCESSFUL COMPRESSION
-      if (currentRunCount >= minRunLength && currentRunCount > 1) {
-        baseSteps.push({
-          title: "Compressed Run Generated",
-          content:
-            "The run satisfies the minimum threshold condition and is stored compactly as a (value, count) pair.",
-          targetId: "encoded-output-zone",
-          placement: "top",
-        });
-        setTutorStepsSim(baseSteps);
-        return;
-      }
-    }
-
-    // STEP 6 — ENCODED OUTPUT
-
-    if (isEncodedVisible) {
       baseSteps.push(
         {
-          title: "Encoded Run Sequence",
+          title: "Current Highlighted Character",
           content:
-            "Each encoded block represents a compressed run in the format (value, count). Consecutive repeated symbols are replaced by a single compact representation.",
-          targetId: "encoded-output-zone",
-          placement: "top",
+            "The highlighted character shows the current position being processed by the encoder. Consecutive repeated characters are grouped into runs.",
+          targetId: "text-input-container-zone",
+          placement: "right",
+          offset: [0, 10],
         },
 
         {
-          title: "Compression Principle",
+          title: "Encoded Text Runs",
           content:
-            "Instead of storing repeated symbols multiple times, Run Length Encoding stores the symbol once along with the number of repetitions.",
-          targetId: "encoded-output-zone",
-          placement: "bottom",
+            "Completed character runs are displayed here as compact (character, count) pairs. For example, AAAA becomes (A,4).",
+          targetId: "text-encoded-output-zone",
+          placement: "right",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Live Encoding Progress",
+          content:
+            "This section shows the current character, active run value, and run count while the text is being encoded step-by-step.",
+          targetId: "rle-live-progress-zone",
+          placement: "right",
+          offset: [0, 10],
         },
       );
-      setTutorStepsSim(baseSteps);
-      return;
+      if (!isStatsVisible) {
+        baseSteps.push({
+          title: "Action Required",
+          content: "Please wait for the encoding process to complete.",
+          targetId: "rle-live-progress-zone",
+          placement: "left",
+          offset: [0, 10],
+        });
+        setTutorStepsSim(baseSteps);
+        return;
+      }
+      baseSteps.push(
+        {
+          title: "Compression Statistics",
+          content:
+            "These statistics compare the original text length with the encoded output length and display the achieved compression ratio.",
+          targetId: "rle-statistics-zone",
+          placement: "top",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Text Run Length Encoding Completed",
+          content:
+            "Congratulations! The text sequence has been successfully compressed using Run Length Encoding. You have now completed both Binary Image RLE and Text RLE simulations.",
+          targetId: "rle-statistics-zone",
+          placement: "bottom",
+          offset: [0, 10],
+        },
+      );
     }
-
-    // HOVER EXPLANATION
-    if (hoveredRunId !== null) {
-      baseSteps.push({
-        title: "Run Highlight Visualization",
-        content:
-          "Hovering over an encoded run highlights the corresponding pixels or characters in the original input that belong to that compressed sequence.",
-        targetId: "encoded-output-zone",
-        placement: "left",
-      });
-      setTutorStepsSim(baseSteps);
-      return;
-    }
-
-    // RANDOM NOISE CASE
-
-    if (selectedPattern === "random") {
-      baseSteps.push({
-        title: "Poor Compression Scenario",
-        content:
-          "Random noise contains very few repeated consecutive values. Since runs are short, Run Length Encoding achieves poor compression efficiency on such data.",
-        targetId: "main-image-box-rle",
-        placement: "right",
-      });
-    }
-    // STEP 8 — COMPRESSION STATISTICS
-
-    // if (rleresult) {
-    //   baseSteps.push(
-    //     {
-    //       title: "Compression Ratio",
-    //       content:
-    //         "The compression ratio compares encoded data size with original data size. Smaller ratios indicate better compression efficiency.",
-    //       targetId: "compression-ratio-zone",
-    //       placement: "top",
-    //     },
-
-    //     {
-    //       title: "Compression Interpretation",
-    //       content:
-    //         "Images with large continuous regions compress efficiently, while noisy images produce minimal compression because of frequent run interruptions.",
-    //       targetId: "compression-ratio-zone",
-    //       placement: "bottom",
-    //     },
-    //   );
-    // }
-
-    // FINAL STEP
-
-    // if (true===true) {
-    //   baseSteps.push({
-    //     title: "Simulation Completed",
-    //     content:
-    //       "Congratulations! You have successfully completed the Run Length Encoding simulation including scanning, run formation, conditional compression, and compression analysis.",
-    //     targetId: "outputCanvas",
-    //     placement: "bottom",
-    //     offset: [0, 10],
-    //   });
-    // }
 
     setTutorStepsSim(baseSteps);
   }, [
@@ -1152,6 +1147,8 @@ export default function RLEanimation({ handleClose2Modal }) {
     currentRunValue,
     currentRunCount,
     stepIndex,
+    textCells,
+    isStatsVisible,
   ]);
 
   return (
@@ -1177,7 +1174,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             display: "flex",
           }}
         >
-          Canny Edge Detection Concept
+          {isMobile ? "Simulation" : "Run Length Encoding Visualizer"}
         </div>
         <div
           style={{
@@ -1362,23 +1359,24 @@ export default function RLEanimation({ handleClose2Modal }) {
                 <div className="rle-section-heading">
                   <h3>Enter Text Data:</h3>
                 </div>
-
-                <TextField
-                  multiline
-                  minRows={1}
-                  value={textData}
-                  onChange={(event) => {
-                    setTextData(event.target.value);
-                    resetTextAnimation();
-                    setCurrentRunValue(null);
-                    setCurrentRunCount(0);
-                    setStepIndex(0);
-                    setExplanation(
-                      "Text updated. Press Play to animate Text RLE.",
-                    );
-                  }}
-                  aria-label="Text input for run length encoding"
-                />
+                <div id="text-input-zone">
+                  <TextField
+                    multiline
+                    minRows={1}
+                    value={textData}
+                    onChange={(event) => {
+                      setTextData(event.target.value);
+                      resetTextAnimation();
+                      setCurrentRunValue(null);
+                      setCurrentRunCount(0);
+                      setStepIndex(0);
+                      setExplanation(
+                        "Text updated. Press Play to animate Text RLE.",
+                      );
+                    }}
+                    aria-label="Text input for run length encoding"
+                  />
+                </div>
               </div>
             )}
             <div className="rle-section-heading compact">
@@ -1518,10 +1516,13 @@ export default function RLEanimation({ handleClose2Modal }) {
                     className="rle-panel rle-matrix-panel"
                     style={{ flex: "0 0 auto", minWidth: "fit-content" }}
                   >
-                    <div id="chosen-image-matrix-heading-zone" className="rle-section-heading">
+                    <div
+                      id="chosen-image-matrix-heading-zone"
+                      className="rle-section-heading"
+                    >
                       <h3>Chosen Binary Image</h3>
                     </div>
-                     
+
                     <div
                       id="chosen-image-matrix-zone"
                       className="rle-matrix"
@@ -1681,7 +1682,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           )}
 
           <section
-           id="rle-live-progress-zone"
+            id="rle-live-progress-zone"
             className="rle-panel rle-live-explanation-box"
             aria-live="polite"
             style={{ display: isEncodingLiveVisible ? "block" : "none" }}
@@ -1707,7 +1708,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             </div>
 
             <div
-            id="rle-statistics-zone"
+              id="rle-statistics-zone"
               className="rle-panel rle-stats-panel"
               aria-label="Compression statistics"
               style={{ display: isStatsVisible ? "block" : "none" }}
@@ -1752,6 +1753,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 </div>
 
                 <div
+                  id="text-rle-visualization-zone"
                   className="rle-text-character-row"
                   aria-label="Animated text scan characters"
                 >
@@ -1760,38 +1762,41 @@ export default function RLEanimation({ handleClose2Modal }) {
                       Enter text to visualize character runs.
                     </span>
                   )}
-                  {textCells.map((cell) => {
-                    const isActive = activeTextIndex === cell.index;
-                    const isCompleted =
-                      textHasAnimationProgress &&
-                      cell.index < textStepIndex &&
-                      !isActive;
-                    const isHighlighted = highlightedTextPositions.has(
-                      cell.index,
-                    );
+                  <div id="text-input-container-zone">
+                    {textCells.map((cell) => {
+                      const isActive = activeTextIndex === cell.index;
+                      const isCompleted =
+                        textHasAnimationProgress &&
+                        cell.index < textStepIndex &&
+                        !isActive;
+                      const isHighlighted = highlightedTextPositions.has(
+                        cell.index,
+                      );
 
-                    return (
-                      <span
-                        key={`${cell.value}-${cell.index}`}
-                        className={`rle-text-cell ${
-                          isActive ? "active" : ""
-                        } ${isCompleted ? "completed" : ""} ${
-                          isHighlighted ? "highlighted" : ""
-                        }`}
-                        aria-label={`Character ${cell.value === " " ? "space" : cell.value} at position ${
-                          cell.index + 1
-                        }`}
-                      >
-                        {cell.value === " " ? "space" : cell.value}
-                      </span>
-                    );
-                  })}
+                      return (
+                        <span
+                          key={`${cell.value}-${cell.index}`}
+                          className={`rle-text-cell ${
+                            isActive ? "active" : ""
+                          } ${isCompleted ? "completed" : ""} ${
+                            isHighlighted ? "highlighted" : ""
+                          }`}
+                          aria-label={`Character ${cell.value === " " ? "space" : cell.value} at position ${
+                            cell.index + 1
+                          }`}
+                        >
+                          {cell.value === " " ? "space" : cell.value}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="rle-section-heading compact">
                   <h3>Encoded Text Runs</h3>
                 </div>
                 <div
+                  id="text-encoded-output-zone"
                   className="rle-runs text-runs"
                   aria-label="Encoded text output"
                 >
