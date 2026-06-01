@@ -150,11 +150,15 @@ export default function Morphological() {
       mySpeedUpButton.current.disabled = true;
       mySpeedDownButton.current.disabled = true;
     }
-
   }
 
   // Major modification: scan only real image centers (1,1) through (7,7) on the padded 9x9 image.
-  async function animateSingleOperation(sourceImage, mode, stageLabel, introText) {
+  async function animateSingleOperation(
+    sourceImage,
+    mode,
+    stageLabel,
+    introText,
+  ) {
     const nextImage = makeBlankImage();
     const modeName = mode === "dilation" ? "Dilation" : "Erosion";
     const centerOffset = Math.floor(kernel.length / 2);
@@ -207,13 +211,13 @@ export default function Morphological() {
         const resultText =
           mode === "dilation"
             ? overlaps
-              ? `Pixel (${i},${j}):\nKernel overlaps at least one foreground pixel.\nOutput = 1.`
-              : `Pixel (${i},${j}):\nNo overlap found.\nOutput = 0.`
+              ? ` Current pixel (${i},${j}):\nKernel overlaps at least one foreground pixel.(Hit)\nOutput = 1.`
+              : ` Current pixel (${i},${j}):\nNo overlap found. (Miss)\nOutput = 0.`
             : fits
-              ? `Pixel (${i},${j}):\nAll required foreground positions match.\nOutput = 1.`
-              : `Pixel (${i},${j}):\nA required foreground position contains 0.\nOutput = 0.`;
+              ? ` Current pixel (${i},${j}):\nAll required foreground positions match.(Hit)\nOutput = 1.`
+              : ` Current pixel (${i},${j}):\nA required foreground position contains 0.(Miss)\nOutput = 0.`;
 
-        setExplanation(`${introText || modeName}.\n${resultText}`);
+        setExplanation(`${introText || modeName}.\n${resultText}`); 
 
         await new Promise((resolve) => setTimeout(resolve, delayRef.current));
       }
@@ -299,7 +303,7 @@ export default function Morphological() {
     if (!eroded || isCancelledRef.current) return;
 
     await animateSingleOperation(
-      eroded,
+      eroded, 
       "dilation",
       "Stage 2/2: Dilation",
       "Opening = Erosion followed by Dilation.\nCurrent stage: Dilation",
@@ -392,7 +396,6 @@ export default function Morphological() {
                 border: 1,
                 borderRadius: 2,
                 justifyContent: "space-around",
-                
               }}
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
@@ -445,7 +448,6 @@ export default function Morphological() {
               </div>
 
               <hr className="custom-divider" />
-              
 
               <div
                 style={{
@@ -521,7 +523,9 @@ export default function Morphological() {
                       }}
                     >
                       {kernel.flat().map((_, cellIndex) => {
-                        const rowIndex = Math.floor(cellIndex / kernel[0].length);
+                        const rowIndex = Math.floor(
+                          cellIndex / kernel[0].length,
+                        );
                         const colIndex = cellIndex % kernel[0].length;
                         const isCenter =
                           rowIndex === Math.floor(kernel.length / 2) &&
@@ -602,7 +606,9 @@ export default function Morphological() {
                         style={{
                           animationDelay: `${rowIndex * 0.15}s`,
                           backgroundColor: cell === 0 ? "black" : "white",
-                          border: isCenter ? "2px solid #6089B7" : "1px solid gray",
+                          border: isCenter
+                            ? "2px solid #6089B7"
+                            : "1px solid gray",
                         }}
                       ></div>
                     );
@@ -610,7 +616,7 @@ export default function Morphological() {
                 )}
               </div>
             </div>
-                {/* operation stage symbol */}
+            {/* operation stage symbol */}
             <div className="morph_op morph_op_container">
               <div className="morph_op_text">
                 {" "}
@@ -646,9 +652,7 @@ export default function Morphological() {
                 )}
               </h2>
 
-              <div
-                className="morph-grid morph-grid-9"
-              >
+              <div className="morph-grid morph-grid-9">
                 {processed &&
                   processed.map((row, rowIndex) =>
                     row.map((cell, cellIndex) => (
@@ -667,38 +671,18 @@ export default function Morphological() {
             </div>
           </div>
           {/* Current pixel panel reports the padded-grid center followed by the moving overlay. */}
-          {activePixel && (
-            <div
-              style={{
-                marginTop: "10px",
-                padding: "10px",
-                border: "1px solid #1D2A6D",
-                borderRadius: "8px",
-                backgroundColor: "#fffdf0",
-                fontWeight: "500",
-              }}
-            >
-              <strong>Current Pixel:</strong> ({activePixel.i},{activePixel.j})
-            </div>
-          )}
           {/* explanation */}
           {processed && (
-            <div
-              style={{
-                marginTop: "10px",
-                padding: "10px",
-                border: "1px solid #1D2A6D",
-                borderRadius: "8px",
-                minHeight: "40px",
-                backgroundColor: "#f4f6ff",
-                fontWeight: "500",
-              }}
-            >
-              <strong>Step Explanation:</strong>
-              <div style={{ whiteSpace: "pre-line" }}>{explanation}</div>
+            <div className="explanation-container">
+              <div className="explanation-content">
+               
+                <h4 ><strong>Stepwise Explanation:</strong></h4>
+                <div style={{ whiteSpace: "pre-line" }}>{explanation}</div>
+              </div>
             </div>
           )}
         </div>
+
         {/* footer buttons */}
         <div id="footer_buttons" className="morph_btn footer-animate">
           <div className="button-container " style={{ height: "fit-content" }}>
