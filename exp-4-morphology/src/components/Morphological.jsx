@@ -28,10 +28,13 @@ export default function Morphological() {
   const mySpeedUpButton = useRef(null);
   const mySpeedDownButton = useRef(null);
   const isCancelledRef = useRef(false);
+  const originalGridRef = useRef(null);
   const [activePixel, setActivePixel] = useState(null);
-  const [overlapCells, setOverlapCells] = useState([]);
+  const [operationStage, setOperationStage] = useState("");
   const [explanation, setExplanation] = useState("");
   const [step, setStep] = useState(0);
+  const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
+  const totalSteps = 49;
 
   useEffect(() => {
     handleImage(0);
@@ -39,6 +42,31 @@ export default function Morphological() {
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
+
+  useEffect(() => {
+    const grid = originalGridRef.current;
+    if (!grid) return undefined;
+
+    // Major modification: measure the rendered grid so the overlay tracks 3x3, 5x5, or 7x7 kernels exactly.
+    const updateGridMetrics = () => {
+      const styles = window.getComputedStyle(grid);
+      const gap = Number.parseFloat(styles.columnGap) || 0;
+      const firstCell = grid.querySelector(".morph_matrix");
+      const cellSize = firstCell?.getBoundingClientRect().width || 20;
+      setGridMetrics({ cellSize, gap });
+    };
+
+    updateGridMetrics();
+
+    if (!window.ResizeObserver) {
+      window.addEventListener("resize", updateGridMetrics);
+      return () => window.removeEventListener("resize", updateGridMetrics);
+    }
+
+    const resizeObserver = new ResizeObserver(updateGridMetrics);
+    resizeObserver.observe(grid);
+    return () => resizeObserver.disconnect();
+  }, [original]);
 
   const [imagesDisabled, setImagesDisabled] = useState(false);
 
@@ -82,10 +110,117 @@ export default function Morphological() {
         [0, 0, 0, 0, 0, 0, 0],
       ], // Divide
     ];
-    setOriginal(signs[x]);
+    // Major modification: store each predefined image as the explicit 9x9 padded image.
+    setOriginal(padImage(signs[x]));
   }
 
   const [processed, setProcessed] = useState(null);
+
+  function padImage(image7x7) {
+    return [
+      Array(9).fill(0),
+      ...image7x7.map((row) => [0, ...row, 0]),
+      Array(9).fill(0),
+    ];
+  }
+
+  function makeBlankImage() {
+    return Array.from({ length: 9 }, () => Array(9).fill(0));
+  }
+
+  // Clears all transient scan highlights before each new run and reset.
+  function clearAnimationState() {
+    setStep(0);
+    setExplanation("");
+    setOperationStage("");
+    setActivePixel(null);
+  }
+
+  function finishAnimation() {
+    setImagesDisabled(false);
+    setIsDisabled(false);
+    setActivePixel(null);
+
+    if (myPauseButton.current && myPlayButton.current) {
+      myPauseButton.current.style.display = "none";
+      myPlayButton.current.style.display = "block";
+    }
+
+    if (mySpeedUpButton.current && mySpeedDownButton.current) {
+      mySpeedUpButton.current.disabled = true;
+      mySpeedDownButton.current.disabled = true;
+    }
+
+  }
+
+  // Major modification: scan only real image centers (1,1) through (7,7) on the padded 9x9 image.
+  async function animateSingleOperation(sourceImage, mode, stageLabel, introText) {
+    const nextImage = makeBlankImage();
+    const modeName = mode === "dilation" ? "Dilation" : "Erosion";
+    const centerOffset = Math.floor(kernel.length / 2);
+
+    setOperationStage(stageLabel);
+    setProcessed(nextImage.map((row) => [...row]));
+
+    for (let i = 1; i <= 7; i++) {
+      for (let j = 1; j <= 7; j++) {
+        if (isCancelledRef.current) return null;
+
+        while (isPausedRef.current) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          if (isCancelledRef.current) return null;
+        }
+
+        let overlaps = false;
+        let fits = true;
+
+        for (let ki = 0; ki < kernel.length; ki++) {
+          for (let kj = 0; kj < kernel[0].length; kj++) {
+            const ni = i + ki - centerOffset;
+            const nj = j + kj - centerOffset;
+            if (
+              kernel[ki][kj] === 1 &&
+              mode === "dilation" &&
+              sourceImage[ni][nj] === 1
+            ) {
+              overlaps = true;
+            }
+
+            if (
+              kernel[ki][kj] === 1 &&
+              mode === "erosion" &&
+              sourceImage[ni][nj] === 0
+            ) {
+              fits = false;
+            }
+          }
+        }
+
+        const outputValue =
+          mode === "dilation" ? (overlaps ? 1 : 0) : fits ? 1 : 0;
+        nextImage[i][j] = outputValue;
+
+        setActivePixel({ i, j });
+        setProcessed(nextImage.map((row) => [...row]));
+        setStep((i - 1) * 7 + j);
+
+        const resultText =
+          mode === "dilation"
+            ? overlaps
+              ? `Pixel (${i},${j}):\nKernel overlaps at least one foreground pixel.\nOutput = 1.`
+              : `Pixel (${i},${j}):\nNo overlap found.\nOutput = 0.`
+            : fits
+              ? `Pixel (${i},${j}):\nAll required foreground positions match.\nOutput = 1.`
+              : `Pixel (${i},${j}):\nA required foreground position contains 0.\nOutput = 0.`;
+
+        setExplanation(`${introText || modeName}.\n${resultText}`);
+
+        await new Promise((resolve) => setTimeout(resolve, delayRef.current));
+      }
+    }
+
+    return nextImage;
+  }
 
   function pauseFun() {
     setIsPaused((prev) => !prev);
@@ -100,30 +235,15 @@ export default function Morphological() {
     mySpeedDownButton.current.disabled = false;
 
     setImagesDisabled(true); // images: plus, minus..
-    document.getElementById("moving-kernel").style.display = "grid";
 
     isCancelledRef.current = false;
+    clearAnimationState();
+    setProcessed(makeBlankImage());
 
     setIsDisabled(true); // disabled select box
     setImagesDisabled(true); // images: plus, minus..
 
-    if (process === "dilation") dilate();
-    else if (process === "erosion") erode();
-    else if (process === "opening") {
-      opening();
-      myPlayButton.current.style.display = "block";
-      myPauseButton.current.style.display = "none";
-      myPlayButton.current.disabled = true;
-      mySpeedUpButton.current.disabled = true;
-      mySpeedDownButton.current.disabled = true;
-    } else if (process === "closing") {
-      closing();
-      myPlayButton.current.style.display = "block";
-      myPauseButton.current.style.display = "none";
-      myPlayButton.current.disabled = true;
-      mySpeedUpButton.current.disabled = true;
-      mySpeedDownButton.current.disabled = true;
-    }
+    runSelectedOperation();
   }
 
   function handleReset() {
@@ -141,295 +261,68 @@ export default function Morphological() {
 
     setIsDisabled(false); //enabled select box
     setImagesDisabled(false);
-    document.getElementById("moving-kernel").style.display = "none";
     setProcessed(null); // Clear the processed-grid completely
     setProcess("dilation");
     handleImage(0);
     setCurrentIndex(0);
-    setStep(0);
+    clearAnimationState();
+  }
+
+  async function runSelectedOperation() {
+    if (process === "dilation") await dilate();
+    else if (process === "erosion") await erode();
+    else if (process === "opening") await opening();
+    else if (process === "closing") await closing();
+
+    if (!isCancelledRef.current) finishAnimation();
   }
 
   async function erode() {
     if (!original || !kernel) return;
-
-    const processed = original.map((row) => [...row]); // Deep copy of original
-    let countX = 0; // for play button
-
-    for (let i = 0; i < original.length; i++) {
-      for (let j = 0; j < original[0].length; j++) {
-        if (isCancelledRef.current) return; // ❗Exit early if reset
-
-        while (isPausedRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          if (isCancelledRef.current) return; // ❗Exit early if reset
-        }
-
-        let fits = true;
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < original.length &&
-              nj >= 0 &&
-              nj < original[0].length
-            ) {
-              if (kernel[ki][kj] === 1 && original[ni][nj] === 0) {
-                fits = false;
-              }
-            } else if (kernel[ki][kj] === 1) {
-              fits = false;
-            }
-          }
-        }
-        processed[i][j] = fits ? 1 : 0;
-        setProcessed(processed.map((row) => [...row])); // Update processed state
-
-        // Update position of moving-kernel
-        const movingKernel = document.getElementById("moving-kernel");
-        const img = document.getElementById("processed-img-morph");
-        if (movingKernel && img && i < 6 && j < 6) {
-          const imgRect = img.getBoundingClientRect();
-          const imgTop =
-            Number(imgRect.top.toFixed(0)) + i * (img.offsetWidth + 2);
-          const imgLeft =
-            Number(imgRect.left.toFixed(0)) + j * (img.offsetHeight + 2);
-          // console.log(imgTop,imgLeft)
-          movingKernel.style.top = `${imgTop}px`;
-          movingKernel.style.left = `${imgLeft}px`;
-        }
-
-        // await new Promise((resolve) => setTimeout(resolve, 300));
-        await new Promise((resolve) => setTimeout(resolve, delayRef.current));
-      }
-      countX++;
-    }
-    setImagesDisabled(false);
-    if (countX == original.length) {
-      myPauseButton.current.style.display = "none";
-      myPlayButton.current.style.display = "block";
-      mySpeedUpButton.current.disabled = true;
-      mySpeedDownButton.current.disabled = true;
-      document.getElementById("moving-kernel").style.display = "none";
-      // setImagesDisabled(false);
-      setIsDisabled(false); //enabled select box
-    }
+    await animateSingleOperation(original, "erosion", "", "Erosion");
   }
 
   async function dilate() {
     if (!original || !kernel) return;
-
-    const processed = original.map((row) => [...row]); // Deep copy of original
-    let countX = 0; // for play button
-
-    for (let i = 0; i < original.length; i++) {
-      for (let j = 0; j < original[0].length; j++) {
-        if (isCancelledRef.current) return; // ❗Exit early if reset
-        setActivePixel({ i, j });
-
-        while (isPausedRef.current) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          if (isCancelledRef.current) return; // ❗Exit early if reset
-        }
-
-        let overlaps = false;
-        setOverlapCells([]); // Reset overlap cells
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < original.length &&
-              nj >= 0 &&
-              nj < original[0].length
-            ) {
-              if (kernel[ki][kj] === 1) {
-                if (
-                  ni >= 0 &&
-                  ni < original.length &&
-                  nj >= 0 &&
-                  nj < original[0].length
-                ) {
-                  if (original[ni][nj] === 1) {
-                    overlaps = true;
-                    setOverlapCells((prev) => [...prev, { ni, nj }]);
-                  }
-                }
-              }
-            }
-          }
-        }
-        processed[i][j] = overlaps ? 1 : 0;
-        setProcessed(processed.map((row) => [...row])); // Update processed state
-        if (overlaps) {
-          setExplanation(
-            `Pixel (${i},${j}) → Kernel overlaps at least one white pixel → Output = 1`,
-          );
-        } else {
-          setExplanation(`Pixel (${i},${j}) → No overlap found → Output = 0`);
-        }
-        setStep((prev) => prev + 1);
-
-        // Update position of moving-kernel
-        const movingKernel = document.getElementById("moving-kernel");
-        const img = document.querySelector("#orig-morph .morph_matrix");
-        if (movingKernel && img && i < 6 && j < 6) {
-          const imgRect = img.getBoundingClientRect();
-          const imgTop =
-            Number(imgRect.top.toFixed(0)) + i * (img.offsetWidth + 2);
-          const imgLeft =
-            Number(imgRect.left.toFixed(0)) + j * (img.offsetHeight + 2);
-          // console.log(imgTop,imgLeft)
-          movingKernel.style.top = `${imgTop}px`;
-          movingKernel.style.left = `${imgLeft}px`;
-        }
-
-        // await new Promise((resolve) => setTimeout(resolve, 300)); // 300ms delay
-        await new Promise((resolve) => setTimeout(resolve, delayRef.current));
-      }
-      countX++;
-    }
-    setImagesDisabled(false);
-    if (countX == original.length) {
-      myPauseButton.current.style.display = "none";
-      myPlayButton.current.style.display = "block";
-      mySpeedUpButton.current.disabled = true;
-      mySpeedDownButton.current.disabled = true;
-      document.getElementById("moving-kernel").style.display = "none";
-      // setImagesDisabled(false);
-      setIsDisabled(false); //enabled select box
-    }
+    await animateSingleOperation(original, "dilation", "", "Dilation");
   }
 
   async function opening() {
     if (!original || !kernel) return;
 
-    const eroded = original.map((row) => [...row]); // Deep copy of original
-    let countX = 0; // for play button
+    const eroded = await animateSingleOperation(
+      original,
+      "erosion",
+      "Stage 1/2: Erosion",
+      "Opening = Erosion followed by Dilation.\nCurrent stage: Erosion",
+    );
+    if (!eroded || isCancelledRef.current) return;
 
-    for (let i = 0; i < original.length; i++) {
-      for (let j = 0; j < original[0].length; j++) {
-        let fits = true;
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < original.length &&
-              nj >= 0 &&
-              nj < original[0].length
-            ) {
-              if (kernel[ki][kj] === 1 && original[ni][nj] === 0) {
-                fits = false;
-              }
-            } else if (kernel[ki][kj] === 1) {
-              fits = false;
-            }
-          }
-        }
-        eroded[i][j] = fits ? 1 : 0;
-      }
-    }
-
-    const dilated = eroded.map((row) => [...row]); // Deep copy of eroded
-    for (let i = 0; i < eroded.length; i++) {
-      for (let j = 0; j < eroded[0].length; j++) {
-        let overlaps = false;
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < eroded.length &&
-              nj >= 0 &&
-              nj < eroded[0].length
-            ) {
-              if (kernel[ki][kj] === 1 && eroded[ni][nj] === 1) {
-                overlaps = true;
-              }
-            }
-          }
-        }
-        dilated[i][j] = overlaps ? 1 : 0;
-      }
-      countX++;
-    }
-
-    setProcessed(dilated);
-    setImagesDisabled(false);
+    await animateSingleOperation(
+      eroded,
+      "dilation",
+      "Stage 2/2: Dilation",
+      "Opening = Erosion followed by Dilation.\nCurrent stage: Dilation",
+    );
   }
 
   async function closing() {
     if (!original || !kernel) return;
 
-    const dilated = original.map((row) => [...row]); // Deep copy of original
-    let countX = 0; // for play button
+    const dilated = await animateSingleOperation(
+      original,
+      "dilation",
+      "Stage 1/2: Dilation",
+      "Closing = Dilation followed by Erosion.\nCurrent stage: Dilation",
+    );
+    if (!dilated || isCancelledRef.current) return;
 
-    for (let i = 0; i < original.length; i++) {
-      for (let j = 0; j < original[0].length; j++) {
-        let overlaps = false;
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < original.length &&
-              nj >= 0 &&
-              nj < original[0].length
-            ) {
-              if (kernel[ki][kj] === 1 && original[ni][nj] === 1) {
-                overlaps = true;
-              }
-            }
-          }
-        }
-        dilated[i][j] = overlaps ? 1 : 0;
-      }
-    }
-
-    const eroded = dilated.map((row) => [...row]); // Deep copy of dilated
-    for (let i = 0; i < dilated.length; i++) {
-      for (let j = 0; j < dilated[0].length; j++) {
-        let fits = true;
-        for (let ki = 0; ki < kernel.length; ki++) {
-          for (let kj = 0; kj < kernel[0].length; kj++) {
-            const ni = i + ki - Math.floor(kernel.length / 2);
-            const nj = j + kj - Math.floor(kernel[0].length / 2);
-            if (
-              ni >= 0 &&
-              ni < dilated.length &&
-              nj >= 0 &&
-              nj < dilated[0].length
-            ) {
-              if (kernel[ki][kj] === 1 && dilated[ni][nj] === 0) {
-                fits = false;
-              }
-            } else if (kernel[ki][kj] === 1) {
-              fits = false;
-            }
-          }
-        }
-        eroded[i][j] = fits ? 1 : 0;
-      }
-      countX++;
-    }
-
-    setProcessed(eroded);
-    setImagesDisabled(false);
-    if (countX == original.length) {
-      myPauseButton.current.style.display = "none";
-      myPlayButton.current.style.display = "block";
-      mySpeedUpButton.current.disabled = true;
-      mySpeedDownButton.current.disabled = true;
-      document.getElementById("moving-kernel").style.display = "none";
-      // setImagesDisabled(false);
-      setIsDisabled(false); //enabled select box
-    }
+    await animateSingleOperation(
+      dilated,
+      "erosion",
+      "Stage 2/2: Erosion",
+      "Closing = Dilation followed by Erosion.\nCurrent stage: Erosion",
+    );
   }
 
   const instructions = [
@@ -594,68 +487,87 @@ export default function Morphological() {
 
         <div id="process-box-morph">
           <div id="original-kernel-morph">
-            {/* original image */}
+            {/* Major modification: original image is now the real 9x9 padded image with a transparent overlay kernel. */}
             <div id="orig-morph">
-              <h2>Original Image(A)</h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  gap: "2px",
-                }}
-              >
-                {original &&
-                  original.map((row, rowIndex) =>
-                    row.map((cell, cellIndex) => {
-                      const isActive =
-                        activePixel &&
-                        activePixel.i === rowIndex &&
-                        activePixel.j === cellIndex;
-                      const isOverlap = overlapCells.some(
-                        (cell) => cell.ni === rowIndex && cell.nj === cellIndex,
-                      );
+              <h2>Original Image(A) with Explicit Padding</h2>
+              <div className="morph-grid-wrap">
+                {activePixel && (
+                  <div
+                    className="morph-kernel-overlay"
+                    style={{
+                      top: `${
+                        (activePixel.i - Math.floor(kernel.length / 2)) *
+                        (gridMetrics.cellSize + gridMetrics.gap)
+                      }px`,
+                      left: `${
+                        (activePixel.j - Math.floor(kernel[0].length / 2)) *
+                        (gridMetrics.cellSize + gridMetrics.gap)
+                      }px`,
+                      width: `${
+                        kernel[0].length * gridMetrics.cellSize +
+                        (kernel[0].length - 1) * gridMetrics.gap
+                      }px`,
+                      height: `${
+                        kernel.length * gridMetrics.cellSize +
+                        (kernel.length - 1) * gridMetrics.gap
+                      }px`,
+                    }}
+                  >
+                    <div
+                      className="morph-kernel-overlay-grid"
+                      style={{
+                        gridTemplateColumns: `repeat(${kernel[0].length}, 1fr)`,
+                        gridTemplateRows: `repeat(${kernel.length}, 1fr)`,
+                      }}
+                    >
+                      {kernel.flat().map((_, cellIndex) => {
+                        const rowIndex = Math.floor(cellIndex / kernel[0].length);
+                        const colIndex = cellIndex % kernel[0].length;
+                        const isCenter =
+                          rowIndex === Math.floor(kernel.length / 2) &&
+                          colIndex === Math.floor(kernel[0].length / 2);
 
-                      return (
-                        <div
-                          key={`${rowIndex}-${cellIndex}`}
-                          className="morph_matrix matrix-animate"
-                          style={{
-                            animationDelay: `${rowIndex * 0.15}s`,
-                            backgroundColor: cell === 0 ? "black" : "white",
-                            border: isActive
-                              ? "2px solid blue"
-                              : "1px solid gray",
-                            boxShadow: isOverlap ? "0 0 10px lime" : "none",
-                          }}
-                        ></div>
-                      );
-                    }),
-                  )}
+                        return (
+                          <div
+                            key={`overlay-${rowIndex}-${colIndex}`}
+                            className={isCenter ? "morph-kernel-center" : ""}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+                <div className="morph-grid morph-grid-9" ref={originalGridRef}>
+                  {original &&
+                    original.map((row, rowIndex) =>
+                      row.map((cell, cellIndex) => {
+                        const isPadding =
+                          rowIndex === 0 ||
+                          rowIndex === 8 ||
+                          cellIndex === 0 ||
+                          cellIndex === 8;
+
+                        return (
+                          <div
+                            key={`${rowIndex}-${cellIndex}`}
+                            className={`morph_matrix matrix-animate ${
+                              isPadding ? "morph-padding-cell" : ""
+                            }`}
+                            style={{
+                              animationDelay: `${rowIndex * 0.15}s`,
+                              backgroundColor: isPadding
+                                ? "#333333"
+                                : cell === 0
+                                  ? "black"
+                                  : "white",
+                            }}
+                          ></div>
+                        );
+                      }),
+                    )}
+                </div>
               </div>
-              <div
-                style={{
-                  position: "fixed",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "2px",
-                  zIndex: 10,
-                }}
-                id="moving-kernel"
-              >
-                {document.getElementById("processed-img-morph") &&
-                  kernel.map((row, rowIndex) =>
-                    row.map((cell, cellIndex) => (
-                      <div
-                        key={`${rowIndex}-${cellIndex}`}
-                        class="morph_matrix"
-                        style={{
-                          backgroundColor: cell === 0 ? "black" : "white",
-                          border: "1px solid #ff0000",
-                        }}
-                      ></div>
-                    )),
-                  )}
-              </div>
+              <p className="matrix_label">9 x 9</p>
             </div>
 
             <div className="morph_op">
@@ -690,7 +602,7 @@ export default function Morphological() {
                         style={{
                           animationDelay: `${rowIndex * 0.15}s`,
                           backgroundColor: cell === 0 ? "black" : "white",
-                          border: isCenter ? "2px solid red" : "1px solid gray",
+                          border: isCenter ? "2px solid #6089B7" : "1px solid gray",
                         }}
                       ></div>
                     );
@@ -698,7 +610,7 @@ export default function Morphological() {
                 )}
               </div>
             </div>
-
+                {/* operation stage symbol */}
             <div className="morph_op morph_op_container">
               <div className="morph_op_text">
                 {" "}
@@ -714,29 +626,35 @@ export default function Morphological() {
             </div>
             {/* processed image */}
             <div id="animation-morph">
+              {operationStage && (
+                <div
+                  style={{
+                    color: "#1D2A6D",
+                    fontWeight: "700",
+                    marginBottom: "6px",
+                  }}
+                >
+                  {operationStage}
+                </div>
+              )}
               <h2>
                 Processed Image
                 {step !== 0 && (
                   <div style={{ fontSize: "14px", color: "#38383aff" }}>
-                    {process && ` (Step No. ${step})`}
+                    {process && `Step ${step} / ${totalSteps}`}
                   </div>
                 )}
               </h2>
 
               <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(7, 1fr)",
-                  gap: "2px",
-                  zIndex: "0",
-                }}
+                className="morph-grid morph-grid-9"
               >
                 {processed &&
                   processed.map((row, rowIndex) =>
                     row.map((cell, cellIndex) => (
                       <div
                         key={`${rowIndex}-${cellIndex}`}
-                        class="morph_matrix"
+                        className="morph_matrix"
                         id="processed-img-morph"
                         style={{
                           backgroundColor: cell === 0 ? "black" : "white",
@@ -745,8 +663,24 @@ export default function Morphological() {
                     )),
                   )}
               </div>
+              <p className="matrix_label">9 x 9</p>
             </div>
           </div>
+          {/* Current pixel panel reports the padded-grid center followed by the moving overlay. */}
+          {activePixel && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "10px",
+                border: "1px solid #1D2A6D",
+                borderRadius: "8px",
+                backgroundColor: "#fffdf0",
+                fontWeight: "500",
+              }}
+            >
+              <strong>Current Pixel:</strong> ({activePixel.i},{activePixel.j})
+            </div>
+          )}
           {/* explanation */}
           {processed && (
             <div
@@ -761,7 +695,7 @@ export default function Morphological() {
               }}
             >
               <strong>Step Explanation:</strong>
-              <div>{explanation}</div>
+              <div style={{ whiteSpace: "pre-line" }}>{explanation}</div>
             </div>
           )}
         </div>

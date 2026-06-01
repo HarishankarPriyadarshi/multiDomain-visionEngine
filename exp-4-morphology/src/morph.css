@@ -178,6 +178,57 @@ h2{
   border: 1px solid #ccc;
 }
 
+/* Major modification: shared 9x9 grid sizing keeps original/output matrices aligned with the overlay. */
+.morph-grid-wrap {
+  --morph-cell-size: 20px;
+  --morph-cell-gap: 2px;
+  position: relative;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.morph-grid {
+  display: grid;
+  gap: var(--morph-cell-gap, 2px);
+  position: relative;
+  z-index: 1;
+}
+
+.morph-grid-9 {
+  grid-template-columns: repeat(9, var(--morph-cell-size, 20px));
+}
+
+.morph-padding-cell {
+  background-color: #333333;
+}
+
+/* Major modification: transparent moving kernel overlay replaces yellow cell coverage coloring. */
+.morph-kernel-overlay {
+  position: absolute;
+  border: 3px solid rgba(255, 0, 0, 0.8);
+  background: rgba(255, 0, 0, 0.08);
+  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.5);
+  pointer-events: none;
+  transition: top 0.25s ease, left 0.25s ease;
+  z-index: 1000;
+}
+
+.morph-kernel-overlay-grid {
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+.morph-kernel-overlay-grid > div {
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+/* Major modification: only the overlay's kernel center receives the blue tint. */
+.morph-kernel-overlay-grid .morph-kernel-center {
+  background: rgba(96, 137, 183, 0.407);
+  border: 1px solid #6089B7;
+}
+
 @media (max-width: 1200px) {
   #explanation-dialog {
     width: 95%;
@@ -248,6 +299,9 @@ h2{
   .morph_matrix {
     width: 15px;
     height: 15px;
+  }
+  .morph-grid-wrap {
+    --morph-cell-size: 15px;
   }
   .morph_btn {
     top: 0;
