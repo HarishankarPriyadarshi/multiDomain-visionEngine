@@ -9,7 +9,7 @@ import { Select, Button, MenuItem } from "@mui/material";
 import Box from "@mui/material/Box";
 import React from "react";
 
-export default function Morphological() {
+export default function Morphological({handleClose4Modal} ) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [process, setProcess] = useState("dilation");

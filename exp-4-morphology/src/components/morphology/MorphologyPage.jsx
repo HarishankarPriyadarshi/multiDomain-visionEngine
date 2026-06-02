@@ -15,7 +15,7 @@ import {
   DialogTitle,
 } from "@mui/material";
 import Tab from "@mui/material/Tab";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import React from "react";
 
 import voice from "../../assets/images/voice-play.png";
@@ -30,6 +30,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
 import Morphological from "../Morphological";
+import Tutor from "../features/tutor/Tutor";
+import { HomeContext } from "../context/HomeContext";
 
 //returns a tab panel
 function TabPanel(props) {
@@ -49,12 +51,198 @@ function TabPanel(props) {
 }
 
 export default function MorphologyPage() {
+  const {
+    isMobile,
+    setIsImageProcessed: setTutorImageProcessed,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
+    isSpeaking,
+    isPaused,
+    sentences,
+    currentSentenceIndex,
+    instructionsList,
+    closeInstructions,
+    setIsTutorOpen,
+    setTutorStep,
+    setShowWelcome,
+    stop,
+  } = useContext(HomeContext);
+
   const myProcess3Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
   const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
+
+  // Tutor related state updates when image is processed
+  useEffect(() => {
+    setTutorImageProcessed(isImageProcessed);
+  }, [isImageProcessed, setTutorImageProcessed]);
+
+  // Tutor steps
+  useEffect(() => {
+    const steps = [
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Morphological Operations experiment. This experiment demonstrates how Dilation, Erosion, Opening, and Closing modify image structures using different kernels.",
+        targetId: "guided-tutor-btn",
+        placement: "bottom",
+      },
+
+      {
+        title: "Read Instructions",
+        content:
+          "Click here to view detailed instructions about performing the morphology experiment and understanding the generated results.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Control",
+        content:
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content:
+          "Select one of the sample images. The chosen image will be used as the input for the selected morphological operation.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content:
+          "Alternatively, you may upload your own image to observe how the morphology operation works on different patterns.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+      {
+        title: "Morphological Operation",
+        content:
+          "Select the operation to perform. Dilation expands objects, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
+        targetId: "morph-operation-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Kernel Size",
+        content:
+          "Choose the kernel size. Larger kernels produce stronger morphological effects because more neighboring pixels participate in the operation.",
+        targetId: "kernel-size-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Kernel Shape",
+        content:
+          "Choose the kernel shape. Rectangle, Ellipse, and Cross kernels influence how neighboring pixels are considered during processing.",
+        targetId: "kernel-shape-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+            {
+        title: "Process Image",
+        content:
+          "Click the Process button to apply the selected morphological operation using the chosen kernel size and shape.",
+        targetId: "process-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    ];
+
+    //Only push this step if image is processed
+    if (!isImageProcessed) {
+            steps.push({
+        title: "Action Required",
+        content: "Click the 'Process' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+       setTutorSteps(steps);
+     
+
+    }
+    steps.push(
+
+
+      {
+        title: "Output Image",
+        content:
+          "The output panel displays the processed image. Compare it with the input image to understand the effect of the selected operation.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+
+      {
+        title: "Print Results",
+        content:
+          "Click Print to save or document the experimental results and observations.",
+        targetId: "print-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+
+      {
+        title: "Explore Concept",
+        content:
+          "Must click the Concept button to understand the theory behind Dilation, Erosion, Opening, Closing, kernels, and structuring elements.",
+        targetId: "concept-button-zone",
+        placement: "top",
+        offset: [-60, 12],
+      },
+    );
+    setTutorSteps(steps);
+  }, [setTutorSteps, isImageProcessed]);
+  // Instructions list
+  useEffect(() => {
+    setInstructionsList({
+      0: [
+        "Step 1: Select an image from the available options or upload one using the Upload File button.",
+        "Step 2: Select the Morphological Operation.",
+        "Step 3: Select the Kernel Size.",
+        "Step 4: Select the Kernel Shape.",
+        "Step 5: Click the Process button to continue.",
+        "Step 6: Click the Print button to print the result.",
+        "Step 7: Click the Concept button to get a detailed explanation.",
+      ],
+    });
+  }, [setInstructionsList]);
+  const boldKeywords = [
+    "Upload File",
+    "Process",
+    "Print",
+    "Concept",
+    "Gauss On",
+    "Gauss Off",
+    "Kernel Size",
+    "Canny Low Threshold",
+    "Canny High Threshold",
+    "Step",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "Note",
+  ];
 
   const notifyS = (msg) => {
     toast.success(msg, {
@@ -169,130 +357,14 @@ export default function MorphologyPage() {
     useState("dilation");
   const [kernelShape, setKernelShape] = useState("rectangle");
 
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
-
   const [openMorphModal, setOpenMorphModal] = useState(false);
-
-  const voicePause = useRef(null);
-  const voicePlay = useRef(null);
-
-  var indexTabValue = tabValue;
-
-  const instr = () => {
-    setOpenInstructionsModal(true);
-  };
 
   const exp3 = () => {
     setOpenMorphModal(true);
-  };
-
-  const [isSpeaking, setIsSpeaking] = useState(false);
-  const utteranceRef = useRef(null);
-
-  useEffect(() => {
-    speechSynthesis.cancel(); // Cancel any speech on reload
-  }, []);
-
-  const instructionsList = {
-    2: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Select the Morphological Operation.",
-      "Select the Kernel Size.",
-      "Select the Kernel Shape.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-  };
-
-  const getInstructionsText = () => {
-    const steps = instructionsList[indexTabValue];
-    return steps ? steps.join("\n") : "No instructions available.";
-  };
-
-  const getInstructions = () => {
-    const steps = instructionsList[indexTabValue];
-    if (!steps) return <p>No instructions available.</p>;
-
-    const normalSteps = [];
-    const notes = [];
-
-    steps.forEach((step) => {
-      if (step.trim().startsWith("Note:")) {
-        const noteHtml = step
-          .replace(/(Concept)/g, "<b>$1</b>")
-          .replace(/^Note:/, '<b style="color:blue">Note:</b>');
-        notes.push(noteHtml);
-      } else {
-        const stepHtml = step.replace(
-          /(Upload File|First Order|Process|Print|Gauss On|On|Off|Low|High|Kernel Size|Morphological Operation|Kernel Shape)/g,
-          "<b>$1</b>",
-        );
-        normalSteps.push(stepHtml);
-      }
-    });
-
-    return (
-      <div>
-        <ol>
-          {normalSteps.map((html, idx) => (
-            <li key={idx} dangerouslySetInnerHTML={{ __html: html }} />
-          ))}
-        </ol>
-        {notes.map((note, idx) => (
-          <p key={`note-${idx}`} dangerouslySetInnerHTML={{ __html: note }} />
-        ))}
-      </div>
-    );
-  };
-
-  const speak = () => {
-    if (speechSynthesis.paused) {
-      speechSynthesis.resume();
-      if (voicePlay.current.style.display == "block") {
-        voicePlay.current.style.display = "none";
-        voicePause.current.style.display = "block";
-      }
-      setIsSpeaking(true);
-      return;
-    }
-
-    if (speechSynthesis.speaking) {
-      speechSynthesis.pause();
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      return;
-    }
-
-    // Clean up any lingering speech
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(getInstructionsText());
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices.find(
-      (voice) => voice.name === "Microsoft Ravi - English (India)",
-    );
-    utterance.rate = 0.8;
-    utterance.pitch = 1;
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (voicePlay.current.style.display == "none") {
-        voicePlay.current.style.display = "block";
-        voicePause.current.style.display = "none";
-      }
-      utteranceRef.current = null;
-    };
-
-    utteranceRef.current = utterance;
-    speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-    if (voicePause.current.style.display == "none") {
-      voicePlay.current.style.display = "none";
-      voicePause.current.style.display = "block";
-    }
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    stop();
   };
 
   const initialImages = [sample1, sample2, sample3, sample4];
@@ -334,13 +406,17 @@ export default function MorphologyPage() {
     }, 500);
     setImageName(`Sample ${index + 1}`);
   };
-
-  const handleCloseModal = () => {
-    setOpenInstructionsModal(false); // Close the modal
+  const instr = () => {
+    setIsInstructionOpen(true);
   };
-
   const handleClose4Modal = () => {
     setOpenMorphModal(false);
+    // Reset tutor state
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    // Stop speech completely
+    stop();
   };
 
   return (
@@ -357,97 +433,115 @@ export default function MorphologyPage() {
           <h2 className="header-heading">Morphological Operation</h2>
 
           <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={voice}
+                src={isSpeaking && !isPaused ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                onClick={speak}
               />
             </Button>
 
-            <Button ref={voicePause} title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                onClick={speak}
-              />
-            </Button>
-
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#ffffffff",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={instr}
+            >
               Instructions
+            </Button>
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+
+                margin: "auto auto",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+                height: "40px",
+              }}
+              onClick={startTutor}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
           </div>
 
           {/* Instructions Modal */}
-          {/* <Dialog
-        open={openInstructionsModal}
-        onClose={handleCloseModal}
-        aria-labelledby="instructions-dialog-title"
-        aria-describedby="instructions-dialog-description"
-        style={{height:'80%'}}
-      >
-        <DialogTitle id="instructions-dialog-title">Instructions</DialogTitle>
-        <DialogContent style={{paddingTop:'10px'}}>
-          <p style={{color:'#1D2A6D', fontWeight:'bold'}}>
-            {tabValue === 0 ? 'Derivative Based' : tabValue === 1 ? 'Canny Based' : 'Morphological Operation'}:</p>
-            {getInstructions()}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog> */}
           <Dialog
-            open={openInstructionsModal}
-            onClose={handleCloseModal}
+            open={isInstructionOpen}
+            onClose={closeInstructions}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
             style={{ height: "80%" }}
           >
             <DialogTitle id="instructions-dialog-title">
-              Instructions – Morphological Operations
+              Instructions – Morphological Operation
             </DialogTitle>
 
             <DialogContent style={{ paddingTop: "10px" }}>
-              <ol style={{ lineHeight: "1.8" }}>
-                <li>
-                  Select an image from the available options or upload one using
-                  the
-                  <b> Upload File </b> button.
-                </li>
+              <ul style={{ lineHeight: "1.8", listStyleType: "none" }}>
+                {instructionsList[0]?.map((step, index) => {
+                  // Find if this step contains the currently spoken sentence
+                  // This is a bit tricky because useSpeechController splits by sentences
+                  // but each step in instructionsList might be one or more sentences.
+                  // For simplicity, we'll check if the current sentence is part of this step.
+                  const isCurrentStepSpeaking =
+                    isSpeaking &&
+                    !isPaused &&
+                    isInstructionOpen &&
+                    sentences[currentSentenceIndex] &&
+                    step.includes(sentences[currentSentenceIndex]);
 
-                <li>
-                  Select the <b>Morphological Operation</b>.
-                </li>
-
-                <li>
-                  Select the <b>Kernel Size</b>.
-                </li>
-
-                <li>
-                  Select the <b>Kernel Shape</b>.
-                </li>
-
-                <li>
-                  Click the <b>Process</b> button to continue.
-                </li>
-
-                <li>
-                  Click the <b>Print</b> button to print the result.
-                </li>
-
-                <li>
-                  <b>Note:</b> Click the <b>Concept</b> button to get a detailed
-                  explanation.
-                </li>
-              </ol>
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
+                      style={{
+                        transition: "background-color 0.3s ease",
+                        borderRadius: "4px",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
+                    </li>
+                  );
+                })}
+              </ul>
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button
+                onClick={closeInstructions}
+                color="primary"
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#162882ff",
+                  color: "#ffffffff",
+                }}
+              >
                 Close
               </Button>
             </DialogActions>
@@ -506,6 +600,7 @@ export default function MorphologyPage() {
                       </h4>
                     </Box>
                     <Box
+
                       sx={{
                         p: 2,
                         display: "flex",
@@ -522,7 +617,7 @@ export default function MorphologyPage() {
                         },
                       }}
                     >
-                      <div class="contentog">
+                      <div  class="contentog">
                         <h4
                           style={{
                             margin: "5px 0px",
@@ -533,6 +628,7 @@ export default function MorphologyPage() {
                           Choose an Image:
                         </h4>
                         <div
+                                            id="image-selection-zone"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -606,7 +702,7 @@ export default function MorphologyPage() {
                         </div>
 
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label htmlFor="file-upload" className="upload-btn">
+                          <label id="upload-btn-zone" htmlFor="file-upload" className="upload-btn">
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -645,6 +741,7 @@ export default function MorphologyPage() {
                         Morphological Operation:
                       </h4>
                       <Select
+                      
                         value={morphologicalOperation}
                         className="derivative-btn"
                         onChange={(e) =>
@@ -663,6 +760,7 @@ export default function MorphologyPage() {
                           },
                           borderRadius: "10px",
                         }}
+                          id="morph-operation-zone"
                       >
                         <MenuItem value="dilation">Dilation</MenuItem>
                         <MenuItem value="erosion">Erosion</MenuItem>
@@ -679,10 +777,12 @@ export default function MorphologyPage() {
                         Kernel Size:
                       </h4>
                       <Select
+                        id="kernel-size-zone"
                         value={gaussKernelSize}
                         className="derivative-btn"
                         onChange={(e) => setGaussKernelSize(e.target.value)}
                         sx={{
+                          
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
                             // Caret (dropdown icon) color
@@ -710,6 +810,7 @@ export default function MorphologyPage() {
                         Kernel Shape:
                       </h4>
                       <Select
+                        id="kernel-shape-zone"
                         value={kernelShape}
                         className="derivative-btn"
                         onChange={(e) => setKernelShape(e.target.value)}
@@ -822,6 +923,7 @@ export default function MorphologyPage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -860,6 +962,7 @@ export default function MorphologyPage() {
                       }}
                     >
                       <Box
+                    
                         sx={{
                           p: 2,
                           borderBottom: 1,
@@ -934,6 +1037,7 @@ export default function MorphologyPage() {
                   }}
                 >
                   <Button
+                    id="process-button-zone"
                     ref={myProcess3Button}
                     class="tool_btn"
                     onClick={processImage}
@@ -946,6 +1050,7 @@ export default function MorphologyPage() {
                     </svg>
                   </Button>
                   <Button
+                  id="print-button-zone"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -957,6 +1062,7 @@ export default function MorphologyPage() {
                     </svg>
                   </Button>
                   <Button
+                  id="concept-button-zone"
                     class="tool_btn"
                     onClick={exp3}
                     variant="outlined"
@@ -988,7 +1094,7 @@ export default function MorphologyPage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle
+                  {/* <DialogTitle
                     id="instructions-dialog-title"
                     className="dialog-title"
                   >
@@ -1008,16 +1114,20 @@ export default function MorphologyPage() {
                         Close
                       </Button>
                     </div>
-                  </DialogTitle>
+                  </DialogTitle> */}
 
                   <DialogContent
                     sx={{ padding: "0px", height: "1200px", overflow: "clip" }}
                   >
-                    {openMorphModal && <Morphological />}
+                    {openMorphModal && (
+                      <Morphological handleClose4Modal={handleClose4Modal} />
+                    )}
 
                     {/* {Morphological()} */}
                   </DialogContent>
                 </Dialog>
+                {/* tutor modal */}
+                <Tutor />
               </div>
             </div>
           </TabPanel>
