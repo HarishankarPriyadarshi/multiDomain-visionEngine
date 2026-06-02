@@ -31,7 +31,14 @@
   flex-direction: row;
   justify-content: space-around;
 }
+.prev-btn,
+.next-btn {
+  background-color: #000000;
+  color: #fff;
+  border: none;
 
+  cursor: pointer;
+}
 .next-icon,
 .prev-icon {
   display: inline-block;

@@ -371,11 +371,11 @@ export default function Morphological({handleClose4Modal} ) {
             }}
           >
             <div id="inst_content">
-              <button onClick={prevSlide} style={{ marginRight: "10px" }}>
+              <button className="prev-btn" onClick={prevSlide} style={{ marginRight: "10px" }}>
                 <span className="prev-icon" aria-hidden="true"></span>
               </button>
               <span>{instructions[currentIndex]}</span>
-              <button onClick={nextSlide}>
+              <button className="next-btn" onClick={nextSlide}>
                 <span className="next-icon" aria-hidden="true"></span>
               </button>
             </div>
@@ -643,6 +643,7 @@ export default function Morphological({handleClose4Modal} ) {
                   {operationStage}
                 </div>
               )}
+              {processed && (
               <h2>
                 Processed Image
                 {step !== 0 && (
@@ -651,6 +652,7 @@ export default function Morphological({handleClose4Modal} ) {
                   </div>
                 )}
               </h2>
+              )}
 
               <div className="morph-grid morph-grid-9">
                 {processed &&
@@ -667,7 +669,9 @@ export default function Morphological({handleClose4Modal} ) {
                     )),
                   )}
               </div>
-              <p className="matrix_label">9 x 9</p>
+              {processed && (
+                <p className="matrix_label">9 x 9</p>
+              )}
             </div>
           </div>
           {/* Current pixel panel reports the padded-grid center followed by the moving overlay. */}
