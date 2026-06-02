@@ -5,7 +5,7 @@ export const useSpeechController = () => {
   const utteranceRef = useRef(null);
   const voicesRef = useRef([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPausedSpeaking, setIsPausedSpeaking] = useState(false);
   //highlight sentences
   const [sentences, setSentences] = useState([]);
 const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
@@ -33,7 +33,7 @@ const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
     window.speechSynthesis.cancel();
     utteranceRef.current = null;
     setIsSpeaking(false);
-    setIsPaused(false);
+    setIsPausedSpeaking(false);
     setSentences([]);
     setCurrentSentenceIndex(0);
   }, []);
@@ -85,7 +85,7 @@ const speak = useCallback(
 
       utterance.onstart = () => {
         setIsSpeaking(true);
-        setIsPaused(false);
+        setIsPausedSpeaking(false);
         setCurrentSentenceIndex(index);
       };
 
@@ -94,7 +94,7 @@ const speak = useCallback(
           speakSentence(index + 1);
         } else {
           setIsSpeaking(false);
-          setIsPaused(false);
+          setIsPausedSpeaking(false);
           setSentences([]);
           setCurrentSentenceIndex(0);
         }
@@ -102,7 +102,7 @@ const speak = useCallback(
 
       utterance.onerror = () => {
         setIsSpeaking(false);
-        setIsPaused(false);
+        setIsPausedSpeaking(false);
         setSentences([]);
         setCurrentSentenceIndex(0);
       };
@@ -121,7 +121,7 @@ const speak = useCallback(
 
     window.speechSynthesis.pause();
     setIsSpeaking(false);
-    setIsPaused(true);
+    setIsPausedSpeaking(true);
   }, []);
 
   const resume = useCallback(() => {
@@ -129,7 +129,7 @@ const speak = useCallback(
 
     window.speechSynthesis.resume();
     setIsSpeaking(true);
-    setIsPaused(false);
+    setIsPausedSpeaking(false);
   }, []);
 
   useEffect(() => {
@@ -153,7 +153,7 @@ const speak = useCallback(
     resume,
     stop,
     isSpeaking,
-    isPaused,
+    isPausedSpeaking,
     sentences,
     currentSentenceIndex,
   };

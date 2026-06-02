@@ -27,7 +27,7 @@ export const HomeContextProvider = ({ children }) => {
     resume,
     stop,
     isSpeaking,
-    isPaused,
+    isPausedSpeaking,
     sentences,
     currentSentenceIndex,
   } = useSpeechController();
@@ -121,12 +121,12 @@ export const HomeContextProvider = ({ children }) => {
       return;
     }
 
-    if (isSpeaking && !isPaused) {
+    if (isSpeaking && !isPausedSpeaking) {
       setIsPlaying(false);
       return;
     }
 
-    if (isPaused) {
+    if (isPausedSpeaking) {
       setIsPlaying(true);
       return;
     }
@@ -141,12 +141,12 @@ export const HomeContextProvider = ({ children }) => {
       previousSpeechKeyRef.current = activeSpeechKey;
     }
 
-    if (!activeSpeechText || !isPlaying || isPaused) {
+    if (!activeSpeechText || !isPlaying || isPausedSpeaking) {
       return;
     }
 
     speak(activeSpeechText);
-  }, [activeSpeechKey, activeSpeechText, isPaused, isPlaying, speak, stop]);
+  }, [activeSpeechKey, activeSpeechText, isPausedSpeaking, isPlaying, speak, stop]);
 
   useEffect(() => {
     const wasPlaying = previousPlayStateRef.current;
@@ -155,12 +155,12 @@ export const HomeContextProvider = ({ children }) => {
       pause();
     }
 
-    if (!wasPlaying && isPlaying && isPaused) {
+    if (!wasPlaying && isPlaying && isPausedSpeaking) {
       resume();
     }
 
     previousPlayStateRef.current = isPlaying;
-  }, [isPaused, isPlaying, pause, resume]);
+  }, [isPausedSpeaking, isPlaying, pause, resume]);
 
   return (
     <HomeContext.Provider
@@ -186,7 +186,7 @@ export const HomeContextProvider = ({ children }) => {
         isPlaying,
         setIsPlaying,
         isSpeaking,
-        isPaused,
+        isPausedSpeaking,
         showWelcome,
         setShowWelcome,
         tutorBtnRef,

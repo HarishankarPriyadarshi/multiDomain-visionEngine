@@ -1,6 +1,8 @@
 import { OpenCvProvider } from "opencv-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import "../morph.css";
+
+import { DialogTitle } from "@mui/material";
 import divide from "../assets/images/divide_sign.png";
 import multiply from "../assets/images/x_sign.png";
 import minus from "../assets/images/minus_sign.png";
@@ -8,8 +10,12 @@ import plus from "../assets/images/plus_sign.png";
 import { Select, Button, MenuItem } from "@mui/material";
 import Box from "@mui/material/Box";
 import React from "react";
+import voice from "../assets/images/voice-play.png";
+import voice_pause from "../assets/images/voice-pause.png";
+import { SimContext } from "../components/context/SimContext";
+import { TutorSim } from "../components/features/tutor/TutorSim";
 
-export default function Morphological({handleClose4Modal} ) {
+export default function Morphological({ handleClose4Modal }) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [process, setProcess] = useState("dilation");
@@ -217,7 +223,7 @@ export default function Morphological({handleClose4Modal} ) {
               ? ` Current pixel (${i},${j}):\nAll required foreground positions match.(Hit)\nOutput = 1.`
               : ` Current pixel (${i},${j}):\nA required foreground position contains 0.(Miss)\nOutput = 0.`;
 
-        setExplanation(`${introText || modeName}.\n${resultText}`); 
+        setExplanation(`${introText || modeName}.\n${resultText}`);
 
         await new Promise((resolve) => setTimeout(resolve, delayRef.current));
       }
@@ -303,7 +309,7 @@ export default function Morphological({handleClose4Modal} ) {
     if (!eroded || isCancelledRef.current) return;
 
     await animateSingleOperation(
-      eroded, 
+      eroded,
       "dilation",
       "Stage 2/2: Dilation",
       "Opening = Erosion followed by Dilation.\nCurrent stage: Dilation",
@@ -348,9 +354,270 @@ export default function Morphological({handleClose4Modal} ) {
     );
   };
 
+  // tutor implementation
+  const {
+    isMobile,
+    startTutorSim,
+    handleSpeechToggleSim,
+    tutorBtnRefSim,
+    isSpeaking,
+    isPausedSpeaking,
+    setTutorStepsSim,
+    resetTutorSim,
+  } = useContext(SimContext);
+
+  //   // Dynamic Tutor Steps for Run Length Encoding Simulation
+
+  useEffect(() => {
+    const baseSteps = [
+      {
+        title: "Welcome ",
+        content:
+          "This simulation demonstrates Dilation, Erosion, Opening, and Closing using a structuring element (kernel). Observe how the kernel scans the image and generates the output image step-by-step.",
+        targetId: "guided-tutor-btn-sim",
+        placement: "bottom",
+      },
+
+      {
+        title: "Instruction Panel",
+        content:
+          "Use the navigation arrows here to read step-by-step instructions for performing the experiment correctly.",
+        targetId: "inst_content-zone",
+        placement: "bottom",
+      },
+
+      {
+        title: "Choose Input Image",
+        content:
+          "Select one of the available binary images. This image will be used as the input image A for the morphological operation, by default the Plus image is selected.",
+        targetId: "input-image-zone",
+        placement: "right",
+        offset: [-12, 10],
+      },
+      {
+        title: "Original Image",
+        content:
+          "This is the padded binary image A. A border of zeros is added around the image so that kernel behavior at boundaries can be visualized clearly.",
+        targetId: "original-image-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Choose Morphological Operation",
+        content:
+          "Select the desired operation. Dilation expands foreground regions, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
+        targetId: "operation-selection-zone",
+        placement: "right",
+        offset: [0, 12],
+      },
+    ];
+
+    baseSteps.push(
+      {
+        title: "Kernel",
+        content:
+          "This is the structuring element B. The kernel slides over the image and determines how output pixels are calculated.",
+        targetId: "kernel-zone",
+        placement: "bottom",
+      },
+
+      {
+        title: "Reset Simulation",
+        content:
+          "Click Reset to clear all progress and return the simulation to its initial state.",
+        targetId: "resetBtn-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Animation Speed Up",
+        content: "Use these controls to increase the speed of kernel movement.",
+        targetId: "speedUpBtn-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Animation Speed Down",
+        content: "Use these controls to decrease the speed of kernel movement.",
+        targetId: "speedDownBtn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Start Processing",
+        content: "Click Play to begin the selected morphological operation.",
+        targetId: "playPauseBtn-container",
+        placement: "bottom",
+      },
+    );
+
+    if (!processed || step === 0) {
+      console.log("step", step);
+      baseSteps.push({
+        title: "Action Required",
+        content: "Please click Play to begin the morphological operation.",
+        targetId: "play-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    baseSteps.push(
+      {
+        title: "Moving Kernel Overlay",
+        content:
+          "The transparent red overlay represents the active kernel window. It moves across the image and evaluates neighboring pixels around the kernel center.",
+        targetId: "original-image-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Kernel Center",
+        content:
+          "The blue highlighted cell inside the overlay is the kernel center. The output pixel currently being calculated corresponds to this position.",
+        targetId: "original-image-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Current Processing Explanation",
+        content:
+          "This panel explains exactly why the current output pixel becomes 0 or 1. It also indicates when the kernel touches padded regions.",
+        targetId: "explanation-zone",
+        placement: "bottom",
+      },
+
+
+    );
+    if(operationStage){
+      baseSteps.push(
+        {
+        title: "Operation Stage",
+        content:
+          process === "opening"
+            ? "Opening consists of two stages: Erosion followed by Dilation."
+            : process === "closing"
+              ? "Closing consists of two stages: Dilation followed by Erosion."
+              : "Single-stage morphological operations show only one processing stage.",
+        targetId: "operation-stage-zone",
+        placement: "top",
+        offset: [0, 10],
+      },
+      )
+    }
+    baseSteps.push(
+
+
+      {
+        title: "Output Image",
+        content:
+          "The processed image is generated progressively as the kernel scans the image. Compare it with the original image to understand the effect of the selected operation.",
+        targetId: "processed-img-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+    )
+
+    if (step < totalSteps) {
+      baseSteps.push({
+        title: "Processing In Progress",
+        content:
+          "The kernel is still scanning the image. Wait until all pixels have been processed.",
+        targetId: "step-counter-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    baseSteps.push({
+      title: "Simulation Completed",
+      content:
+        process === "dilation"
+          ? "Dilation completed successfully. Observe how foreground regions expanded."
+          : process === "erosion"
+            ? "Erosion completed successfully. Observe how foreground regions shrank."
+            : process === "opening"
+              ? "Opening completed successfully. Small foreground noise has been removed."
+              : "Closing completed successfully. Small gaps and holes have been filled.",
+      targetId: "processed-img-zone",
+      placement: "bottom",
+
+    });
+
+    setTutorStepsSim(baseSteps);
+  }, [original, process, processed, step, operationStage, activePixel]);
   return (
     <OpenCvProvider>
       <div id="main-box-morph">
+        <DialogTitle id="instructions-dialog-title" className="rle-titlebar">
+          <div
+            style={{
+              width: "50%",
+              justifyContent: "flex-start",
+              display: "flex",
+            }}
+          >
+            {isMobile ? "Simulation" : "Morphological Operations Visualizer"}
+          </div>
+          <div
+            style={{
+              width: "50%",
+
+              display: "flex",
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            <Button
+              id="guided-tutor-btn-sim"
+              ref={tutorBtnRefSim}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+                margin: "auto auto",
+                marginRight: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+                height: "40px",
+              }}
+              onClick={startTutorSim}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
+            </Button>
+            <Button
+              id="sound-btn-sim"
+              title={isSpeaking && !isPausedSpeaking ? "Pause" : "Play"}
+              onClick={handleSpeechToggleSim}
+            >
+              <img
+                src={isSpeaking && !isPausedSpeaking ? voice_pause : voice}
+                alt="voice"
+                style={{ width: "40px", height: "auto", marginRight: "10px" }}
+              />
+            </Button>
+            <Button
+              onClick={() => {
+                resetTutorSim();
+                handleClose4Modal();
+              }}
+              color="primary"
+              style={{ backgroundColor: "beige", marginRight: "10px" }}
+            >
+              Close
+            </Button>
+          </div>
+        </DialogTitle>
         <div
           id="inst_div"
           style={{
@@ -361,6 +628,7 @@ export default function Morphological({handleClose4Modal} ) {
           }}
         >
           <div
+            id="inst_content-zone"
             style={{
               padding: "2px",
               border: "1px solid #ccc",
@@ -371,7 +639,11 @@ export default function Morphological({handleClose4Modal} ) {
             }}
           >
             <div id="inst_content">
-              <button className="prev-btn" onClick={prevSlide} style={{ marginRight: "10px" }}>
+              <button
+                className="prev-btn"
+                onClick={prevSlide}
+                style={{ marginRight: "10px" }}
+              >
                 <span className="prev-icon" aria-hidden="true"></span>
               </button>
               <span>{instructions[currentIndex]}</span>
@@ -398,7 +670,10 @@ export default function Morphological({handleClose4Modal} ) {
                 justifyContent: "space-around",
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column" }}>
+              <div
+                id="input-image-zone"
+                style={{ display: "flex", flexDirection: "column" }}
+              >
                 <div id="image-box-morph">
                   <div onClick={() => !imagesDisabled && handleImage(0)}>
                     <img
@@ -450,6 +725,7 @@ export default function Morphological({handleClose4Modal} ) {
               <hr className="custom-divider" />
 
               <div
+                id="operation-selection-zone"
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -492,9 +768,10 @@ export default function Morphological({handleClose4Modal} ) {
             {/* Major modification: original image is now the real 9x9 padded image with a transparent overlay kernel. */}
             <div id="orig-morph">
               <h2>Original Image(A) with Explicit Padding</h2>
-              <div className="morph-grid-wrap">
+              <div id="original-image-zone" className="morph-grid-wrap">
                 {activePixel && (
                   <div
+                    id="kernel-overlay-zone"
                     className="morph-kernel-overlay"
                     style={{
                       top: `${
@@ -587,6 +864,7 @@ export default function Morphological({handleClose4Modal} ) {
             <div id="kernel-morph">
               <h2>Kernel(B)</h2>
               <div
+                id="kernel-zone"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(3, 1fr)",
@@ -634,6 +912,7 @@ export default function Morphological({handleClose4Modal} ) {
             <div id="animation-morph">
               {operationStage && (
                 <div
+                id="operation-stage-zone"
                   style={{
                     color: "#1D2A6D",
                     fontWeight: "700",
@@ -644,17 +923,17 @@ export default function Morphological({handleClose4Modal} ) {
                 </div>
               )}
               {processed && (
-              <h2>
-                Processed Image
-                {step !== 0 && (
-                  <div style={{ fontSize: "14px", color: "#38383aff" }}>
-                    {process && `Step ${step} / ${totalSteps}`}
-                  </div>
-                )}
-              </h2>
+                <h2>
+                  Processed Image
+                  {step !== 0 && (
+                    <div style={{ fontSize: "14px", color: "#38383aff" }}>
+                      {process && `Step ${step} / ${totalSteps}`}
+                    </div>
+                  )}
+                </h2>
               )}
 
-              <div className="morph-grid morph-grid-9">
+              <div id="processed-img-zone" className="morph-grid morph-grid-9">
                 {processed &&
                   processed.map((row, rowIndex) =>
                     row.map((cell, cellIndex) => (
@@ -669,18 +948,17 @@ export default function Morphological({handleClose4Modal} ) {
                     )),
                   )}
               </div>
-              {processed && (
-                <p className="matrix_label">9 x 9</p>
-              )}
+              {processed && <p className="matrix_label">9 x 9</p>}
             </div>
           </div>
           {/* Current pixel panel reports the padded-grid center followed by the moving overlay. */}
           {/* explanation */}
           {processed && (
             <div className="explanation-container">
-              <div className="explanation-content">
-               
-                <h4 ><strong>Stepwise Explanation:</strong></h4>
+              <div id="explanation-zone" className="explanation-content">
+                <h4>
+                  <strong>Stepwise Explanation:</strong>
+                </h4>
                 <div style={{ whiteSpace: "pre-line" }}>{explanation}</div>
               </div>
             </div>
@@ -691,11 +969,11 @@ export default function Morphological({handleClose4Modal} ) {
         <div id="footer_buttons" className="morph_btn footer-animate">
           <div className="button-container " style={{ height: "fit-content" }}>
             <button
-              id="commmon-btn"
+              id="speedDownBtn-zone"
               onClick={() => (delayRef.current += 100)}
               ref={mySpeedDownButton}
               title="speed down"
-              className="px-4 py-2 font-medium text-gray-600 transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100"
+              className="commmon-btn"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -709,38 +987,15 @@ export default function Morphological({handleClose4Modal} ) {
                 </g>
               </svg>
             </button>
-            <button
-              ref={myPlayButton}
-              onClick={() => play()}
-              id="commmon-btn"
-              title="Play"
-              className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
-              style={{ dispslay: "block" }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div id="playPauseBtn-container">
+              <button
+                id="playBtn-zone"
+                ref={myPlayButton}
+                onClick={() => play()}
+                title="Play"
+                className="commmon-btn"
+                style={{ dispslay: "block" }}
               >
-                <polygon points="5,3 19,12 5,21"></polygon>
-              </svg>
-            </button>
-
-            <button
-              ref={myPauseButton}
-              id="commmon-btn"
-              onClick={() => pauseFun()}
-              title={isPaused ? "Play" : "Pause"}
-              className={`px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100`}
-              style={{ display: "none" }}
-            >
-              {isPaused ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -754,31 +1009,57 @@ export default function Morphological({handleClose4Modal} ) {
                 >
                   <polygon points="5,3 19,12 5,21"></polygon>
                 </svg>
-              ) : (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="6" y="4" width="4" height="16"></rect>
-                  <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-              )}
-            </button>
+              </button>
+
+              <button
+                id="pauseBtn-zone"
+                ref={myPauseButton}
+                onClick={() => pauseFun()}
+                title={isPaused ? "Play" : "Pause"}
+                className="commmon-btn"
+                style={{ display: "none" }}
+              >
+                {isPaused ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="5,3 19,12 5,21"></polygon>
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="6" y="4" width="4" height="16"></rect>
+                    <rect x="14" y="4" width="4" height="16"></rect>
+                  </svg>
+                )}
+              </button>
+            </div>
+
             <button
-              id="commmon-btn"
+              id="speedUpBtn-zone"
               onClick={() =>
                 (delayRef.current = Math.max(50, delayRef.current - 100))
               }
               ref={mySpeedUpButton}
               title="speed up"
-              className="px-4 py-2 font-medium text-gray-600 transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 dark:text-gray-300 hover:bg-gray-100"
+              className="commmon-btn"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -794,10 +1075,10 @@ export default function Morphological({handleClose4Modal} ) {
             </button>
 
             <button
-              id="commmon-btn"
+              id="resetBtn-zone"
               title="reset"
               onClick={() => handleReset()}
-              className="px-4 py-2 font-medium text-black transition-colors duration-200 sm:px-6 dark:hover:bg-gray-800 hover:bg-gray-100"
+              className="commmon-btn"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -824,6 +1105,8 @@ export default function Morphological({handleClose4Modal} ) {
             </button>
           </div>
         </div>
+        {/* tutor modal */}
+        <TutorSim />
       </div>
     </OpenCvProvider>
   );

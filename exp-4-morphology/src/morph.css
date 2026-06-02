@@ -17,7 +17,37 @@
 #explanation-dialog {
   width: 980px;
 }
+/* for header btn title */
 
+.rle-titlebar {
+  align-items: center !important;
+  background: var(--rle-navy) !important;
+  color: #ffffff !important;
+  height: 48px !important;
+  justify-content: space-between !important;
+  letter-spacing: 0;
+  padding: 6px 14px !important;
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+}
+
+#instructions-dialog-title {
+  padding: 8px 16px;
+  display: flex;
+  background-color: #1d2a6d !important;
+  color: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+@media screen and (max-width: 768px) {
+  #instructions-dialog-title {
+    font-size: 16px;
+    padding: 5px 10px;
+  }
+}
 /* for instructions */
 #inst_div {
   width: 80%;
@@ -386,11 +416,18 @@ h2 {
   justify-content: center;
   align-items: center;
 }
-#commmon-btn {
-  background-color: #ffffff;
+.commmon-btn {
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  color: #000;
+  background-color: #fff;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  display: block;
 }
-#commmon-btn:hover {
-  background-color: #171717bc;
+
+.commmon-btn:hover {
+  background-color: rgba(23, 23, 23, 0.74);
+  color: #fff;
 }
 
 /* Selected Image Highlight */

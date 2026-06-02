@@ -23,7 +23,7 @@ export const SimContextProvider = ({ children }) => {
     resume,
     stop,
     isSpeaking,
-    isPaused,
+    isPausedSpeaking,
     sentences,
     currentSentenceIndex,
   } = useSpeechController();
@@ -94,9 +94,9 @@ export const SimContextProvider = ({ children }) => {
       return;
     }
 
-    if (isSpeaking && !isPaused) {
+    if (isSpeaking && !isPausedSpeaking) {
       setIsSimPlaying(false);
-    } else if (isPaused) {
+    } else if (isPausedSpeaking) {
       setIsSimPlaying(true);
     } else {
       // If neither speaking nor paused (e.g. finished or not started)
@@ -113,7 +113,7 @@ export const SimContextProvider = ({ children }) => {
       lastSpokenKeyRef.current = ""; // Reset when key changes
     }
 
-    if (!activeSpeechText || !isSimPlaying || isPaused) {
+    if (!activeSpeechText || !isSimPlaying || isPausedSpeaking) {
       return;
     }
 
@@ -124,7 +124,7 @@ export const SimContextProvider = ({ children }) => {
   }, [
     activeSpeechKey,
     activeSpeechText,
-    isPaused,
+    isPausedSpeaking,
     isSimPlaying,
     speak,
     stop,
@@ -137,12 +137,12 @@ export const SimContextProvider = ({ children }) => {
       pause();
     }
 
-    if (!wasPlaying && isSimPlaying && isPaused) {
+    if (!wasPlaying && isSimPlaying && isPausedSpeaking) {
       resume();
     }
 
     previousPlayStateRef.current = isSimPlaying;
-  }, [isPaused, isSimPlaying, pause, resume]);
+  }, [isPausedSpeaking, isSimPlaying, pause, resume]);
 
   return (
     <SimContext.Provider
@@ -155,7 +155,7 @@ export const SimContextProvider = ({ children }) => {
         sentences,
         currentSentenceIndex,
         isSpeaking,
-        isPaused,
+        isPausedSpeaking,
 
         // Simulation State
         tutorStepsSim,

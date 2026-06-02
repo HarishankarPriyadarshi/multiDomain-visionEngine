@@ -62,7 +62,7 @@ export default function MorphologyPage() {
     handleSpeechToggle,
     tutorBtnRef,
     isSpeaking,
-    isPaused,
+    isPausedSpeaking,
     sentences,
     currentSentenceIndex,
     instructionsList,
@@ -231,8 +231,8 @@ export default function MorphologyPage() {
     "Gauss On",
     "Gauss Off",
     "Kernel Size",
-    "Canny Low Threshold",
-    "Canny High Threshold",
+    "Morphological Operation",
+    "Kernel Shape",
     "Step",
     "1",
     "2",
@@ -435,11 +435,11 @@ export default function MorphologyPage() {
           <div id="header_button">
             <Button
               id="sound-btn"
-              title={isSpeaking && !isPaused ? "Pause" : "Play"}
+              title={isSpeaking && !isPausedSpeaking ? "Pause" : "Play"}
               onClick={handleSpeechToggle}
             >
               <img
-                src={isSpeaking && !isPaused ? voice_pause : voice}
+                src={isSpeaking && !isPausedSpeaking ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
               />
@@ -500,7 +500,7 @@ export default function MorphologyPage() {
                   // For simplicity, we'll check if the current sentence is part of this step.
                   const isCurrentStepSpeaking =
                     isSpeaking &&
-                    !isPaused &&
+                    !isPausedSpeaking &&
                     isInstructionOpen &&
                     sentences[currentSentenceIndex] &&
                     step.includes(sentences[currentSentenceIndex]);
