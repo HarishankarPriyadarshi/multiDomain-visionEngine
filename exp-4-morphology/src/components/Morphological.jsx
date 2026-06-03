@@ -41,6 +41,7 @@ export default function Morphological({ handleClose4Modal }) {
   const [step, setStep] = useState(0);
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
   const totalSteps = 49;
+ 
 
   useEffect(() => {
     handleImage(0);
@@ -237,6 +238,7 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   function play() {
+    
     if (myPauseButton.current) {
       myPlayButton.current.style.display = "none";
       myPauseButton.current.style.display = "block";
@@ -276,6 +278,7 @@ export default function Morphological({ handleClose4Modal }) {
     handleImage(0);
     setCurrentIndex(0);
     clearAnimationState();
+    
   }
 
   async function runSelectedOperation() {
@@ -397,7 +400,7 @@ export default function Morphological({ handleClose4Modal }) {
       {
         title: "Original Image",
         content:
-          "This is the padded binary image A. A border of zeros is added around the image so that kernel behavior at boundaries can be visualized clearly.",
+          "This is the padded binary image. A border of zeros is added around the image so that kernel behavior at boundaries can be visualized clearly.",
         targetId: "original-image-zone",
         placement: "bottom",
         offset: [0, 10],
@@ -536,9 +539,8 @@ export default function Morphological({ handleClose4Modal }) {
       });
 
       setTutorStepsSim(baseSteps);
-      return;
+      
     }
-
     baseSteps.push({
       title: "Simulation Completed",
       content:
@@ -556,6 +558,7 @@ export default function Morphological({ handleClose4Modal }) {
 
     setTutorStepsSim(baseSteps);
   }, [original, process, processed, step, operationStage, activePixel]);
+
   return (
     <OpenCvProvider>
       <div id="main-box-morph">
