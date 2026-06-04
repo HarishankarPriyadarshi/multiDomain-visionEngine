@@ -11,6 +11,9 @@ import {
 import ErrorPage from "./components/ErrorPage";
 import WatershedPage from "./components/watershed/WatershedPage";
 
+import { HomeContextProvider } from "./components/context/HomeContext";
+import {SimContextProvider} from "./components/context/SimContext"; 
+
 function App() {
   const router = createBrowserRouter([
     {
@@ -30,7 +33,11 @@ function App() {
 
   return (
     <OpenCvProvider>
-      <RouterProvider router={router} />
+      <HomeContextProvider>
+        <SimContextProvider>
+          <RouterProvider router={router} />
+        </SimContextProvider>
+      </HomeContextProvider>  
     </OpenCvProvider>
   );
 }
