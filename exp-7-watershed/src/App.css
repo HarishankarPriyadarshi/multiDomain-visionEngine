@@ -1,0 +1,778 @@
+#bottom-footer {
+  position: absolute;
+  background-color: #1d2a6d;
+  color: white;
+  width: 100%;
+  bottom: 0;
+  height: auto;
+  padding: 2px 0;
+  box-sizing: border-box;
+  left: 0;
+  margin: 0 auto;
+  text-align: center;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: bold;
+}
+
+h1 {
+  font-size: 24px;
+}
+h2 {
+  font-size: 22px;
+}
+h3 {
+  font-size: 20px;
+}
+
+h4 {
+  font-size: 18px;
+}
+
+.header-heading {
+  color: #fff5ee;
+  text-align: "center";
+  font: "1.5rem bold";
+}
+@media (max-width: 768px) {
+  .header-heading {
+    font-size: 1.2rem;
+  }
+}
+@media (max-width: 480px) {
+  .header-heading {
+    font-size: 1rem;
+  }
+}
+
+.MuiOutlinedInput-root {
+  color: #1d2a6d; /* Text color */
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border-color: #1d2a6d !important; /* Border color */
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #1d2a6d !important; /* Hover color */
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #1d2a6d !important; /* Focus color */
+}
+
+.MuiTabs-indicator {
+  background-color: white !important; /* Replace with the desired color */
+}
+
+#top-header {
+  position: fixed; /* Fixed to the top */
+  background-color: #1d2a6d;
+  width: inherit;
+  top: 0;
+  height: auto;
+  max-height: 120px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  z-index: 1000;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 5px 10px; /* Add padding for better spacing */
+  justify-content: space-between; /* Ensure space between elements */
+}
+
+#heading {
+  font-size: 1.5rem;
+  color: white;
+  margin: 0;
+  flex: 1; /* Allow heading to take up available space */
+  text-align: left;
+}
+
+#tab-box {
+  display: flex;
+  justify-content: flex-start;
+  padding-right: 10px;
+  width: -webkit-fill-available;
+}
+
+#header_button {
+  display: flex;
+  justify-content: flex-end !important;
+  justify-content: center;
+  padding-right: 10px;
+  color: #d1d3d8;
+}
+
+/* For smaller screens, hide tabs and show hamburger menu */
+@media (max-width: 768px) {
+  #tab-box {
+    display: none; /* Hide tabs on small screens */
+  }
+}
+
+@media (max-width: 480px) {
+  #heading {
+    font-size: 1rem; /* Adjust font size on very small screens */
+    text-align: center;
+  }
+
+  #top-header {
+    flex-direction: row;
+  }
+
+  #outputCanvas {
+    width: -webkit-fill-available;
+  }
+}
+#guided-tutor-btn {
+  color: #1d2a6d;
+  background-color: #ffd700;
+  font-weight: bold;
+
+  margin: auto auto;
+  margin-left: 10px;
+  border-radius: 20px;
+  padding: 5px 15px;
+  height: 40px;
+  
+}
+
+#main-box {
+  background-color: #f2f9ff;
+  position: relative;
+  /*   
+  left: auto;
+  right: auto;
+    top: 0; */
+  margin: 0 auto;
+
+  height: 90%;
+  /* min-width: 1150px; */
+  width: 1200px;
+  overflow: hidden;
+  color: #333333;
+  box-sizing: border-box; /* Ensure padding doesn't affect width and height calculations */
+  border-radius: 10px;
+}
+.grand-container {
+  background-color: #f5f5f5;
+  min-height: 100vh;
+  overflow-x: auto;
+  overflow-y: auto;
+  box-sizing: border-box;
+  width: 100vw;
+}
+.parent-container {
+  position: relative;
+
+  box-sizing: border-box;
+  width: 1400px;
+  /* 898+45 */
+  /* min-height: 943px; */
+  margin: 0 auto;
+  margin-top: 4px;
+  background-color: #1a5376;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  border-radius: 10px;
+}
+/* for alerts */
+/* .MuiDialog-container {
+  height: 90%;
+  width: 1200px;
+}
+
+.MuiBackdrop-root {
+  height: 90%;
+  width: 1200px;
+} */
+
+/* Media query for larger screens (desktop and above) */
+@media (min-width: 1200px) {
+  #main-box {
+    width: 1200px; /* Maintain original width for large screens */
+    height: 870px; /* Maintain original height for large screens */
+  }
+  /* .MuiDialog-container {
+    height: 75%;
+    width: 1200px;
+  } */
+
+  /* .MuiBackdrop-root {
+    height: 800px;
+    width: 1200px;
+  } */
+}
+
+/* Media query for tablets and medium screens */
+@media (max-width: 1200px) and (min-width: 768px) {
+  #main-box {
+    width: 100%; /* Adjust width to 90% of the viewport width */
+    height: 100%; /* Allow height to adjust based on content */
+    max-height: 850px; /* Limit height for medium-sized screens */
+  }
+  /* .MuiDialog-container {
+    width: 100%;
+    height: 100%;
+    max-height: 700px;
+  }
+  .MuiBackdrop-root {
+    width: 100%;      
+    height: 100%;     
+    max-height: 700px;
+  } */
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  #main-box {
+    width: 100%; /* Make the width 100% of the screen on mobile */
+    height: 100%; /* Allow height to adjust based on content */
+    border-radius: 0px;
+  }
+  /* .MuiDialog-container {
+    width: 100%; 
+    height: 100%;
+  }
+  .MuiBackdrop-root {
+    width: 100%; 
+    height: 100%;
+  } */
+}
+
+#mainbox {
+  position: absolute;
+  top: var(
+    --top-header-height,
+    30px
+  ); /* Adjust based on the height of the top-header */
+  bottom: var(
+    --bottom-footer-height,
+    30px
+  ); /* Adjust based on the height of the bottom-footer */
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 10px;
+  padding-top: calc(
+    var(--top-header-height, 30px) + 10px
+  ); /* Add padding to avoid overlap */
+}
+
+#mainbox::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+#mainbox::-webkit-scrollbar-thumb {
+  background-color: #888; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners of the scrollbar thumb */
+}
+
+#mainbox::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Color of the scrollbar thumb on hover */
+}
+
+.flex-container {
+  display: flex;
+  text-align: center;
+  flex-direction: row;
+}
+
+/* Responsive layout - makes a one column-layout instead of a two-column layout */
+@media (max-width: 800px) {
+  .flex-container,
+  .flex-item-left,
+  .flex-item-right {
+    padding: 10px;
+    padding-top: 0px;
+    flex: 100%;
+    flex-direction: column;
+  }
+}
+
+.flex-item-left {
+  padding: 10px;
+  padding-top: 50px;
+  flex: 30%;
+}
+
+.flex-item-right {
+  padding: 10px;
+  padding-top: 50px;
+  flex: 70%;
+}
+
+#left_bar {
+  margin: auto;
+  width: 90%;
+  height: auto;
+  min-height: 500px;
+}
+
+/* General content container */
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.input_output {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 80%;
+}
+
+/* Flex container for images */
+#sampling_area {
+  display: flex;
+  /* flex-wrap: wrap;  */
+  gap: min(25px, 10vw);
+  justify-content: center;
+  width: 100%;
+  margin-top: 30px;
+}
+
+/* Adjust image containers to be responsive */
+#sampling_area > div {
+  width: 100%; /* Make each box take full width on small screens */
+  /* max-width: 400px; Limit width to 600px on larger screens */
+  flex-grow: 1; /* Allow items to grow */
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px; /* Add some space between the boxes */
+  min-height: 325px;
+  margin-right: 0%;
+}
+
+/* Input and output box styling */
+#sampling_area > div > .input-output-box {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#sampling_area > div > .input-output-box > .header {
+  padding: 10px;
+  background-color: #1d2a6d;
+  color: #fff5ee;
+  text-align: center;
+}
+
+#sampling_area > div > .input-output-box img,
+#sampling_area > div > .input-output-box canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 768px) {
+  .content {
+    padding: 0;
+    width: 100%;
+  }
+
+  .input_output {
+    padding: 0;
+    width: 100%;
+  }
+
+  #sampling_area {
+    flex-direction: column; /* Stack the boxes vertically on small screens */
+    gap: 15px; /* Reduce gap between elements */
+  }
+
+  #sampling_area > div {
+    width: 100%;
+    margin-bottom: 20px; /* Add space between stacked elements */
+  }
+
+  #sampling_area > div > .input-output-box {
+    max-width: 100%; /* Ensure it takes full width */
+  }
+
+  /* Optional: Adjust header size on smaller screens */
+  #sampling_area > div > .input-output-box > .header h4 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 22px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  h3 {
+    font-size: 18px;
+  }
+  h4 {
+    font-size: 16px;
+  }
+  h5 {
+    font-size: 14px;
+  }
+
+  #sampling_area > div > .input-output-box > .header h4 {
+    font-size: 14px;
+  }
+
+  /* Image and canvas size adjustments on very small screens */
+  #sampling_area > div > .input-output-box img,
+  #sampling_area > div > .input-output-box canvas {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.tool_btn {
+  position: relative;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
+  padding-block: 0.5rem;
+  /* padding-inline: 1.25rem; */
+  background-color: #1d2a6d;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffff;
+  gap: 10px;
+  font-weight: bold;
+  border: 2px solid #ffffff4d;
+  outline: none;
+  overflow: hidden;
+  font-size: 14px;
+  cursor: pointer;
+  width: 120px;
+  min-height: 35px;
+  margin-top: 5px;
+}
+
+.print_btn {
+  background-color: #eff4fa;
+  border-color: #1d2a6d;
+  color: #1d2a6d;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  transition: all 0.3s ease-in-out;
+}
+
+.tool_btn:hover {
+  transform: scale(1.05);
+  border-color: #fff9;
+}
+
+.tool_btn:hover .icon {
+  transform: translate(4px);
+}
+
+.tool_btn:hover::before {
+  animation: shine 1.5s ease-out infinite;
+}
+
+.tool_btn::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  opacity: 0.6;
+}
+/* print btn shine */
+
+.print_btn:hover {
+  transform: scale(1.05);
+  border-color: #1d2a6d95;
+}
+.print_btn::before {
+  content: "";
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  background-image: linear-gradient(
+    120deg,
+    rgba(215, 215, 215, 0) 30%,
+    #313f82cb,
+    rgba(255, 255, 255, 0) 70%
+  );
+  top: 0;
+  left: -100px;
+  opacity: 0.6;
+}
+
+@keyframes shine {
+  0% {
+    left: -100px;
+  }
+
+  60% {
+    left: 100%;
+  }
+
+  to {
+    left: 100%;
+  }
+}
+
+#instructions-dialog-title {
+  background-color: #1d2a6d;
+  color: #fff5ee;
+  text-align: center;
+  padding: 10px;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+[role="tabpanel"] > div {
+  padding: 0px;
+}
+
+ol {
+  list-style: decimal !important;
+  padding-left: 1.5rem !important;
+  text-align: justify;
+}
+
+.custom-progress-bar {
+  width: 300px; /* or 100%, or any custom size */
+  margin: 0 auto; /* optional: centers the bar */
+}
+
+#explanation-dialog {
+  position: fixed;
+  top: 0;
+  padding: 0px;
+  width: 1160px;
+  max-width: 1200px;
+  height: 100%;
+  max-height: 840px;
+}
+
+/* @media (max-width:1200px){
+  #explanation-dialog
+  {
+    width:90%;
+  }
+}
+
+@media (max-width:768px){
+  #explanation-dialog
+  {
+    width:90%;
+    max-height: -webkit-fill-available;
+  }
+}
+
+@media (max-width:480px){
+  #explanation-dialog
+  {
+  
+  }
+} */
+
+/* css additional for input images */
+.gridImage {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.gridImageOne:hover {
+  transform: translateY(-5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageTwo:hover {
+  transform: translateY(-5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageThree:hover {
+  transform: translateY(5px) translateX(-5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+.gridImageFour:hover {
+  transform: translateY(5px) translateX(5px) scale(1.03);
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.25);
+}
+/* upload btn */
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  width: 90%;
+  padding: 12px 0;
+
+  background: #dfe3ea; /* light gray */
+  border: 2px solid #1d2a6d; /* theme blue */
+  border-radius: 14px;
+
+  font-weight: 600;
+  font-size: 15px;
+  color: #1d2a6d;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.upload-btn:hover {
+  background: #e8ecf3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.2);
+}
+
+.upload-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.derivative-btn:hover {
+  background: #e8ecf3;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+.derivative-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+.input-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 90%;
+  padding: 7px 10px;
+
+  background: #f4f4f4; /* light gray */
+  border: 2px solid #1d2a6d; /* theme blue */
+  border-radius: 14px;
+
+  font-weight: 600;
+  font-size: 18px;
+  color: #000000;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+.input-btn:hover {
+  background: #e8ecf3;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2);
+}
+.input-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.upload-icon {
+  width: 18px;
+  height: 18px;
+}
+/* input image */
+#inputImage {
+  border-radius: 10px;
+}
+#finalImage {
+  border-radius: 10px;
+}
+
+#instruction-btn {
+  border-radius: 10px;
+  border: 2px solid #e7e7e7;
+  padding: 5px 10px;
+  height: 40px;
+  margin: auto auto;
+}
+/* process message container */
+
+.process-message-container {
+  position: relative;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 240px;
+  width: 100%;
+  margin-top: 0px;
+
+  padding: 20px;
+
+  background: linear-gradient(135deg, #e4e7eb, #eaf1f9);
+
+  border-radius: 14px;
+  box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.quant {
+  margin-top: -190px;
+}
+
+/* Inner Content */
+.placeholder-content {
+  text-align: center;
+  color: #444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.file-icon {
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+.placeholder-content p {
+  text-align: center;
+  font-size: 1rem;
+  color: #101111cd;
+}
+@keyframes highlightPulseBlue {
+  0% {
+    box-shadow: 0 0 0 0 rgba(28, 42, 109, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(28, 42, 109, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(28, 42, 109, 0);
+  }
+}
+/* enhanced css */
+.dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
