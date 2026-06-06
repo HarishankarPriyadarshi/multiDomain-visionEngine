@@ -77,7 +77,7 @@
 
 
 
-#content-box-region{
+#image-box-region{
     display: flex;
     flex-direction: row;
     margin-left: 10px;
@@ -85,6 +85,8 @@
     align-items: center;
     right: 0px;
     justify-content: space-evenly;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 #original-image-temp{
@@ -92,13 +94,24 @@
     flex-direction: column;
 }
 
-#left-content-box-region{
+#left-image-box-region 
+,#right-image-box-region{
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    /* width: 50%; */
-    left: 0px;
+    width: 50%;
+   padding: 10px;
+}
+
+#content-box-region{
+    display: flex;
+    flex-direction: ro
+    ;
+    align-items: center;
+    justify-content: center;
+    width: 50%;
+   padding: 10px;
 }
 
 #seed{
@@ -162,9 +175,11 @@
         width: 20px;
         height: 20px;
     }
-    #content-box-region
+    #image-box-region
     {
         flex-direction: column;
+        padding-left: 10px;
+        padding-right: 10px;
     }
     #water_arrow
     {
@@ -196,7 +211,7 @@
         width: 20px;
         height: 20px;
     }
-    #content-box-region
+    #image-box-region
     {
         flex-direction: column;
     }
@@ -223,4 +238,109 @@
         height:200px;
     }
 
+}
+/* for instructions */
+
+#instructions-dialog-title {
+  padding: 8px 16px;
+  display: flex;
+  background-color: #1d2a6d;
+  color: white;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+@media screen and (max-width: 768px) {
+  #instructions-dialog-title {
+    font-size: 16px;
+    padding: 5px 10px;
+  }
+}
+
+/* for instructions */
+#inst_div_edge
+{
+    width: 80%; margin: auto; text-align: center; padding: 10px;
+}
+@media (max-width: 768px) {
+  #inst_div_edge {
+    width: 97%;
+  }
+}
+@media (max-width: 480px) {
+  #inst_div_edge {
+    width: 95%;
+  }
+}
+
+/* for instructions */
+#inst_div_edge {
+  width: 80%;
+  margin: 0;
+  text-align: center;
+  padding: 10px;
+}
+@media screen and (max-width: 768px) {
+  #inst_div_edge {
+    width: 95%;
+    margin: 10px;
+  }
+}
+
+#inst_content_edge {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+.prev-icon,
+.next-icon {
+  font-size: 20px;
+  background-color: rgb(0, 0, 0);
+}
+#inst_content_edge button {
+  background-color: black;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+#image {
+  width: 70%;
+  height: auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+}
+
+/* Selected Image Highlight */
+.image-selected {
+  border: 3px solid #1d2a6dc3;
+  box-shadow: 0 0 15px rgba(29, 42, 109, 0.4);
+  transform: scale(1.08);
+  background-color: #eef2ff;
+}
+
+/* Matrix appear animation */
+.matrix-animate {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: dropDown 0.4s ease forwards;
+  background-color: #d4e4fb;
+  border-radius: 3px;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.7);
+}
+
+/* Keyframes */
+@keyframes dropDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
