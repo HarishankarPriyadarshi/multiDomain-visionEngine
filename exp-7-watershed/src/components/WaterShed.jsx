@@ -109,6 +109,11 @@ export default function WaterShed({ handleClose4Modal }) {
         (prevIndex - 1 + instructions.length) % instructions.length,
     );
   };
+  const stepExplanation = [
+    "1. terrace formation",
+    "2. water filling.",
+    "3. boundary detection.",
+  ];
 
   // tutor implementation
   const {
@@ -316,6 +321,12 @@ export default function WaterShed({ handleClose4Modal }) {
                   )}
               </div>
             </div>
+            {/* control buttons */}
+            <div className="control-buttons">
+              <button onClick={handleSimRefresh}>Refresh</button>
+              <button onClick={handleSimPrev}>Prev</button>
+              <button onClick={handleSimNext}>Next</button>
+            </div>
           </div>
 
           <div id="water_arrow">&#129066;</div>
@@ -327,21 +338,10 @@ export default function WaterShed({ handleClose4Modal }) {
             <div id="original-image-temp">
               <VoxelScene binaryMap={original} maxY={1} />
             </div>
-          </div>
-        </div>
-
-        <div id="content-box-region">
-          <div id="left-content-box-region">
-            {/* control buttons */}
-            <div className="control-buttons">
-              <button onClick={handleSimRefresh}>Refresh</button>
-              <button onClick={handleSimPrev}>Prev</button>
-              <button onClick={handleSimNext}>Next</button>
-            </div>
-          </div>
-
-          <div id="right-content-box-region">
             <div className="explanation-box">
+              <h2 style={{ textAlign: "center" }}>
+                {stepExplanation[currentIndex]}
+              </h2>
               <p>
                 The Watershed algorithm uses a heatmap representation where
                 higher intensity values form hills and lower intensity values
