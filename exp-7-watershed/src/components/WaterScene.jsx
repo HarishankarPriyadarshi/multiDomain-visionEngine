@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
+import "../region_animation.css";
 const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
   const mountRef = useRef(null);
 
@@ -13,6 +13,8 @@ const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111111);
+    
+    
 
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     camera.position.set(10, 12, 10);

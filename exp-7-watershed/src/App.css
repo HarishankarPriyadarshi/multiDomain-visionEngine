@@ -576,7 +576,7 @@ ol {
   max-height: 840px;
 }
 
-/* @media (max-width:1200px){
+@media (max-width:1200px){
   #explanation-dialog
   {
     width:90%;
@@ -596,7 +596,7 @@ ol {
   {
   
   }
-} */
+} 
 
 /* css additional for input images */
 .gridImage {

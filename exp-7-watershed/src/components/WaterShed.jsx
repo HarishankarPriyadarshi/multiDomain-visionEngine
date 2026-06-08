@@ -234,7 +234,7 @@ export default function WaterShed({ handleClose4Modal }) {
               }}
             >
               <div style={{ display: "flex", flexDirection: "column" }}>
-                <div id="image-box-region">
+                <div id="choose-image-box-region">
                   <div onClick={() => handleImage(0)}>
                     <img
                       src={plus}
@@ -333,12 +333,12 @@ export default function WaterShed({ handleClose4Modal }) {
 
           <div id="right-image-box-region">
             <div id="head-image-temp">
-              <h1>Watershed Algo</h1>
+              <h1>Output Image</h1> 
             </div>
-            <div id="original-image-temp">
+            <div id="original-image-temp-water">
               <VoxelScene binaryMap={original} maxY={1} />
             </div>
-            <div className="explanation-box">
+            <div id="explanation-box" >
               <h2 style={{ textAlign: "center" }}>
                 {stepExplanation[currentIndex]}
               </h2>
