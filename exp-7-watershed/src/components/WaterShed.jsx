@@ -23,12 +23,16 @@ import { SimContext } from "./context/SimContext";
 
 import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
+import { FiRefreshCw } from "react-icons/fi";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
 import TutorSim from "./features/tutor/TutorSim";
 
 export default function WaterShed({ handleClose4Modal }) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [imageAnimateKey, setImageAnimateKey] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -83,14 +87,11 @@ export default function WaterShed({ handleClose4Modal }) {
       ],
     ];
     setOriginal(signs[x]);
+    setCurrentStep(0);
   }
   useEffect(() => {
     handleImage(0);
   }, []);
-  //   simulation controls
-  const handleSimRefresh = () => {};
-  const handleSimPrev = () => {};
-  const handleSimNext = () => {};
 
   //   instructions
   const instructions = [
@@ -109,10 +110,22 @@ export default function WaterShed({ handleClose4Modal }) {
         (prevIndex - 1 + instructions.length) % instructions.length,
     );
   };
-  const stepExplanation = [
-    "1. terrace formation",
-    "2. water filling.",
-    "3. boundary detection.",
+  const stepInfo = [
+    {
+      title: "Step 1: Terrain Formation",
+      content:
+        "The binary image is converted into a 3D terrain. White pixels become elevated hills while black pixels remain at ground level.",
+    },
+    {
+      title: "Step 2: Water Filling",
+      content:
+        "Water starts rising from the lower regions of the terrain. The flooding process helps visualize how catchment basins are formed.",
+    },
+    {
+      title: "Step 3: Watershed Boundaries",
+      content:
+        "Red boundaries are highlighted along the region edges. These watershed lines separate different regions and represent the final segmentation result.",
+    },
   ];
 
   // tutor implementation
@@ -322,10 +335,28 @@ export default function WaterShed({ handleClose4Modal }) {
               </div>
             </div>
             {/* control buttons */}
+
             <div className="control-buttons">
-              <button onClick={handleSimRefresh}>Refresh</button>
-              <button onClick={handleSimPrev}>Prev</button>
-              <button onClick={handleSimNext}>Next</button>
+              <button onClick={() => setCurrentStep(0)}>
+                <FiRefreshCw />
+                <span>Refresh</span>
+              </button>
+
+              <button
+                onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+                disabled={currentStep === 0}
+              >
+                <FaChevronLeft />
+                <span>Previous</span>
+              </button>
+
+              <button
+                onClick={() => setCurrentStep((prev) => Math.min(2, prev + 1))}
+                disabled={currentStep === 2}
+              >
+                <span>Next</span>
+                <FaChevronRight />
+              </button>
             </div>
           </div>
 
@@ -333,19 +364,21 @@ export default function WaterShed({ handleClose4Modal }) {
 
           <div id="right-image-box-region">
             <div id="head-image-temp">
-              <h1>Output Image</h1> 
+              <h1>Output Image</h1>
             </div>
             <div id="original-image-temp-water">
-              <VoxelScene binaryMap={original} maxY={1} />
+              <VoxelScene
+                binaryMap={original}
+                maxY={1}
+                currentStep={currentStep}
+              />
             </div>
-            <div id="explanation-box" >
+            <div id="explanation-box">
               <h2 style={{ textAlign: "center" }}>
-                {stepExplanation[currentIndex]}
+                {stepInfo[currentStep].title}
               </h2>
-              <p>
-                The Watershed algorithm uses a heatmap representation where
-                higher intensity values form hills and lower intensity values
-                form valleys.
+              <p style={{ textAlign: "justify" }}>
+                {stepInfo[currentStep].content}
               </p>
             </div>
           </div>

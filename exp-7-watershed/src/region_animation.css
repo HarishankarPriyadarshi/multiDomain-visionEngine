@@ -35,7 +35,12 @@
   width: 30%;
   height: 10%;
   margin: 10px;
-  transition: all 0.3s ease;
+
+  animation: dropDown 0.8s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+
 }
 #Choose_box_region:hover {
   transform: translateY(-1px);
@@ -393,23 +398,46 @@
 }
 
 .control-buttons {
-  margin-top: 20px;
+  margin-top: 30px;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   gap: 20px;
+ animation: dropUp 2.4s ease forwards;
+}
+
+@keyframes dropUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .control-buttons button {
   padding: 5px 10px;
   border-radius: 5px;
   cursor: pointer;
-  background-color: #1d2a6d;
+  background-color: #212f75;
   color: white;
   border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 .control-buttons button:hover {
   background-color: #1d2a6dc3;
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+.control-buttons button:disabled {
+  background-color: #a1a1a1;
+  cursor: not-allowed;
+   transform: scale(1);
 }
 #explanation-box {
   display: nofne;
@@ -417,6 +445,7 @@
   background-color: #ffffff;
   padding: 10px;
   border-radius: 10px;
+  border: 1px solid #e6e6e6;
   width: 95%;
 
 }

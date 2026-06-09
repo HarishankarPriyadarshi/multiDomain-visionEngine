@@ -2,8 +2,17 @@ import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import "../region_animation.css";
-const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
+const VoxelScene = ({
+  binaryMap,
+  maxY = 1,
+  waterLevel = 1,
+  currentStep = 0,
+}) => {
   const mountRef = useRef(null);
+  // Keep references to animate objects in the clock-based loop
+  const terrainMeshesRef = useRef([]);
+  const waterMeshesRef = useRef([]);
+  const edgeMeshesRef = useRef([]);
 
   useEffect(() => {
     if (!binaryMap || !binaryMap.length) return;
@@ -13,8 +22,6 @@ const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111111);
-    
-    
 
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
     camera.position.set(10, 12, 10);
@@ -38,7 +45,9 @@ const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
     const rows = binaryMap.length;
     const cols = binaryMap[0].length;
 
-    const brightColors = [0x00ff00, 0xffa500, 0xff0000, 0xffff00, 0x00ffff, 0xff00ff];
+    const brightColors = [
+      0x00ff00, 0xffa500, 0xff0000, 0xffff00, 0x00ffff, 0xff00ff,
+    ];
     const boxGeo = new THREE.BoxGeometry(1, 1, 1);
 
     const terrainHeights = [];
@@ -53,72 +62,101 @@ const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
         if (value === 1) {
           const voxelMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
           const voxel = new THREE.Mesh(boxGeo, voxelMat);
-          voxel.position.set(x - cols / 2 + 0.5, cappedHeight / 2, y - rows / 2 + 0.5);
+          voxel.position.set(
+            x - cols / 2 + 0.5,
+            cappedHeight / 2,
+            y - rows / 2 + 0.5,
+          );
           scene.add(voxel);
         }
 
-        for (let h = 0; h < cappedHeight; h++) {
-          const isZeroNeighbor = (i, j) => {
-            return j >= 0 && j < rows && i >= 0 && i < cols && binaryMap[j][i] === 0;
-          };
+        // edge drawing
+        if (currentStep >= 2) {
+          for (let h = 0; h < cappedHeight; h++) {
+            const isZeroNeighbor = (i, j) => {
+              return (
+                j >= 0 &&
+                j < rows &&
+                i >= 0 &&
+                i < cols &&
+                binaryMap[j][i] === 0
+              );
+            };
 
-          const directions = [
-            [-1, 0, Math.PI / 2],   // left
-            [1, 0, -Math.PI / 2],   // right
-            [0, -1, 0],             // top
-            [0, 1, Math.PI],        // bottom
-          ];
+            const directions = [
+              [-1, 0, Math.PI / 2], // left
+              [1, 0, -Math.PI / 2], // right
+              [0, -1, 0], // top
+              [0, 1, Math.PI], // bottom
+            ];
 
-          const baseX = x - cols / 2 + 0.5;
-          const baseY = h + 0.5;
-          const baseZ = y - rows / 2 + 0.5;
+            const baseX = x - cols / 2 + 0.5;
+            const baseY = h + 0.5;
+            const baseZ = y - rows / 2 + 0.5;
 
-          const edgeMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            const edgeMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
 
-          directions.forEach(([dx, dy, rotY]) => {
-            const nx = x + dx;
-            const ny = y + dy;
+            directions.forEach(([dx, dy, rotY]) => {
+              const nx = x + dx;
+              const ny = y + dy;
 
-            if (isZeroNeighbor(nx, ny)) {
-              const edgeGeo = new THREE.EdgesGeometry(new THREE.PlaneGeometry(1, 1));
-              const edge = new THREE.LineSegments(edgeGeo, edgeMat);
+              if (isZeroNeighbor(nx, ny)) {
+                const edgeGeo = new THREE.EdgesGeometry(
+                  new THREE.PlaneGeometry(1, 1),
+                );
+                const edge = new THREE.LineSegments(edgeGeo, edgeMat);
 
-              edge.rotation.y = rotY;
-              edge.position.set(baseX + dx * 0.5, baseY, baseZ + dy * 0.5);
+                edge.rotation.y = rotY;
+                edge.position.set(baseX + dx * 0.5, baseY, baseZ + dy * 0.5);
 
-              scene.add(edge);
-            }
-          });
+                scene.add(edge);
+              }
+            });
+          }
         }
       }
     }
-
+    //water fill
     const waterBoxes = [];
-
-    for (let y = 0; y < rows; y++) {
-      for (let x = 0; x < cols; x++) {
-        const terrainHeight = terrainHeights[y][x];
-        const fullWaterHeight = Math.max(0, Math.min(waterLevel, maxY) - terrainHeight);
-        if (fullWaterHeight > 0) {
-          const waterGeo = new THREE.BoxGeometry(1, fullWaterHeight, 1);
-          const waterMat = new THREE.MeshStandardMaterial({
-            color: 0x33ccff,
-            transparent: true,
-            opacity: 0.6,
-            roughness: 0.1,
-            metalness: 0.4,
-          });
-
-          const waterMesh = new THREE.Mesh(waterGeo, waterMat);
-          waterMesh.position.set(
-            x - cols / 2 + 0.5,
-            terrainHeight + fullWaterHeight / 2,
-            y - rows / 2 + 0.5
+    if (currentStep >= 1) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const terrainHeight = terrainHeights[y][x];
+          const fullWaterHeight = Math.max(
+            0,
+            Math.min(waterLevel, maxY) - terrainHeight,
           );
-          waterMesh.scale.y = 0.001;
-          waterMesh.userData.targetHeight = fullWaterHeight;
-          scene.add(waterMesh);
-          waterBoxes.push({ mesh: waterMesh, x, y, terrainHeight, fullWaterHeight });
+          if (fullWaterHeight > 0) {
+            const waterGeo = new THREE.BoxGeometry(1, fullWaterHeight, 1);
+            const waterMat = new THREE.MeshStandardMaterial({
+              color: 0x33ccff,
+              transparent: true,
+              opacity: 0.6,
+              roughness: 0.1,
+              metalness: 0.4,
+            });
+
+            const waterMesh = new THREE.Mesh(waterGeo, waterMat);
+            waterMesh.position.set(
+              x - cols / 2 + 0.5,
+              terrainHeight + fullWaterHeight / 2,
+              y - rows / 2 + 0.5,
+            );
+            if (currentStep === 1) {
+              waterMesh.scale.y = 0.001;
+            } else {
+              waterMesh.scale.y = 1;
+            }
+            waterMesh.userData.targetHeight = fullWaterHeight;
+            scene.add(waterMesh);
+            waterBoxes.push({
+              mesh: waterMesh,
+              x,
+              y,
+              terrainHeight,
+              fullWaterHeight,
+            });
+          }
         }
       }
     }
@@ -162,25 +200,32 @@ const VoxelScene = ({ binaryMap, maxY = 1, waterLevel = 1 }) => {
     renderer.setAnimationLoop(() => {
       const delta = clock.getDelta();
 
-      waterBoxes.forEach(({ mesh, terrainHeight, fullWaterHeight }) => {
-        if (mesh.scale.y < 1) {
-          mesh.scale.y += riseSpeed * delta;
-          mesh.scale.y = Math.min(mesh.scale.y, 1);
-          mesh.position.y = terrainHeight + (mesh.scale.y * fullWaterHeight) / 2;
-        }
-      });
+      if (currentStep >= 1) {
+        waterBoxes.forEach(({ mesh, terrainHeight, fullWaterHeight }) => {
+          if (mesh.scale.y < 1) {
+            mesh.scale.y += riseSpeed * delta;
+            mesh.scale.y = Math.min(mesh.scale.y, 1);
+            mesh.position.y =
+              terrainHeight + (mesh.scale.y * fullWaterHeight) / 2;
+          }
+        });
+      }
 
       controls.update();
       renderer.render(scene, camera);
     });
 
     return () => {
-      if(mountRef.current)
-      mountRef.current.removeChild(renderer.domElement);
-    };
-  }, [binaryMap, maxY, waterLevel]);
+      renderer.dispose();
+      controls.dispose();
 
-  return <div ref={mountRef} id="water_shed"/>;
+      if (mountRef.current && renderer.domElement.parentNode) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
+    };
+  }, [binaryMap, maxY, waterLevel, currentStep]);
+
+  return <div ref={mountRef} id="water_shed" />;
 };
 
 export default VoxelScene;
