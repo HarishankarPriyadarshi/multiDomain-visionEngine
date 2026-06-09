@@ -32,7 +32,8 @@ export default function WaterShed({ handleClose4Modal }) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [imageAnimateKey, setImageAnimateKey] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [isVisible, setIsVisible] = useState(false);
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -87,10 +88,28 @@ export default function WaterShed({ handleClose4Modal }) {
       ],
     ];
     setOriginal(signs[x]);
-    setCurrentStep(0);
+    setCurrentStep(-1);
+    setIsVisible(false);
   }
   useEffect(() => {
     handleImage(0);
+  }, []);
+
+  function handleNextStep() {
+    
+    setCurrentStep((prev) => Math.min(2, prev + 1));
+    setIsVisible(true);
+  }
+  function handleRefresh() {
+    setCurrentStep(-1);
+    setIsVisible(false);
+  }
+  function handlePreviousStep() {
+    setCurrentStep((prev) => Math.max(0, prev - 1));
+    setIsVisible(true);
+  }
+  useEffect(() => {
+    setCurrentStep(-1);
   }, []);
 
   //   instructions
@@ -337,23 +356,17 @@ export default function WaterShed({ handleClose4Modal }) {
             {/* control buttons */}
 
             <div className="control-buttons">
-              <button onClick={() => setCurrentStep(0)}>
+              <button onClick={handleRefresh}>
                 <FiRefreshCw />
                 <span>Refresh</span>
               </button>
 
-              <button
-                onClick={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
-                disabled={currentStep === 0}
-              >
+              <button onClick={handlePreviousStep} disabled={currentStep === 0}>
                 <FaChevronLeft />
                 <span>Previous</span>
               </button>
 
-              <button
-                onClick={() => setCurrentStep((prev) => Math.min(2, prev + 1))}
-                disabled={currentStep === 2}
-              >
+              <button onClick={handleNextStep} disabled={currentStep === 2}>
                 <span>Next</span>
                 <FaChevronRight />
               </button>
@@ -362,26 +375,33 @@ export default function WaterShed({ handleClose4Modal }) {
 
           <div id="water_arrow">&#129066;</div>
 
-          <div id="right-image-box-region">
-            <div id="head-image-temp">
-              <h1>Output Image</h1>
+          {isVisible && (
+            <div id="right-image-box-region">
+              <div id="head-image-temp">
+                <h1>Output Image</h1>
+              </div>
+              <div id="original-image-temp-water">
+                <VoxelScene
+                  binaryMap={original}
+                  maxY={1}
+                  currentStep={currentStep}
+                />
+              </div>
+              <div id="explanation-box">
+                <h2 style={{ textAlign: "center" }}>
+                  {stepInfo[currentStep]?.title}
+                </h2>
+                <p style={{ textAlign: "justify" }}>
+                  {stepInfo[currentStep]?.content}
+                </p>
+              </div>
             </div>
-            <div id="original-image-temp-water">
-              <VoxelScene
-                binaryMap={original}
-                maxY={1}
-                currentStep={currentStep}
-              />
+          )}
+          {!isVisible && (
+            <div id="right-image-box-region">
             </div>
-            <div id="explanation-box">
-              <h2 style={{ textAlign: "center" }}>
-                {stepInfo[currentStep].title}
-              </h2>
-              <p style={{ textAlign: "justify" }}>
-                {stepInfo[currentStep].content}
-              </p>
-            </div>
-          </div>
+          )}
+
         </div>
       </div>
     </OpenCvProvider>

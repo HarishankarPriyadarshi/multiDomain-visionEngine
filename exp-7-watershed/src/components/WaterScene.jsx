@@ -9,16 +9,13 @@ const VoxelScene = ({
   currentStep = 0,
 }) => {
   const mountRef = useRef(null);
-  // Keep references to animate objects in the clock-based loop
-  const terrainMeshesRef = useRef([]);
-  const waterMeshesRef = useRef([]);
-  const edgeMeshesRef = useRef([]);
+
 
   useEffect(() => {
     if (!binaryMap || !binaryMap.length) return;
 
-    const width = mountRef.current.clientWidth;
-    const height = mountRef.current.clientHeight;
+    const width = mountRef.current.clientWidth  +10;
+    const height = mountRef.current.clientHeight+100;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x111111);
