@@ -71,204 +71,257 @@ export default function Sampling() {
 
   const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
-  const [isImageProcessed, setIsImageProcessed] = useState([0, 0]);
+  const [isSamplingImageProcessed, setIsSamplingImageProcessed] =
+    useState(false);
+  const [isQuantizationImageProcessed, setIsQuantizationImageProcessed] =
+    useState(false);
+
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
-     //sets variable which defines which tab is active
+  //sets variable which defines which tab is active
   const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
-    setTutorImageProcessed(isImageProcessed);
-  }, [isImageProcessed, setTutorImageProcessed]);
-
-  //tutor steps
-  const samplingTutorSteps = [
-    {
-      title: "Welcome to Sampling",
-      content:"In this experiment, you will study how image resolution changes when the sampling rate is modified. By adjusting the scale factor and choosing different interpolation methods such as Nearest, Linear, and Cubic, you will observe how pixel spacing affects image sharpness and detail preservation. Click Next to begin the sampling experiment.",
- targetId: "guided-tutor-btn",
-      placement: "bottom",
-    },
-    {
-      title: "Read Instructions",
-      content:
-        "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
-      targetId: "instruction-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Sound Mute or Unmute",
-      content:
-        "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
-      targetId: "sound-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Image Selection",
-      content:
-        "Start by selecting an image from the grid. This image will be used for the sampling experiment.",
-      targetId: "sampling-image-selection",
-      placement: "right",
-    },
-    {
-      title: "Upload Image",
-      content:
-        "Alternatively, you may upload your own image to analyze sampling effects.",
-      targetId: "upload-btn-zone",
-      placement: "right-start",
-    },
-    {
-      title: "Scale Factor",
-      content:
-        "Adjust the scale factor to control the sampling density. A lower value reduces resolution.",
-      targetId: "sampling-scale-slider",
-      placement: "bottom",
-    },
-    {
-      title: "Sampling Method",
-      content:
-        "Choose the interpolation method for sampling: Nearest, Linear, or Cubic.",
-      targetId: "sampling-method-select",
-      placement: "bottom",
-    },
-    {
-      title: "Process Image",
-      content: "Click the Process button to apply the sampling operation.",
-      targetId: "sampling-process-btn",
-      placement: "bottom",
-    },
-    {
-      title: "Result",
-      content:
-        "Observe the output image. You can see how different sampling methods and factors affect the quality.",
-      targetId: "sampling-output-box",
-      placement: "top",
-    },
-    {
-      title: "Print Results",
-      content:
-        "Click the Print button if you wish to save or document your experimental results for further analysis.",
-      targetId: "print-button-zone",
-      placement: "bottom",
-    },
-    {
-      title: "Simulation Completed",
-      content:
-        "Congratulations!  You have successfully completed the sampling simulation.",
-      targetId: "print-button-zone",
-      placement: "right",
-    },
-  ];
-
-  const quantizationTutorSteps = [
-    {
-      title: "Welcome to Quantization",
-      content:
-        "In this experiment, you will analyze how reducing the number of intensity levels affects image quality. By changing the bit depth or quantization levels, you will observe the appearance of banding effects and loss of smooth gradients. This helps you understand how amplitude discretization impacts digital image representation. Click Next to begin the quantization experiment.",
-      targetId: "guided-tutor-btn",
-      placement: "bottom",
-    },
-    {
-      title: "Read Instructions",
-      content:
-        "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
-      targetId: "instruction-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Sound Mute or Unmute",
-      content:
-        "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
-      targetId: "sound-btn",
-      placement: "bottom",
-      offset: [-60, 12],
-    },
-    {
-      title: "Image Selection",
-      content: "Select an image from the grid for the quantization experiment.",
-      targetId: "quantization-image-selection",
-      placement: "right",
-    },
-    {
-      title: "Upload Image",
-      content:
-        "Alternatively, you may upload your own image to analyze sampling effects.",
-      targetId: "upload-btn-zone",
-      placement: "right-start",
-    },
-    {
-      title: "Bit Depth",
-      content:
-        "Select the number of bits for quantization. Fewer bits result in more visible gray-level steps (contouring).",
-      targetId: "quantization-bit-select",
-      placement: "bottom",
-    },
-    {
-      title: "Process Image",
-      content: "Click the Process button to apply quantization.",
-      targetId: "quantization-process-btn",
-      placement: "bottom",
-    },
-    {
-      title: "Result",
-      content:
-        "Observe the quantized output image. Notice the effect of bit depth reduction.",
-      targetId: "quantization-output-box",
-      placement: "left",
-    },
-    {
-      title: "Print Results",
-      content:
-        "Click the Print button if you wish to save or document your experimental results for further analysis.",
-      targetId: "print-button-zone",
-      placement: "bottom",
-    },
-    {
-      title: "Simulation Completed",
-      content:
-        "Congratulations!  You have successfully completed the quantization simulation.",
-      targetId: "print-button-zone",
-      placement: "right",
-      offset: [0, 12],
-    },
-  ];
+    setTutorImageProcessed(isSamplingImageProcessed);
+  }, [isSamplingImageProcessed, setTutorImageProcessed]);
 
   useEffect(() => {
+    setTutorImageProcessed(isQuantizationImageProcessed);
+  }, [isQuantizationImageProcessed, setTutorImageProcessed]);
+
+  //tutor steps
+  useEffect(() => {
     stop();
-    setTutorStep(0);
+
     if (tabValue === 0) {
+      const samplingTutorSteps = [
+        {
+          title: "Welcome to Sampling",
+          content:
+            "In this experiment, you will study how image resolution changes when the sampling rate is modified. By adjusting the scale factor and choosing different interpolation methods such as Nearest, Linear, and Cubic, you will observe how pixel spacing affects image sharpness and detail preservation. Click Next to begin the sampling experiment.",
+          targetId: "guided-tutor-btn",
+          placement: "bottom",
+        },
+        {
+          title: "Read Instructions",
+          content:
+            "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+          targetId: "instruction-btn",
+          placement: "bottom",
+          offset: [-60, 12],
+        },
+        {
+          title: "Sound Mute or Unmute",
+          content:
+            "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+          targetId: "sound-btn",
+          placement: "bottom",
+          offset: [-60, 12],
+        },
+        {
+          title: "Image Selection",
+          content:
+            "Start by selecting an image from the grid. This image will be used for the sampling experiment. by default the first image is selected.",
+          targetId: "sampling-image-selection",
+          placement: "right",
+        },
+        {
+          title: "Upload Image",
+          content:
+            "Alternatively, you may upload your own image to analyze sampling effects.",
+          targetId: "upload-btn-zone",
+          placement: "right-start",
+        },
+        {
+          title: "Scale Factor",
+          content:
+            "Adjust the scale factor to control the sampling density. A lower value reduces resolution.",
+          targetId: "sampling-scale-slider",
+          placement: "bottom",
+        },
+        {
+          title: "Sampling Method",
+          content:
+            "Choose the interpolation method for sampling: Nearest, Linear, or Cubic.",
+          targetId: "sampling-method-select",
+          placement: "bottom",
+        },
+        {
+          title: "Process Sampling",
+          content: "Click the Process button to apply the sampling operation.",
+          targetId: "sampling-process-btn",
+          placement: "bottom",
+        },
+      ];
+      console.log(isSamplingImageProcessed);
+
+      if (!isSamplingImageProcessed) {
+        samplingTutorSteps.push({
+          title: "Action Required",
+          content: "Click the Process button to continue.",
+          targetId: "next-btn",
+          placement: "top",
+          offset: [0, 10],
+        });
+        setTutorSteps(samplingTutorSteps);
+        return;
+      }
+      samplingTutorSteps.push(
+        {
+          title: "Outffput Image",
+          content:
+            "Observe the output image. You can see how different sampling methods and factors affect the quality.",
+          targetId: "sampling-output-box",
+          placement: "top",
+        },
+        {
+          title: "Print Results",
+          content:
+            "Click the Print button if you wish to save or document your experimental results for further analysis.",
+          targetId: "print-button-zone",
+          placement: "bottom",
+        },
+        {
+          title: "Simulation Completed",
+          content:
+            "Congratulations!  You have successfully completed the sampling simulation.",
+          targetId: "print-button-zone",
+          placement: "right",
+        },
+      );
       setTutorSteps(samplingTutorSteps);
     } else {
+      const quantizationTutorSteps = [
+        {
+          title: "Welcome to Quantization",
+          content:
+            "In this experiment, you will analyze how reducing the number of intensity levels affects image quality. By changing the bit depth or quantization levels, you will observe the appearance of banding effects and loss of smooth gradients. This helps you understand how amplitude discretization impacts digital image representation. Click Next to begin the quantization experiment.",
+          targetId: "guided-tutor-btn",
+          placement: "bottom",
+        },
+        {
+          title: "Read Instructions",
+          content:
+            "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+          targetId: "instruction-btn",
+          placement: "bottom",
+          offset: [-60, 12],
+        },
+        {
+          title: "Sound Mute or Unmute",
+          content:
+            "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+          targetId: "sound-btn",
+          placement: "bottom",
+          offset: [-60, 12],
+        },
+        {
+          title: "Image Selection",
+          content:
+            "Select an image from the grid for the quantization experiment. by default the first image is selected.",
+          targetId: "quantization-image-selection",
+          placement: "right",
+        },
+        {
+          title: "Upload Image",
+          content:
+            "Alternatively, you may upload your own image to analyze sampling effects.",
+          targetId: "upload-btn-zone",
+          placement: "right-start",
+        },
+        {
+          title: "Bit Depth",
+          content:
+            "Select the number of bits for quantization. Fewer bits result in more visible gray-level steps (contouring).",
+          targetId: "quantization-bit-select",
+          placement: "bottom",
+        },
+        {
+          title: "Process Quantization",
+          content: "Click the Process button to apply quantization.",
+          targetId: "quantization-process-btn",
+          placement: "bottom",
+        },
+      ];
+      console.log(isSamplingImageProcessed);
+
+      if (!isQuantizationImageProcessed) {
+        quantizationTutorSteps.push({
+          title: "Action Required",
+          content: "Click the Process button to continue.",
+          targetId: "next-btn",
+          placement: "top",
+          offset: [0, 10],
+        });
+        setTutorSteps(quantizationTutorSteps);
+        return;
+      }
+      quantizationTutorSteps.push(
+        {
+          title: "Result",
+          content:
+            "Observe the quantized output image. Notice the effect of bit depth reduction.",
+          targetId: "quantization-output-box",
+          placement: "left",
+        },
+        {
+          title: "Print Results",
+          content:
+            "Click the Print button if you wish to save or document your experimental results for further analysis.",
+          targetId: "print-button-zone",
+          placement: "bottom",
+        },
+        {
+          title: "Simulation Completed",
+          content:
+            "Congratulations!  You have successfully completed the quantization simulation.",
+          targetId: "print-button-zone",
+          placement: "right",
+          offset: [0, 12],
+        },
+      );
       setTutorSteps(quantizationTutorSteps);
     }
-  }, [setTutorSteps, setTutorStep, stop, tabValue]);
+  }, [
+    setTutorSteps,
+    setTutorStep,
+    tabValue,
+    isSamplingImageProcessed,
+    isQuantizationImageProcessed,
+  ]);
+
+  useEffect(() => {
+    setTutorStep(0);
+  }, [tabValue]);
 
   // Instructions list
   useEffect(() => {
-    setInstructionsList({
-      0: [
-        " Step 1: Select an image from the available options or upload one using the Upload File button.",
-        " Step 2: Set the scale factor.",
-        " Step 3: Select the sampling method.",
-        " Step 4: Click the Process button to continue.",
-        " Step 5: Click the Print button to print the result.",
-      ],
-      1: [
-        " Step 1: Select an image from the available options or upload one using the Upload File button.",
-        " Step 2: Select the quantization mode.",
-        " Step 3: Click the Process button to continue.",
-        " Step 4: Click the Print button to print the result.",
-      ],
-    });
-  }, [setInstructionsList]);
+    if (tabValue === 0) {
+      setInstructionsList({
+        0: [
+          " Step 1: Select an image from the available options or upload one using the Upload File button.",
+          " Step 2: Set the scale factor.",
+          " Step 3: Select the sampling method.",
+          " Step 4: Click the Process button to continue.",
+          " Step 5: Click the Print button to print the result.",
+        ],
+      });
+    }else if (tabValue === 1) {
+      setInstructionsList({
+        0: [
+          " Step 1: Select an image from the available options or upload one using the Upload File button.",
+          " Step 2: Select the quantization mode.",
+          " Step 3: Click the Process button to continue.",
+          " Step 4: Click the Print button to print the result.",
+        ],
+      });
+    }
+  }, [setInstructionsList, tabValue]);
   const boldKeywords = [
     "Upload File",
     "Process",
     "Print",
-
+    "quantization mode",
     "Step",
     "scale factor",
     "sampling method",
@@ -299,7 +352,7 @@ export default function Sampling() {
   const notifyS = (msg) => {
     toast.success(msg, {
       theme: "dark",
-      position: "bottom-left", // Set toast position
+      position: "bottom-right", // Set toast position
       autoClose: 2000, // Toast auto-closes after 3 seconds
       hideProgressBar: false, // Show progress bar
       closeOnClick: true, // Close toast when clicked
@@ -334,7 +387,9 @@ export default function Sampling() {
       window.cv.resize(src, dst, newSize, 0, 0, cv.INTER_CUBIC);
     }
     window.cv.imshow("finalImage", dst);
-    setIsImageProcessed([1, 0]);
+    setIsSamplingImageProcessed(true);
+    console.log("isImageProcessedSampling", isSamplingImageProcessed);
+
     setIsAnimationPlaying(true);
     setTimeout(() => {
       setIsAnimationPlaying(false);
@@ -373,7 +428,9 @@ export default function Sampling() {
     src.convertTo(dst, cv.CV_8U, (levels - 1) / 255.0); // Scale to 0-15
     dst.convertTo(dst, cv.CV_8U, 255.0 / (levels - 1)); // Scale back to 0-255
     window.cv.imshow("finalImage", dst);
-    setIsImageProcessed([0, 1]);
+    setIsQuantizationImageProcessed(true);
+    console.log("isImageProcessedQuantization", isQuantizationImageProcessed);
+
     setIsAnimationPlaying(true);
     setTimeout(() => {
       setIsAnimationPlaying(false);
@@ -387,14 +444,12 @@ export default function Sampling() {
 
   const [scaleFactor, setScaleFactor] = useState(1);
   const [samplingMethod, setSamplingMethod] = useState("Nearest");
- 
+
   const [bitValue, setBitVale] = useState("8");
   const [drawerOpen, setDrawerOpen] = useState(false); // State for opening/closing the drawer
   const [uploadedImageName, setUploadedImageName] = useState(null);
 
-  var indexTabValue = tabValue;
   const handleTabChange = (event, newValue) => {
-    indexTabValue = newValue;
     setTabValue(newValue);
   };
 
@@ -406,10 +461,6 @@ export default function Sampling() {
     setIsInstructionOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsInstructionOpen(false); // Close the modal
-  };
-
   const initialImages = [sample1, sample2, sample3, sample4];
 
   // State to hold the images
@@ -419,6 +470,8 @@ export default function Sampling() {
   const [imageName, setImageName] = useState("");
 
   const handleImageChange = (event) => {
+    setIsSamplingImageProcessed(false);
+    setIsQuantizationImageProcessed(false);
     const file = event.target.files?.[0];
     if (file) {
       setIsInputImageAnimationPlaying(true);
@@ -444,6 +497,8 @@ export default function Sampling() {
 
   const handleImageClick = (index) => {
     // console.log("clickeddd");
+    setIsSamplingImageProcessed(false);
+    setIsQuantizationImageProcessed(false);
     setSelectedImage(index);
     setImageName(`Sample ${index + 1}`);
     setIsInputImageAnimationPlaying(true);
@@ -521,7 +576,7 @@ export default function Sampling() {
               />
               <Tab
                 sx={{ color: "#D1D3D8", "&.Mui-selected": { color: " white" } }}
-                onClick={() => handleImageClick(0)}
+                onClick={() => handleImageClick(1)}
                 label="Quantization"
               />
             </Tabs>
@@ -635,28 +690,6 @@ export default function Sampling() {
               </Button>
             </DialogActions>
           </Dialog>
-          {/* <Dialog
-            open={openInstructionsModal}
-            onClose={handleCloseModal}
-            aria-labelledby="instructions-dialog-title"
-            aria-describedby="instructions-dialog-description"
-            style={{ height: "80%" }}
-          >
-            <DialogTitle id="instructions-dialog-title">
-              Instructions
-            </DialogTitle>
-            <DialogContent style={{ paddingTop: "10px" }}>
-              <p style={{ color: "#1D2A6D", fontWeight: "bold" }}>
-                {tabValue === 0 ? "Sampling" : "Quantization"}:
-              </p>
-              {getInstructions()}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog> */}
         </div>
 
         <div id="mainbox">
@@ -1102,9 +1135,17 @@ export default function Sampling() {
                           alignItems: "center",
                         }}
                       >
-                        <canvas style={{}} id="finalImage" alt="Output Image" />
+                        <canvas
+                          style={{
+                            display: isSamplingImageProcessed
+                              ? "block"
+                              : "none",
+                          }}
+                          id="finalImage"
+                          alt="Output Image"
+                        />
                         {/* <p>Output Image</p> */}
-                        {isImageProcessed[0] === 0 && (
+                        {!isSamplingImageProcessed && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
@@ -1557,7 +1598,7 @@ export default function Sampling() {
                           alt="Output Image"
                         />
                         {/* <p>Output Image</p> */}
-                        {isImageProcessed[1] === 0 && (
+                        {!isQuantizationImageProcessed && (
                           <div className="process-message-container quant">
                             <div className="placeholder-content">
                               <div className="file-icon">
