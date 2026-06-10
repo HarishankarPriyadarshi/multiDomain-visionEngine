@@ -96,7 +96,6 @@ export default function WaterShed({ handleClose4Modal }) {
   }, []);
 
   function handleNextStep() {
-    
     setCurrentStep((prev) => Math.min(2, prev + 1));
     setIsVisible(true);
   }
@@ -114,8 +113,11 @@ export default function WaterShed({ handleClose4Modal }) {
 
   //   instructions
   const instructions = [
-    "1 Click to select an image and observe the resulting image.",
-    "2 Click to select an image and observe the resulting image.",
+    "Step 1: select a binary image from image box ",
+    "Step 2: click the next button to start the simulation.",
+    "Step 3: observe the terrain formation.",
+    "Step 4: observe the water filling.",
+    "Step 5: observe the watershed boundaries.",
   ];
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -158,6 +160,141 @@ export default function WaterShed({ handleClose4Modal }) {
     setTutorStepsSim,
     resetTutorSim,
   } = useContext(SimContext);
+
+  useEffect(() => {
+    const baseSteps = [
+      {
+        title: " Watershed Segmentation Simulation",
+        content:
+          "This guided walkthrough demonstrates the Watershed Segmentation algorithm. The algorithm treats an image as a topographic surface, floods low regions with water, and identifies watershed boundaries that separate different regions.",
+        targetId: "guided-tutor-btn-sim",
+        placement: "bottom",
+      },
+
+      {
+        title: "Instruction Panel",
+        content:
+          "Use the navigation arrows here to read step-by-step instructions for performing the Watershed Segmentation experiment.",
+        targetId: "inst_content_container",
+        placement: "bottom",
+      },
+
+      {
+        title: "Choose Binary Image",
+        content:
+          "Select one of the predefined binary images. The selected image will be used as the input terrain for the Watershed Segmentation process.",
+        targetId: "Choose_box_region",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Selected Binary Image",
+        content:
+          "This selected binary image acts as the input for Watershed Segmentation. Foreground pixels represent elevated regions, while background pixels represent lower regions.",
+        targetId: "original-image-temp",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Reset Button",
+        content:
+          "You can click the Reset button to return to its initial state .",
+        targetId: "reset-btn",
+        placement: "bottom",
+      },
+
+      {
+        title: "Simulation Start",
+        content: "Click the Next button to start the simulation.",
+        targetId: "next-btn",
+        placement: "bottom",
+      },
+    ];
+
+    if (currentStep === -1) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Please click the Next button to continue the simulation.",
+        targetId: "next-btn",
+        placement: "bottom",
+      });
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    /* STEP 0 */
+    if (currentStep === 0) {
+      baseSteps.push(
+        {
+          title: "Step 1: Topographic Surface Generation",
+          content:
+            "The binary image is converted into a 3D terrain representation. Foreground pixels become elevated regions, while background pixels remain at lower levels. Observe the resulting hills and plateaus, which correspond to objects that will later be separated by watershed boundaries during segmentation.",
+          targetId: "water_shed",
+          placement: "top",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Action Required",
+          content: "Click the Next button to begin the flooding process.",
+          targetId: "next-btn",
+          placement: "top",
+          offset: [0, 10],
+        },
+      );
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    /* STEP 1 */
+    if (currentStep === 1) {
+      baseSteps.push(
+        {
+          title: "Step 2: Flooding Simulation",
+          content:
+            "Water gradually rises through the lower regions, forming catchment basins while elevated areas remain visible. This flooding process helps separate neighboring regions.",
+          targetId: "water_shed",
+          placement: "top",
+          offset: [0, 10],
+        },
+
+        {
+          title: "Action Required",
+          content: "Click the Next button to identify watershed boundaries.",
+          targetId: "next-btn",
+          placement: "top",
+          offset: [0, 10],
+        },
+      );
+
+      setTutorStepsSim(baseSteps);
+      return;
+    }
+
+    /* STEP 2 */
+    if (currentStep === 2) {
+      baseSteps.push({
+        title: "Step 3: Watershed Boundary Detection",
+        content:
+          "After flooding, red watershed lines are identified to separate neighboring catchment basins, producing the final segmented regions.",
+        targetId: "water_shed",
+        placement: "top",
+        offset: [0, 10],
+      });
+    }
+    baseSteps.push({
+      title: "Watershed Algo Completed",
+      content:
+        "Congratulations! You have successfully visualized terrain generation, flooding simulation, and watershed boundary detection.",
+      targetId: "water_shed",
+      placement: "bottom",
+      offset: [0, 10],
+    });
+
+    setTutorStepsSim(baseSteps);
+  }, [currentStep, currentStep]);
 
   return (
     <OpenCvProvider>
@@ -305,25 +442,6 @@ export default function WaterShed({ handleClose4Modal }) {
           </div>
         </div>
 
-        {/* <div>
-          <p
-            style={{
-              marginTop: "20px",
-              fontSize: "16px",
-              lineHeight: "1.5",
-              marginLeft: "10px",
-              marginRight: "10px",
-              textAlign: "justify",
-            }}
-          >
-            The Watershed algorithm uses a heatmap representation where higher
-            intensity values form hills and lower intensity values form valleys.
-            It simulates filling these valleys with water, and as the water
-            levels rise, the boundaries where different water sources meet are
-            marked with red edges, representing the segmentation result.
-          </p>
-        </div> */}
-
         <div id="image-box-region">
           <div id="left-image-box-region">
             <div id="head-image-temp">
@@ -356,9 +474,9 @@ export default function WaterShed({ handleClose4Modal }) {
             {/* control buttons */}
 
             <div className="control-buttons">
-              <button onClick={handleRefresh}>
+              <button id="reset-btn" onClick={handleRefresh}>
                 <FiRefreshCw />
-                <span>Refresh</span>
+                <span>Reset</span>
               </button>
 
               <button onClick={handlePreviousStep} disabled={currentStep === 0}>
@@ -366,7 +484,11 @@ export default function WaterShed({ handleClose4Modal }) {
                 <span>Previous</span>
               </button>
 
-              <button onClick={handleNextStep} disabled={currentStep === 2}>
+              <button
+                id="next-btn"
+                onClick={handleNextStep}
+                disabled={currentStep === 2}
+              >
                 <span>Next</span>
                 <FaChevronRight />
               </button>
@@ -397,12 +519,10 @@ export default function WaterShed({ handleClose4Modal }) {
               </div>
             </div>
           )}
-          {!isVisible && (
-            <div id="right-image-box-region">
-            </div>
-          )}
-
+          {!isVisible && <div id="right-image-box-region"></div>}
         </div>
+        {/* tutor modal */}
+        <TutorSim />
       </div>
     </OpenCvProvider>
   );
