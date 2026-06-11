@@ -112,12 +112,12 @@ export const HomeContextProvider = ({ children }) => {
       }
     : currentStep;
 
-  // Auto-advance tutor for processing
-  useEffect(() => {
-    if (isTutorOpen && tutorStep === 7 && isImageProcessed) {
-      handleTutorNext();
-    }
-  }, [handleTutorNext, isImageProcessed, isTutorOpen, tutorStep]);
+  // // Auto-advance tutor for processing
+  // useEffect(() => {
+  //   if (isTutorOpen && tutorStep === 7 && isImageProcessed) {
+  //     handleTutorNext();
+  //   }
+  // }, [handleTutorNext, isImageProcessed, isTutorOpen, tutorStep]);
 
   // Read instructions aloud once when reaching the instruction button step
   const hasReadInstructionsRef = useRef(false);

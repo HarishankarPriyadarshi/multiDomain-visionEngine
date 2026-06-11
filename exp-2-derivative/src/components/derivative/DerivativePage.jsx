@@ -75,7 +75,6 @@ export default function DerivativePage() {
     setTutorStep,
     setShowWelcome,
     stop,
-    
   } = useContext(HomeContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
@@ -83,6 +82,7 @@ export default function DerivativePage() {
     useState(false);
   // const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
+  
 
   const notifyS = (msg) => {
     toast.success(msg, {
@@ -206,7 +206,7 @@ export default function DerivativePage() {
 
   // Tutor steps
   useEffect(() => {
-    setTutorSteps([
+    const baseSteps = [
       {
         title: "Welcome",
         content:
@@ -233,7 +233,7 @@ export default function DerivativePage() {
       {
         title: "Select Image",
         content:
-          "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing.",
+          "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing.by default first image is selected. ",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -271,13 +271,27 @@ export default function DerivativePage() {
         offset: [0, 12],
       },
       {
-        title: "Processing",
+        title: "Process",
         content:
           "Click the Process button to convert the image into grayscale and apply the selected derivative operator for edge detection.",
         targetId: "process-button",
         placement: "bottom",
         offset: [-60, 12],
       },
+
+    ];
+    if (!isImageProcessed) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the Process button to continue.",
+        targetId: "process-button",
+        placement: "top",
+        offset: [0, 10],
+      });
+      setTutorSteps(baseSteps);
+      return;
+    }
+    baseSteps.push(
       {
         title: "Observe Output",
         content:
@@ -302,8 +316,9 @@ export default function DerivativePage() {
         placement: "bottom",
         offset: [-60, 12],
       },
-    ]);
-  }, [derivativeMethod, setTutorSteps]);
+  );
+    setTutorSteps(baseSteps);
+  }, [derivativeMethod, setTutorSteps, isImageProcessed]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -325,6 +340,8 @@ export default function DerivativePage() {
     "Concept",
     "First Order",
     "Step",
+    "order of the derivative",
+
     "1",
     "2",
     "3",
@@ -348,6 +365,7 @@ export default function DerivativePage() {
   };
 
   const handleImageChange = (event) => {
+    setIsImageProcessed(false);
     const file = event.target.files?.[0];
     if (file) {
       setUploadedImageName(file.name);
@@ -372,6 +390,7 @@ export default function DerivativePage() {
   };
 
   const handleImageClick = (index) => {
+    setIsImageProcessed(false);
     setSelectedImage(index);
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
@@ -380,19 +399,17 @@ export default function DerivativePage() {
     // setImageName(`Sample ${index + 1}`);
   };
 
-  const handleCloseModal = () => {
-    setIsInstructionOpen(false);
-  };
+  
 
   const handleClose2Modal = () => {
     setOpenExplanationModal(false);
-      // Reset tutor state
-  setIsTutorOpen(false);
-  setTutorStep(0);
-  setShowWelcome(false);
+    // Reset tutor state
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
 
-  // Stop speech completely
-  stop();
+    // Stop speech completely
+    stop();
   };
 
   return (
@@ -421,14 +438,7 @@ export default function DerivativePage() {
               />
             </Button>
 
-            {/* <Button id="sound-btn"  ref={voicePause} title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                onClick={speak}
-              />
-            </Button> */}
+
 
             <Button
               id="instruction-btn"
@@ -460,7 +470,7 @@ export default function DerivativePage() {
               }}
               onClick={startTutor}
             >
-               {isMobile ? "Tutor" : "Guided Tutor"}
+              {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
           </div>
 
@@ -477,10 +487,6 @@ export default function DerivativePage() {
             <DialogContent style={{ paddingTop: "10px" }}>
               <ul style={{ lineHeight: "1.8" }}>
                 {instructionsList[0]?.map((step, index) => {
-                  // Find if this step contains the currently spoken sentence
-                  // This is a bit tricky because useSpeechController splits by sentences
-                  // but each step in instructionsList might be one or more sentences.
-                  // For simplicity, we'll check if the current sentence is part of this step.
                   const isCurrentStepSpeaking =
                     isSpeaking &&
                     !isPaused &&
@@ -983,9 +989,14 @@ export default function DerivativePage() {
                           alignItems: "center",
                         }}
                       >
-                        <canvas style={{}} id="finalImage" alt="Output Image" />
+                        
+                        <canvas style={{
+                            display: isImageProcessed
+                              ? "block"
+                              : "none",
+                          }} id="finalImage" alt="Output Image" />
                         {/* <p>Output Image</p>  */}
-                        {isImageProcessed === false && (
+                        {!isImageProcessed  && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
@@ -1084,51 +1095,7 @@ export default function DerivativePage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  {/* <DialogTitle id="instructions-dialog-title">
-                    <div
-                      style={{
-                        width: "50%",
-                        justifyContent: "flex-start",
-                        display: "flex",
-                      }}
-                    >
-                      Derivative Concept
-                    </div>
-                    <div
-                      style={{
-                        width: "50%",
-
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Button
-                        id="guided-tutor-btn"
-                        ref={tutorBtnRef}
-                        style={{
-                          color: "#1D2A6D",
-                          backgroundColor: "#FFD700",
-                          fontWeight: "bold",
-                          margin: "auto auto",
-                          marginLeft: "10px",
-                          borderRadius: "20px",
-                          padding: "5px 15px",
-                          height: "40px",
-                        }}
-                        onClick={startTutor}
-                      >
-                        Guided Tutor
-                      </Button>
-                      <Button
-                        onClick={handleClose2Modal}
-                        color="primary"
-                        style={{ backgroundColor: "beige" }}
-                      >
-                        Close
-                      </Button>
-                    </div>
-                  </DialogTitle> */}
+                  
 
                   <DialogContent
                     sx={{ padding: "0px", height: "1200px", overflow: "clip" }}
