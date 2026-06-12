@@ -45,7 +45,7 @@ export const SimContextProvider = ({ children }) => {
   const startTutorSim = () => {
     setTutorStepSim(0);
     setIsTutorOpenSim(true);
-     setIsSimPlaying(true);
+    //  setIsSimPlaying(true);
   };
 
   const handleTutorNextSim = () => {
@@ -53,6 +53,7 @@ export const SimContextProvider = ({ children }) => {
      
       setPrevStepSim(tutorStepSim);
       setTutorStepSim(tutorStepSim + 1);
+      console.log("isSimPlaying", isSimPlaying);
     } else {
       setIsTutorOpenSim(false);
       setTutorStepSim(0);

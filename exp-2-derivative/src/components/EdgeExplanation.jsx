@@ -69,7 +69,9 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     isSimPlaying,
     setIsSimPlaying,
     resetTutorSim,
-    
+    isTutorOpenSim,
+    tutorStepSim,
+    setTutorStepSim,
   } = useContext(SimContext);
 
   useEffect(() => {
@@ -89,15 +91,15 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         placement: "bottom",
       },
       {
-        title: "Choose Input Image",
+        title: "Select Input Image",
         content:
-          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing.",
+          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing. by default, the Plus image is selected.",
         targetId: "image-box",
         placement: "right",
       },
       {
-        title: "Image Chosen",
-        content: "You can see the selected image in the image box.",
+        title: "Selected Image",
+        content: `You can see the selected ${image === 0 ? "Plus" : image === 1 ? "Minus" : image === 2 ? "multiply" : "divide"} image in the image box.`,
         targetId: "ogimage",
         placement: "right",
       },
@@ -110,8 +112,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       },
       {
         title: "Kernel X and Kernel Y",
-        content:
-          "Observe Kernel X and Kernel Y matrices. Kernel X detects horizontal intensity changes, while Kernel Y detects vertical intensity changes.",
+        content: `Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X detects horizontal intensity changes, while Kernel Y detects vertical intensity changes.`,
         targetId: "kernels",
         placement: "top",
       },
@@ -139,7 +140,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       {
         title: "Play / Pause",
         content:
-          "Now, Click the Play button to start the convolution process. The kernel will slide over the image and compute gradient values pixel by pixel. You can pause the simulation at any time by clicking the Pause button.",
+          "Now, Click the Play button to start the convolution process.  You can pause the simulation at any time by clicking the Pause button.",
         targetId: "sim-play-pause-btn",
         placement: "bottom",
       },
@@ -148,93 +149,94 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     // 👇 If simulation NOT started
     if (!isSimPlaying) {
       baseSteps.push({
-        title: "Simulation Not Started",
+        title: "Action Required",
         content:
-          "Please click the Play button to begin the sliding window convolution process.",
+          "Please click the Play button to begin the convolution process.",
         targetId: "sim-play-pause-btn",
         placement: "bottom",
       });
+      setTutorStepsSim(baseSteps);
+      return;
     }
-    if (isSimPlaying) {
-      baseSteps.push(
-        {
-          title: "Sliding Window Operation",
-          content:
-            "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
-          targetId: "kernel-sliding-box",
-          placement: "top",
-          offset: [-10, 12],
-        },
-        {
-          title: "Observe Kernel X Convolution Steps",
-          content:
-            "Here you can see the detailed multiplication steps and running sum for Kernel X  during convolution.",
-          targetId: "convStepsX",
-          placement: "right",
-          offset: [1, 12],
-        },
-        {
-          title: "Gradient X",
-          content:
-            "After each window operation, ΔX values are generated and stored in their respective result matrices.",
-          targetId: "tutorDXGrid",
-          placement: "top",
-          offset: [-10, 32],
-        },
-        {
-          title: "Observe Kernel Y Convolution Steps",
-          content:
-            "Here you can see the detailed multiplication steps and running sum for Kernel Y during convolution.",
-          targetId: "convStepsY",
-          placement: "left",
-          offset: [1, 12],
-        },
-        {
-          title: "Gradient Y",
-          content:
-            "After each window operation, ΔY values are generated and stored in their respective result matrices.",
-          targetId: "tutorDYGrid",
-          placement: "bottom",
-          offset: [-10, 32],
-        },
 
-        {
-          title: "Resultant  ΔG Calculation",
-          content:
-            "The final edge strength is computed using above formula. This gives the overall magnitude of intensity change.",
-          targetId: "tutorResCalculationGrid",
-          placement: "top",
-          offset: [-10, 32],
-        },
-        {
-          title: "Resultant Gradient",
-          content:
-            "after each window operation, ΔG values are computed and stored in their respective result Gradient matrices.",
-          targetId: "tutorResGrid",
-          placement: "top",
-          offset: [-10, 12],
-        },
-        {
-          title: "Resultant Image",
-          content:
-            "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
-          targetId: "tutorResImageGrid",
-          placement: "bottom",
-          offset: [-10, 12],
-        },
+    baseSteps.push(
+      {
+        title: "Sliding Window Operation",
+        content:
+          "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+        targetId: "kernel-sliding-box",
+        placement: "top",
+        offset: [-10, 12],
+      },
+      {
+        title: "Observe Kernel X Convolution Steps",
+        content:
+          "Here you can see the detailed multiplication steps and running sum for Kernel X  during convolution.",
+        targetId: "convStepsX",
+        placement: "right",
+        offset: [1, 12],
+      },
+      {
+        title: "Gradient X",
+        content:
+          "After each window operation, ΔX values are generated and stored in their respective result matrices.",
+        targetId: "tutorDXGrid",
+        placement: "top",
+        offset: [-10, 32],
+      },
+      {
+        title: "Observe Kernel Y Convolution Steps",
+        content:
+          "Here you can see the detailed multiplication steps and running sum for Kernel Y during convolution.",
+        targetId: "convStepsY",
+        placement: "left",
+        offset: [1, 12],
+      },
+      {
+        title: "Gradient Y",
+        content:
+          "After each window operation, ΔY values are generated and stored in their respective result matrices.",
+        targetId: "tutorDYGrid",
+        placement: "bottom",
+        offset: [-10, 32],
+      },
 
-        {
-          title: "Experiment Completed",
-          content:
-            "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
-          targetId: "tutorResImageGrid",
-          placement: "top",
-        },
-      );
-    }
+      {
+        title: "Resultant  ΔG Calculation",
+        content:
+          "The final edge strength is computed using above formula. This gives the overall magnitude of intensity change.",
+        targetId: "tutorResCalculationGrid",
+        placement: "top",
+        offset: [-10, 32],
+      },
+      {
+        title: "Resultant Gradient",
+        content:
+          "after each window operation, ΔG values are computed and stored in their respective result Gradient matrices.",
+        targetId: "tutorResGrid",
+        placement: "top",
+        offset: [-10, 12],
+      },
+      {
+        title: "Resultant Image",
+        content:
+          "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
+        targetId: "tutorResImageGrid",
+        placement: "bottom",
+        offset: [-10, 12],
+      },
+
+      {
+        title: "Experiment Completed",
+        content:
+          "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
+        targetId: "tutorResImageGrid",
+        placement: "top",
+      },
+    );
 
     setTutorStepsSim(baseSteps);
-  }, [isSimPlaying]);
+  }, [isSimPlaying, kernel, image]);
 
   useEffect(() => {
     isPausedSimulationRef.current = isPausedSimulation;
@@ -423,6 +425,12 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     setActiveDX({ row: -1, col: -1 });
     setActiveDY({ row: -1, col: -1 });
     setFirstKernelCalculated(false);
+    
+    // Tutor logic: if tutor is open and was past the Action Required step, redirect back
+    if (isTutorOpenSim && tutorStepSim >= 10) {
+      setTutorStepSim(10);
+    }
+    
     setIsSimPlaying(false);
   }
   //   useEffect(() => {
@@ -647,10 +655,9 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 />
               </Button>
               <Button
-                onClick={()=>{
+                onClick={() => {
                   resetTutorSim();
                   handleClose2Modal();
-                  
                 }}
                 color="primary"
                 style={{ backgroundColor: "beige", marginRight: "10px" }}
@@ -1005,6 +1012,15 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
             <div id="kernels">
               <div id="kernelx">
+                <h3
+                  style={{
+                    marginBottom: "10px",
+                    color: "black",
+                    fontSize: "22px",
+                  }}
+                >
+                  {kernel}
+                </h3>
                 <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel X</h4>
                 <div
                   className="matrix-over"
