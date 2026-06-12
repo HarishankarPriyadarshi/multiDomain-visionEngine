@@ -62,7 +62,8 @@ export default function Sampling() {
     currentSentenceIndex,
     instructionsList,
     closeInstructions,
-
+    tutorStep,
+    isTutorOpen,
     setTutorStep,
 
     stop,
@@ -153,7 +154,7 @@ export default function Sampling() {
           placement: "bottom",
         },
       ];
-      console.log(isSamplingImageProcessed);
+     // console.log(isSamplingImageProcessed);
 
       if (!isSamplingImageProcessed) {
         samplingTutorSteps.push({
@@ -306,7 +307,7 @@ export default function Sampling() {
           " Step 5: Click the Print button to print the result.",
         ],
       });
-    }else if (tabValue === 1) {
+    } else if (tabValue === 1) {
       setInstructionsList({
         0: [
           " Step 1: Select an image from the available options or upload one using the Upload File button.",
@@ -472,6 +473,10 @@ export default function Sampling() {
   const handleImageChange = (event) => {
     setIsSamplingImageProcessed(false);
     setIsQuantizationImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
+    }
     const file = event.target.files?.[0];
     if (file) {
       setIsInputImageAnimationPlaying(true);
@@ -496,6 +501,10 @@ export default function Sampling() {
   };
 
   const handleImageClick = (index) => {
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
+    }
     // console.log("clickeddd");
     setIsSamplingImageProcessed(false);
     setIsQuantizationImageProcessed(false);
