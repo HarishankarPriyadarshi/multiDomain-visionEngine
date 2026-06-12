@@ -29,7 +29,8 @@ export const Tutor = () => {
     currentSentenceIndex,
     isSpeaking,
     isPaused,
-    isInstructionOpen
+    isInstructionOpen,
+    stop
   } = useContext(HomeContext);
 
   // Helper to render text with sentence highlighting

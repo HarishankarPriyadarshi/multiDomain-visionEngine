@@ -72,6 +72,8 @@ export default function DerivativePage() {
     instructionsList,
     closeInstructions,
     setIsTutorOpen,
+    tutorStep,
+    isTutorOpen,
     setTutorStep,
     setShowWelcome,
     stop,
@@ -366,6 +368,10 @@ export default function DerivativePage() {
 
   const handleImageChange = (event) => {
     setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
+    }
     const file = event.target.files?.[0];
     if (file) {
       setUploadedImageName(file.name);
@@ -391,6 +397,10 @@ export default function DerivativePage() {
 
   const handleImageClick = (index) => {
     setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
+    }
     setSelectedImage(index);
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
