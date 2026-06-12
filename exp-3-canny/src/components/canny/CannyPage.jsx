@@ -69,6 +69,8 @@ export default function CannyPage() {
     setTutorStep,
     setShowWelcome,
     stop,
+    isTutorOpen,
+    tutorStep,
     setIsGaussOnTutor,
   } = useContext(HomeContext);
   const myProcess2Button = useRef(null);
@@ -114,7 +116,7 @@ export default function CannyPage() {
       {
         title: "Select Image",
         content:
-          "Start by selecting a sample image from the available options. The chosen image will be used as input for Canny edge detection.",
+          "Start by selecting a sample image from the available options. The chosen image will be used as input for Canny edge detection, by default first image is selected as input.",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -137,12 +139,12 @@ export default function CannyPage() {
       },
     ];
 
-    // ✅ Only push this step if Gauss On is selected
+    //  Only push this step if Gauss On is selected
     if (gaussOn === "Gauss On") {
       steps.push({
         title: "Kernel Size Selection",
         content:
-          "If Gaussian Blur is enabled, select the kernel size. Larger kernels provide stronger smoothing but may slightly blur fine edges.",
+          "As Gaussian Blur is enabled, select the kernel size. Larger kernels provide stronger smoothing but may slightly blur fine edges.",
         targetId: "kernel-select-zone",
         placement: "right",
         offset: [0, 12],
@@ -167,13 +169,26 @@ export default function CannyPage() {
       },
 
       {
-        title: "Processing",
+        title: "Process Image",
         content:
-          "Click the Process button to convert the image into grayscale and apply the selected derivative operator for edge detection.",
+          "Click the Process button to convert the image into grayscale and apply the Canny Edge Detection algorithm.",
         targetId: "process-button-zone",
         placement: "bottom",
         offset: [-60, 12],
       },
+    );
+    if (!isImageProcessed) {
+      steps.push({
+        title: "Action Required",
+        content: "Click the Process button to continue.",
+        targetId: "process-button-zone",
+        placement: "bottom",
+       
+      });
+      setTutorSteps(steps);
+      return;
+    }
+    steps.push(
       {
         title: "Observe Output",
         content:
@@ -200,7 +215,8 @@ export default function CannyPage() {
       },
     );
     setTutorSteps(steps);
-  }, [setTutorSteps, gaussOn]);
+  }, [setTutorSteps, gaussOn, isImageProcessed, tutorStep]);
+
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -240,7 +256,7 @@ export default function CannyPage() {
     setIsGaussOnTutor("Gauss Off");
   }, [gaussOn]);
 
-  // reset code
+  // rest code
   const notifyS = (msg) => {
     toast.success(msg, {
       theme: "dark",
@@ -346,6 +362,13 @@ export default function CannyPage() {
   const [imageName, setImageName] = useState("");
 
   const handleImageChange = (event) => {
+    setIsImageProcessed(false);
+    if (gaussOn == "Gauss Off" && isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
+    if (gaussOn == "Gauss On" && isTutorOpen && tutorStep >= 10) {
+      setTutorStep(10);
+    }
     const file = event.target.files?.[0];
     if (file) {
       setUploadedImageName(file.name);
@@ -369,16 +392,20 @@ export default function CannyPage() {
   };
 
   const handleImageClick = (index) => {
+    setIsImageProcessed(false);
+    setIsImageProcessed(false);
+    if (gaussOn == "Gauss Off" && isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
+    if (gaussOn == "Gauss On" && isTutorOpen && tutorStep >= 10) {
+      setTutorStep(10);
+    }
     setSelectedImage(index);
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
       setIsInputImageAnimationPlaying(false);
     }, 500);
     setImageName(`Sample ${index + 1}`);
-  };
-
-  const handleCloseModal = () => {
-    setIsInstructionOpen(false); // Close the modal
   };
 
   const handleClose3Modal = () => {
@@ -959,7 +986,11 @@ export default function CannyPage() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{
+                            minHeight: "190px",
+                            display:
+                              isImageProcessed === true ? "block" : "none",
+                          }}
                           id="finalImage"
                           alt="Output Image"
                         />
@@ -1085,7 +1116,9 @@ export default function CannyPage() {
                   </DialogTitle> */}
 
                   <DialogContent sx={{ padding: "0px", height: "1200px" }}>
-                    {openCannyModal && <CannyExplanation handleClose3Modal={handleClose3Modal} />}
+                    {openCannyModal && (
+                      <CannyExplanation handleClose3Modal={handleClose3Modal} />
+                    )}
                     {/* {CannyExplanation()} */}
                   </DialogContent>
                 </Dialog>
