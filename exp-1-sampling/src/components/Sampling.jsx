@@ -159,7 +159,7 @@ export default function Sampling() {
         samplingTutorSteps.push({
           title: "Action Required",
           content: "Click the Process button to continue.",
-          targetId: "next-btn",
+          targetId: "sampling-process-btn",
           placement: "top",
           offset: [0, 10],
         });
@@ -249,7 +249,7 @@ export default function Sampling() {
         quantizationTutorSteps.push({
           title: "Action Required",
           content: "Click the Process button to continue.",
-          targetId: "next-btn",
+          targetId: "quantization-process-btn",
           placement: "top",
           offset: [0, 10],
         });
@@ -1593,7 +1593,13 @@ export default function Sampling() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{
+                            display: isQuantizationImageProcessed
+                              ? "block"
+                              : "none",
+                            height: "190px",
+                            minHeight: "190px",
+                          }}
                           id="finalImage"
                           alt="Output Image"
                         />
