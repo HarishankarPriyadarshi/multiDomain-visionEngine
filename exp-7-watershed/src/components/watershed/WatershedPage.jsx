@@ -70,6 +70,8 @@ export default function WatershedPage() {
     setTutorStep,
     setShowWelcome,
     stop,
+    isTutorOpen,
+    tutorStep,
   } = useContext(HomeContext);
   const myProcess3Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
@@ -102,6 +104,10 @@ export default function WatershedPage() {
 
   const exp3 = () => {
     setOpenWaterModal(true);
+        setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    stop();
   };
 
   const [threshold, setThreshold] = useState(0.1);
@@ -217,6 +223,11 @@ export default function WatershedPage() {
   const [imageName, setImageName] = useState("");
 
   const handleImageChange = (event) => {
+    setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
+    }
     const file = event.target.files?.[0];
     if (file) {
       setUploadedImageName(file.name);
@@ -240,6 +251,11 @@ export default function WatershedPage() {
   };
 
   const handleImageClick = (index) => {
+    setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 7) {
+      setTutorStep(8);
+    }
     setSelectedImage(index);
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
@@ -264,19 +280,19 @@ export default function WatershedPage() {
   }, [isImageProcessed, setTutorImageProcessed]);
   // Tutor steps
   useEffect(() => {
-    const steps = [
+    const baseSteps = [
       {
         title: "Welcome",
         content:
-          "Welcome to the Run Length Encoding experiment. This simulation demonstrates how Run Length Encoding compresses image data by storing repeated pixel values as runs.",
+          "Welcome to the Watershed-Based Image Segmentation experiment. This simulation demonstrates how images are interpreted as topographic surfaces and segmented using the flooding principle.",
         targetId: "guided-tutor-btn",
+
         placement: "bottom",
       },
-
       {
         title: "Read Instructions",
         content:
-          "Click here to view detailed step-by-step instructions about how this experiment works and how to perform each operation correctly.",
+          "Click here to view detailed step-by-step instructions about how  Watershed algorithm works and how to perform each operation correctly.",
         targetId: "instruction-btn",
         placement: "bottom",
         offset: [-60, 12],
@@ -290,67 +306,87 @@ export default function WatershedPage() {
         offset: [-60, 12],
       },
       {
-        title: "Select Image",
+        title: "Select Input Image",
         content:
-          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis.",
+          "Choose one of the sample images that will be used as the input for Watershed segmentation.by default first image is selected. ",
         targetId: "image-selection-zone",
         placement: "right-start",
-        offset: [-70, 12],
+        offset: [-80, 12],
       },
       {
         title: "Upload Image",
         content:
-          "Alternatively, you may also upload your own image to observe how different image patterns affect compression performance and run statistics.",
+          "You may also upload your own image to observe how different image structures affect region formation and segmentation boundaries.",
         targetId: "upload-btn-zone",
         placement: "right-start",
         offset: [-35, 22],
       },
       {
-        title: "Minimum Run Length",
+        title: "Threshold Selection",
         content:
-          "Enter the minimum run length value. This parameter controls which continuous pixel sequences are considered significant during compression.",
-        targetId: "minimum-run-length-zone",
+          "Adjust the threshold value used for extracting the sure foreground from the distance transform. This parameter influences marker generation and segmentation quality.",
+        targetId: "threshold-zone",
         placement: "right",
         offset: [0, 10],
       },
+
       {
-        title: "Click Process Button",
+        title: "Kernel Size",
         content:
-          "Click the Process button to start the Run Length Encoding analysis.",
-        targetId: "process-button-zone",
-        placement: "top",
-        offset: [-60, 12],
+          "Choose the kernel size used in morphological operations for noise removal and background estimation.",
+        targetId: "kernel-size-zone",
+        placement: "bottom",
+        
       },
 
       {
-        title: "Observe Output Analysis",
+        title: "Process",
         content:
-          "The output panel displays three different visual results generated after Run Length Encoding compression. The first section shows the entropy map of the original grayscale image, representing the randomness and information distribution before compression. The second section shows the entropy map after applying Run Length Encoding, allowing you to compare how compression affects local image entropy and data redundancy. The third section displays the reconstructed compressed image generated from the encoded run-length pairs. Observe how different minimum run length values influence compression ratio, entropy distribution, and preservation of image structures.",
+          "Click the Process button to perform Watershed segmentation and generate the segmented image.",
+        targetId: "process-button",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    ];
+    if (!isImageProcessed) {
+      baseSteps.push({
+        title: "Action Required",
+        content: "Click the Process button to continue.",
+        targetId: "process-button",
+        placement: "top",
+        offset: [0, 10],
+      });
+      setTutorSteps(baseSteps);
+      return;
+    }
+    baseSteps.push(
+      {
+        title: "Observe Output",
+        content:
+          "The output image shows the final result of Watershed segmentation. Internally, the image undergoes thresholding, noise removal, distance transform, and marker generation before the watershed algorithm identifies region boundaries. The highlighted boundaries separate adjacent objects and represent the final segmented regions.",
         targetId: "output-image-zone",
         placement: "top",
-        offset: [0, 12],
+       
       },
       {
         title: "Print Results",
         content:
-          "Click the Print button to save or document the experimental observations and compression results.",
-        targetId: "print-button-zone",
-        placement: "top",
+          "Click the Print button if you wish to save or document your experimental results for further analysis.",
+        targetId: "print-button",
+        placement: "bottom",
         offset: [-60, 12],
       },
-
       {
-        title: "Explore Concept",
+        title: "Proceed to Concept – Perform Derivative Convolution",
         content:
-          "Must click the Concept button to understand the theory of Run Length Encoding, including binary scanning, run generation, and compression efficiency.",
-        targetId: "concept-button-zone",
-        placement: "top",
+          "Must click the Concept button to understand the theory behind topographic surfaces, catchment basins, flooding, and watershed boundaries.",
+        targetId: "concept-button",
+        placement: "bottom",
         offset: [-60, 12],
       },
-    ];
-
-    setTutorSteps(steps);
-  }, [setTutorSteps]);
+    );
+    setTutorSteps(baseSteps);
+  }, [setTutorSteps, isImageProcessed]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -579,6 +615,7 @@ export default function WatershedPage() {
                         </h4>
 
                         <div
+                        id="image-selection-zone"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -698,6 +735,7 @@ export default function WatershedPage() {
                         </h4>
 
                         <Slider
+                        id="threshold-zone"
                           value={threshold}
                           onChange={(e, newValue) => setThreshold(newValue)}
                           step={0.1}
@@ -722,6 +760,7 @@ export default function WatershedPage() {
                           </h4>
 
                           <Select
+                            id="kernel-size-zone"
                             className="derivative-btn"
                             value={kernelSize}
                             onChange={(e) => setKernelSize(e.target.value)}
@@ -837,6 +876,7 @@ export default function WatershedPage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
@@ -901,7 +941,10 @@ export default function WatershedPage() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{
+                            display: isImageProcessed ? "block" : "none",
+                            minHeight: "190px",
+                          }}
                           id="finalImage"
                           alt="Output Image"
                         />
@@ -947,6 +990,7 @@ export default function WatershedPage() {
                   }}
                 >
                   <Button
+                    id="process-button"
                     ref={myProcess3Button}
                     class="tool_btn"
                     onClick={watershedSegmentation}
@@ -959,6 +1003,7 @@ export default function WatershedPage() {
                     </svg>
                   </Button>
                   <Button
+                    id="print-button"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -971,6 +1016,7 @@ export default function WatershedPage() {
                   </Button>
 
                   <Button
+                    id="concept-button"
                     class="tool_btn"
                     onClick={exp3}
                     variant="outlined"
@@ -1026,7 +1072,9 @@ export default function WatershedPage() {
                   </DialogTitle> */}
 
                   <DialogContent sx={{ padding: "0px", height: "1300px" }}>
-                    {openWaterModal && <WaterShed handleClose4Modal={handleClose4Modal} />}
+                    {openWaterModal && (
+                      <WaterShed handleClose4Modal={handleClose4Modal} />
+                    )}
                     {/* {WaterShed()} */}
                   </DialogContent>
                 </Dialog>

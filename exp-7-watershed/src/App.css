@@ -726,7 +726,7 @@ ol {
   flex-direction: column;
   min-height: 240px;
   width: 100%;
-  margin-top: -180px;
+  margin-top: 0px;
 
   padding: 20px;
 

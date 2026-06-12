@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Grow from "@mui/material/Grow";
@@ -29,7 +29,7 @@ export const Tutor = () => {
     currentSentenceIndex,
     isSpeaking,
     isPaused,
-    isInstructionOpen
+    isInstructionOpen,
   } = useContext(HomeContext);
 
   // Helper to render text with sentence highlighting
@@ -76,6 +76,15 @@ export const Tutor = () => {
       targetElement.classList.remove("tutor-highlight");
     };
   }, [isTutorOpen, tutorStep, tutorSteps]);
+  // if action required then no next bt
+  const [isActionRequired, setIsActionRequired] = useState(false);
+  useEffect(() => {
+    if (tutorSteps[tutorStep]?.title === "Action Required") {
+      setIsActionRequired(true);
+    } else {
+      setIsActionRequired(false);
+    }
+  }, [tutorStep, tutorSteps]);
 
   return (
     <div>
@@ -172,7 +181,12 @@ export const Tutor = () => {
               aria-labelledby="tutor-step-title"
             >
               <div className="tutor-arrow" />
-              <Typography id="tutor-step-title" className="tutor-title">
+              <Typography
+                id="tutor-step-title"
+                className={
+                  isActionRequired ? "tutor-title-action" : "tutor-title"
+                }
+              >
                 {tutorSteps[tutorStep].title}
               </Typography>
 
@@ -208,14 +222,16 @@ export const Tutor = () => {
                     Back
                   </Button>
                 )}
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleTutorNext}
-                  sx={{ backgroundColor: "#1D2A6D" }}
-                >
-                  {tutorStep === tutorSteps.length - 1 ? "Finish" : "Next"}
-                </Button>
+                {!isActionRequired && (
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleTutorNext}
+                    sx={{ backgroundColor: "#1D2A6D" }}
+                  >
+                    {tutorStep === tutorSteps.length - 1 ? "Finish" : "Next"}
+                  </Button>
+                )}
               </div>
             </Paper>
           </Grow>
