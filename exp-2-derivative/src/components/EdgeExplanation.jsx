@@ -56,7 +56,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   const [currentSum, setCurrentSum] = useState({ x: 0, y: 0, result: 0 }); // for X,Y, and Result
   const [step, setStep] = useState(0);
   const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
-
+ const [isConceptAnimationPlaying, setIsConceptAnimationPlaying] = useState(false);
   // from SimContext
   const {
     isMobile,
@@ -147,7 +147,8 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     ];
 
     // 👇 If simulation NOT started
-    if (!isSimPlaying) {
+  
+    if (!isConceptAnimationPlaying) {
       baseSteps.push({
         title: "Action Required",
         content:
@@ -236,7 +237,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     );
 
     setTutorStepsSim(baseSteps);
-  }, [isSimPlaying, kernel, image]);
+  }, [isConceptAnimationPlaying, kernel, image, tutorStepSim]);
 
   useEffect(() => {
     isPausedSimulationRef.current = isPausedSimulation;
@@ -394,6 +395,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     setImagesDisabled(true);
     calculateDerivatives();
     setIsSimPlaying(true);
+    setIsConceptAnimationPlaying(true);
   }
 
   function handleReset() {
@@ -432,6 +434,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     }
     
     setIsSimPlaying(false);
+    setIsConceptAnimationPlaying(false);
   }
   //   useEffect(() => {
   //   console.log("active changed", activeDX, activeDY, activeRes);

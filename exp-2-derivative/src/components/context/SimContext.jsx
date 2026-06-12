@@ -45,7 +45,7 @@ export const SimContextProvider = ({ children }) => {
   const startTutorSim = () => {
     setTutorStepSim(0);
     setIsTutorOpenSim(true);
-    //  setIsSimPlaying(true);
+     setIsSimPlaying(true);
   };
 
   const handleTutorNextSim = () => {
