@@ -232,6 +232,16 @@ h2 {
 
 .morph-grid-9 {
   grid-template-columns: repeat(9, var(--morph-cell-size, 20px));
+  gap: 1px;
+}
+.morph-grid-7 {
+  grid-template-columns: repeat(7, var(--morph-cell-size, 20px));
+  gap: 1px;
+}
+.processed-complete .morph-grid-7 {
+ 
+  border-radius: 4px;
+  padding: 4px;
 }
 
 .morph-padding-cell {
@@ -266,7 +276,25 @@ h2 {
   background: rgba(96, 137, 183, 0.407);
   border: 1px solid #6089b7;
 }
+#original-image-zone,
+#kernel-zone
+#processed-img-zone {
+  border-radius: 0px;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 
+
+}
+
+#original-image-zone:hover,
+#kernel-zone:hover,
+#processed-img-zone:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 15px 30px rgba(0,0,0,.15);
+}
 @media (max-width: 1200px) {
   #explanation-dialog {
     width: 95%;
@@ -460,6 +488,13 @@ h2 {
   opacity: 0;
   transform: translateY(-20px);
   animation: dropDown 0.4s ease forwards;
+}
+
+/* Processed cell active highlight */
+.processed-cell-active {
+  border: 2px solid #1D2A6D !important;
+  box-shadow: 0 0 10px rgba(29, 42, 109, 0.5);
+  z-index: 10;
 }
 
 /* Keyframes */

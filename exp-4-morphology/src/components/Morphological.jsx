@@ -41,6 +41,9 @@ export default function Morphological({ handleClose4Modal }) {
   const [step, setStep] = useState(0);
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
   const totalSteps = 49;
+  const [originalAnimateKey, setOriginalAnimateKey] = useState(0);
+  const [processedAnimateKey, setProcessedAnimateKey] = useState(0);
+  const [activeProcessedPixel, setActiveProcessedPixel] = useState(null);
  
     // tutor implementation
   const {
@@ -103,13 +106,14 @@ export default function Morphological({ handleClose4Modal }) {
 
   function handleImage(x) {
     setImage(x);
-    setProcessed(false);
+    setProcessed(null);
         // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
      // console.log("handleImage");
     }
     setOperationStage("");
+    setOriginalAnimateKey((prev) => prev + 1);
     const signs = [
       [
         [0, 0, 0, 1, 0, 0, 0],
@@ -151,7 +155,7 @@ export default function Morphological({ handleClose4Modal }) {
     // Major modification: store each predefined image as the explicit 9x9 padded image.
     setOriginal(padImage(signs[x]));
   }
-
+  
   const [processed, setProcessed] = useState(null);
 
   function padImage(image7x7) {
@@ -172,6 +176,7 @@ export default function Morphological({ handleClose4Modal }) {
     setExplanation("");
     setOperationStage("");
     setActivePixel(null);
+    setActiveProcessedPixel(null);
   }
 
   function finishAnimation() {
@@ -243,6 +248,7 @@ export default function Morphological({ handleClose4Modal }) {
         nextImage[i][j] = outputValue;
 
         setActivePixel({ i, j });
+        setActiveProcessedPixel({ i, j });
         setProcessed(nextImage.map((row) => [...row]));
         setStep((i - 1) * 7 + j);
 
@@ -281,6 +287,7 @@ export default function Morphological({ handleClose4Modal }) {
 
     isCancelledRef.current = false;
     clearAnimationState();
+    setProcessedAnimateKey((prev) => prev + 1);
     setProcessed(makeBlankImage());
 
     setIsDisabled(true); // disabled select box
@@ -855,7 +862,7 @@ export default function Morphological({ handleClose4Modal }) {
 
                         return (
                           <div
-                            key={`${rowIndex}-${cellIndex}`}
+                            key={`${rowIndex}-${cellIndex}-${originalAnimateKey}`}
                             className={`morph_matrix matrix-animate ${
                               isPadding ? "morph-padding-cell" : ""
                             }`}
@@ -958,22 +965,31 @@ export default function Morphological({ handleClose4Modal }) {
                 </h2>
               )}
 
-              <div id="processed-img-zone" className="morph-grid morph-grid-9">
-                {processed &&
-                  processed.map((row, rowIndex) =>
-                    row.map((cell, cellIndex) => (
-                      <div
-                        key={`${rowIndex}-${cellIndex}`}
-                        className="morph_matrix"
-                        id="processed-img-morph"
-                        style={{
-                          backgroundColor: cell === 0 ? "black" : "white",
-                        }}
-                      ></div>
-                    )),
-                  )}
+              <div id="processed-img-zone" className={`morph-grid-wrapper ${step >= totalSteps ? 'processed-complete' : ''}`}>
+                <div className="morph-grid morph-grid-7">
+                  {processed &&
+                    processed.slice(1, 8).map((row, displayRowIndex) => {
+                      const actualRowIndex = displayRowIndex + 1;
+                      return row.slice(1, 8).map((cell, displayCellIndex) => {
+                        const actualCellIndex = displayCellIndex + 1;
+                        const isActiveCell = activeProcessedPixel && activeProcessedPixel.i === actualRowIndex && activeProcessedPixel.j === actualCellIndex;
+                        const isProcessedCell = step > 0 && ((actualRowIndex - 1) * 7 + (actualCellIndex - 1) < step);
+                        return (
+                          <div
+                            key={`${actualRowIndex}-${actualCellIndex}-${processedAnimateKey}`}
+                            className={`morph_matrix matrix-animate ${isActiveCell ? 'processed-cell-active' : ''}`}
+                            id="processed-img-morph"
+                            style={{
+                              animationDelay: `${displayRowIndex * 0.15}s`,
+                              backgroundColor: isProcessedCell ? (cell === 0 ? "black" : "white") : "transparent"
+                            }}
+                          ></div>
+                        );
+                      });
+                    })}
+                </div>
               </div>
-              {processed && <p className="matrix_label">9 x 9</p>}
+              {processed && <p className="matrix_label">7 x 7</p>}
             </div>
           </div>
           {/* Current pixel panel reports the padded-grid center followed by the moving overlay. */}
