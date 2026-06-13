@@ -27,7 +27,7 @@ export default function Morphological({ handleClose4Modal }) {
   const [isDisabled, setIsDisabled] = React.useState(false);
 
   const [isPaused, setIsPaused] = useState(false);
-  const delayRef = useRef(300);
+  const delayRef = useRef(1100);
   const isPausedRef = useRef(false);
   const myPlayButton = useRef(null);
   const myPauseButton = useRef(null);
@@ -42,10 +42,34 @@ export default function Morphological({ handleClose4Modal }) {
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
   const totalSteps = 49;
  
+    // tutor implementation
+  const {
+    isMobile,
+    startTutorSim,
+    handleSpeechToggleSim,
+    tutorBtnRefSim,
+    isSpeaking,
+    isPausedSpeaking,
+    setTutorStepsSim,
+    resetTutorSim,
+    isTutorOpenSim,
+    tutorStepSim,
+    setTutorStepSim,
+     } = useContext(SimContext);
 
   useEffect(() => {
     handleImage(0);
   }, []);
+  useEffect(() => {
+    setProcessed(false);
+    setOperationStage("");
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpenSim && tutorStepSim >= 10) {
+      setTutorStepSim(10);
+     // console.log("[tutorStepSim,process]", tutorStepSim, process);
+    }
+  }, [process]);
+  
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
@@ -79,6 +103,13 @@ export default function Morphological({ handleClose4Modal }) {
 
   function handleImage(x) {
     setImage(x);
+    setProcessed(false);
+        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpenSim && tutorStepSim >= 10) {
+      setTutorStepSim(10);
+     // console.log("handleImage");
+    }
+    setOperationStage("");
     const signs = [
       [
         [0, 0, 0, 1, 0, 0, 0],
@@ -262,7 +293,12 @@ export default function Morphological({ handleClose4Modal }) {
     isCancelledRef.current = true; // cancel current loop
 
     setIsPaused(false);
-    delayRef.current = 300; // reset delay to default
+        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpenSim && tutorStepSim >= 10) {
+      setTutorStepSim(10);
+      //console.log("handleReset");
+    }
+    delayRef.current = 1100; // reset delay to default
 
     myPauseButton.current.style.display = "none";
     myPlayButton.current.style.display = "block";
@@ -357,17 +393,7 @@ export default function Morphological({ handleClose4Modal }) {
     );
   };
 
-  // tutor implementation
-  const {
-    isMobile,
-    startTutorSim,
-    handleSpeechToggleSim,
-    tutorBtnRefSim,
-    isSpeaking,
-    isPausedSpeaking,
-    setTutorStepsSim,
-    resetTutorSim,
-  } = useContext(SimContext);
+
 
   //   // Dynamic Tutor Steps for Run Length Encoding Simulation
 
@@ -413,10 +439,7 @@ export default function Morphological({ handleClose4Modal }) {
         placement: "right",
         offset: [0, 12],
       },
-    ];
-
-    baseSteps.push(
-      {
+            {
         title: "Kernel",
         content:
           "This is the structuring element B. The kernel slides over the image and determines how output pixels are calculated.",
@@ -454,16 +477,15 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "playPauseBtn-container",
         placement: "bottom",
       },
-    );
+    ];
 
     if (!processed || step === 0) {
-      console.log("step", step);
+    //  console.log("step", step);
       baseSteps.push({
         title: "Action Required",
         content: "Please click Play to begin the morphological operation.",
-        targetId: "play-btn-zone",
-        placement: "left",
-        offset: [0, 10],
+        targetId: "playPauseBtn-container",
+        placement: "bottom",
       });
 
       setTutorStepsSim(baseSteps);
