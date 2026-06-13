@@ -71,6 +71,8 @@ export default function MorphologyPage() {
     setTutorStep,
     setShowWelcome,
     stop,
+    isTutorOpen,
+    tutorStep,
   } = useContext(HomeContext);
 
   const myProcess3Button = useRef(null);
@@ -169,7 +171,7 @@ export default function MorphologyPage() {
             steps.push({
         title: "Action Required",
         content: "Click the 'Process' button to continue to the next step.",
-        targetId: "next-btn-zone",
+        targetId: "process-button-zone",
         placement: "top",
         offset: [0, 10],
       });
@@ -377,6 +379,11 @@ export default function MorphologyPage() {
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
+    setIsImageProcessed(false);
+        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
     if (file) {
       setUploadedImageName(file.name);
       setIsInputImageAnimationPlaying(true);
@@ -400,6 +407,11 @@ export default function MorphologyPage() {
 
   const handleImageClick = (index) => {
     setSelectedImage(index);
+    setIsImageProcessed(false);
+        // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
       setIsInputImageAnimationPlaying(false);
@@ -989,7 +1001,9 @@ export default function MorphologyPage() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{
+                             minHeight: "190px",
+                            display:isImageProcessed === true ? "block" : "none" }}
                           id="finalImage"
                           alt="Output Image"
                         />
