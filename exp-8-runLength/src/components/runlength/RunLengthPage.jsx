@@ -73,12 +73,15 @@ export default function RunLengthPage() {
     setTutorStep,
     setShowWelcome,
     stop,
+    tutorStep,
+    isTutorOpen,
   } = useContext(HomeContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
   const [isImageProcessed, setIsImageProcessed] = useState(false);
+  const [isShowClickToShowOutput, setIsShowClickToShowOutput] = useState(true);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyS = (msg) => {
@@ -92,6 +95,17 @@ export default function RunLengthPage() {
       draggable: true, // Enable dragging
     });
   };
+    const notifyE = (msg) => {
+      toast.error(msg, {
+        theme: "dark",
+        position: "bottom-left", // Set toast position
+        autoClose: 5000, // Toast auto-closes after 5 seconds
+        hideProgressBar: false, // Show progress bar
+        closeOnClick: true, // Close toast when clicked
+        pauseOnHover: true, // Pause when hovered
+        draggable: true, // Enable dragging
+      });
+    };
 
   const handlePrint = () => {
     window.print(); // Triggers the print dialog
@@ -104,6 +118,7 @@ export default function RunLengthPage() {
   const [rleresult, setRleresult] = useState(null);
 
   async function runLengthEncode(image, minRunLength = 1) {
+
     let startTime = performance.now();
 
     let data = image.data;
@@ -259,12 +274,20 @@ export default function RunLengthPage() {
   const [loading, setLoading] = useState(false);
   // const [progress, setProgress] = useState(0);
 
-  async function processImage(minRunLength = 1) {
+  async function processImage(minRunLength) {
+            const imgElement = document.getElementById("inputImage");
+ minRunLength = parseInt(mrl);
+    if (!imgElement || isNaN(minRunLength) ) {
+      notifyE("Please enter the value for Minimum Run Length.");
+      console.log("Image or minRunLength problem");
+      return;
+    }
     setLoading(true);
-    setIsImageProcessed(true);
+    setIsShowClickToShowOutput(false);
     // setProgress(10); // Initial
 
     await new Promise((resolve) => setTimeout(resolve, 300)); // allow re-render
+    
 
     try {
       minRunLength = parseInt(mrl);
@@ -332,7 +355,7 @@ export default function RunLengthPage() {
   var indexTabValue = tabValue;
 
   const instr = () => {
-     setIsInstructionOpen(true);
+    setIsInstructionOpen(true);
   };
 
   const exp = () => {
@@ -349,6 +372,11 @@ export default function RunLengthPage() {
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
+    setIsImageProcessed(false);
+    if (isTutorOpen && tutorStep >= 6) {
+      setTutorStep(6);
+    }
+    setIsShowClickToShowOutput(true);
     if (file) {
       setUploadedImageName(file.name);
       setIsInputImageAnimationPlaying(true);
@@ -372,6 +400,11 @@ export default function RunLengthPage() {
 
   const handleImageClick = (index) => {
     setText("Output Image");
+    setIsImageProcessed(false);
+        if (isTutorOpen && tutorStep >= 6) {
+      setTutorStep(6);
+    }
+    setIsShowClickToShowOutput(true);
 
     setRleresult();
 
@@ -385,8 +418,6 @@ export default function RunLengthPage() {
     setImageName(`Sample ${index + 1}`);
   };
 
-
-
   const handleClose2Modal = () => {
     setOpenRunLengthModal(false); // Close the modal
     // Reset tutor state
@@ -397,7 +428,6 @@ export default function RunLengthPage() {
     stop();
   };
 
-  
   // tutor code
   useEffect(() => {
     setTutorImageProcessed(isImageProcessed);
@@ -405,13 +435,13 @@ export default function RunLengthPage() {
   // Tutor steps
   useEffect(() => {
     const steps = [
-  {
-      title: "Welcome",
-      content:
-        "Welcome to the Run Length Encoding experiment. This simulation demonstrates how Run Length Encoding compresses image data by storing repeated pixel values as runs.",
-      targetId: "guided-tutor-btn",
-      placement: "bottom",
-    },
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Run Length Encoding experiment. This simulation demonstrates how Run Length Encoding compresses image data by storing repeated pixel values as runs.",
+        targetId: "guided-tutor-btn",
+        placement: "bottom",
+      },
 
       {
         title: "Read Instructions",
@@ -432,7 +462,7 @@ export default function RunLengthPage() {
       {
         title: "Select Image",
         content:
-          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis.",
+          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis.by default first image is selected.",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -445,54 +475,79 @@ export default function RunLengthPage() {
         placement: "right-start",
         offset: [-35, 22],
       },
-          {
-      title: "Minimum Run Length",
-      content:
-        "Enter the minimum run length value. This parameter controls which continuous pixel sequences are considered significant during compression.",
-      targetId: "minimum-run-length-zone",
-      placement: "right",
-      offset: [0, 10],
-    },
-    {
-      title:"Click Process Button",
-      content:"Click the Process button to start the Run Length Encoding analysis.",
-      targetId: "process-button-zone",
-      placement: "top",
-      offset: [-60, 12],
-    },
-
-    {
-  title: "Observe Output Analysis",
-  content:
-    "The output panel displays three different visual results generated after Run Length Encoding compression. The first section shows the entropy map of the original grayscale image, representing the randomness and information distribution before compression. The second section shows the entropy map after applying Run Length Encoding, allowing you to compare how compression affects local image entropy and data redundancy. The third section displays the reconstructed compressed image generated from the encoded run-length pairs. Observe how different minimum run length values influence compression ratio, entropy distribution, and preservation of image structures.",
-  targetId: "output-image-zone",
-  placement: "top",
-  offset: [0, 12],
-},
-{
-      title: "Print Results",
-      content:
-        "Click the Print button to save or document the experimental observations and compression results.",
-      targetId: "print-button-zone",
-      placement: "top",
-      offset: [-60, 12],
-    },
-
-    {
-      title: "Explore Concept",
-      content:
-        "Must click the Concept button to understand the theory of Run Length Encoding, including binary scanning, run generation, and compression efficiency.",
-      targetId: "concept-button-zone",
-      placement: "top",
-      offset: [-60, 12],
-    },
-
+      {
+        title: "Minimum Run Length",
+        content:
+          "Enter the minimum run length value. This parameter controls which continuous pixel sequences are considered significant during compression.",
+        targetId: "minimum-run-length-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
 
     ];
+    const minRunLength = parseInt(mrl);
+    if (!minRunLength) {
+      steps.push({
+        title: "Action Required",
+        content: "Please enter a minimum run length value.",
+        targetId: "minimum-run-length-zone",
+        placement: "right",
+        offset: [0, 10],
+      });
+      setTutorSteps(steps);
+      return;
+    }
+    steps.push(
+            {
+        title: " Process Image",
+        content:
+          "Click the Process button to start the Run Length Encoding analysis.",
+        targetId: "process-button-zone",
+        placement: "top",
+        offset: [-60, 12],
+      },
+    )
+    if (!isImageProcessed) {
+      steps.push({
+        title: "Action Required",
+        content: "Click the Process button to continue.",
+        targetId: "process-button-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+      setTutorSteps(steps);
+      return;
+    }
+    steps.push(
+      {
+        title: "Observe Output Analysis",
+        content:
+          "The output panel displays three different visual results generated after Run Length Encoding compression. The first section shows the entropy map of the original grayscale image, representing the randomness and information distribution before compression. The second section shows the entropy map after applying Run Length Encoding, allowing you to compare how compression affects local image entropy and data redundancy. The third section displays the reconstructed compressed image generated from the encoded run-length pairs. Observe how different minimum run length values influence compression ratio, entropy distribution, and preservation of image structures.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+      {
+        title: "Print Results",
+        content:
+          "Click the Print button to save or document the experimental observations and compression results.",
+        targetId: "print-button-zone",
+        placement: "top",
+        offset: [-60, 12],
+      },
 
+      {
+        title: "Explore Concept",
+        content:
+          "Must click the Concept button to understand the theory of Run Length Encoding, including binary scanning, run generation, and compression efficiency.",
+        targetId: "concept-button-zone",
+        placement: "top",
+        offset: [-60, 12],
+      },
+    );
 
     setTutorSteps(steps);
-  }, [setTutorSteps]);
+  }, [setTutorSteps, isImageProcessed ,mrl]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -565,7 +620,6 @@ export default function RunLengthPage() {
             <Button
               id="guided-tutor-btn"
               ref={tutorBtnRef}
-
               onClick={startTutor}
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
@@ -842,10 +896,10 @@ export default function RunLengthPage() {
                         <input
                           id="minimum-run-length-zone"
                           className="input-btn"
-                          type="text"
+                          type="number"
                           value={mrl}
                           onChange={(e) => setMrl(e.target.value)}
-                          placeholder="example: 1"
+                          placeholder=" Enter value"
                           // style={{
                           //   padding: "5px",
                           //   border: "1px solid #1D2A6D",
@@ -1029,9 +1083,12 @@ export default function RunLengthPage() {
                         <canvas
                           ref={myCanvas}
                           id="outputCanvas"
-                          style={{ display: "none" }}
+                          style={{
+                            display:
+                              isImageProcessed === true ? "block" : "none",
+                          }}
                         />
-                        {isImageProcessed === false && (
+                        {isShowClickToShowOutput && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
