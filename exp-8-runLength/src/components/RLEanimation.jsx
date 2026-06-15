@@ -790,6 +790,9 @@ export default function RLEanimation({ handleClose2Modal }) {
     isPaused,
     setTutorStepsSim,
     resetTutorSim,
+    tutorStepSim,
+    isTutorOpenSim,
+    setTutorStepSim,
   } = useContext(SimContext);
 
   // Dynamic Tutor Steps for Run Length Encoding Simulation
@@ -928,7 +931,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           title: "Current Scanned Cell",
           content:
             "The highlighted red cell shows the current pixel being processed by the Run Length Encoding algorithm. The encoder scans the matrix one value at a time according to the selected scan direction and checks whether consecutive values are repeating.",
-          targetId: "chosen-image-matrix-heading-zone",
+          targetId: "chosen-image-matrix-zone",
           placement: "left",
           offset: [0, 10],
         },
@@ -1267,6 +1270,9 @@ export default function RLEanimation({ handleClose2Modal }) {
                   simulationMode === "image" ? "active" : ""
                 }`}
                 onClick={() => {
+                  if (isTutorOpenSim && tutorStepSim >= 2) {
+                    setTutorStepSim(3);
+                  }
                   pauseAnimation();
                   setSimulationMode("image");
                   setStepIndex(imageStepIndex);
@@ -1293,6 +1299,9 @@ export default function RLEanimation({ handleClose2Modal }) {
                   simulationMode === "text" ? "active" : ""
                 }`}
                 onClick={() => {
+                                    if (isTutorOpenSim && tutorStepSim >= 2) {
+                    setTutorStepSim(3);
+                  }
                   pauseAnimation();
                   setSimulationMode("text");
                   setStepIndex(textStepIndex);
