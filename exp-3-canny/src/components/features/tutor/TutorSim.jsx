@@ -189,7 +189,7 @@ export const TutorSim = () => {
               <div className="tutor-arrow" />
               <Typography id="tutor-step-title" className={isActionRequired ? "tutor-title-action" : "tutor-title"}>
                 
-                {tutorStepsSim[tutorStepSim]?.title}
+                {(tutorStepsSim[tutorStepSim] || {}).title || "no data"}
               </Typography>
 
               <p className="tutor-content">

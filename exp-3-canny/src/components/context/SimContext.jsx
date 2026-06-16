@@ -67,8 +67,8 @@ export const SimContextProvider = ({ children }) => {
     setIsTutorOpenSim(false);
     stop();
   };
-
-  const currentStepSim = tutorStepsSim[tutorStepSim];
+//  console.log("tutorStepsSim",tutorStepsSim);
+  const currentStepSim =tutorStepsSim?.[tutorStepSim] || {};
 
   const computedStepSim = isMobile
     ? {

@@ -223,14 +223,14 @@ export default function CannyExplanation({ handleClose3Modal }) {
       ], // Divide
     ];
     setOriginal(signs[x]);
-    console.log(original);
+  //  console.log(original);
     // handleShow();
     setImagesDisabled(true);
   }
 
   function process(sigma) {
     let rows = [];
-    console.log(sigma);
+    //console.log(sigma);
     for (let i = -1; i < 2; i++) {
       let col = [];
       for (let j = -1; j < 2; j++) {
@@ -242,7 +242,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       rows.push(col);
     }
     setGKernel(rows);
-    console.log(rows);
+    //console.log(rows);
     setShowButtons(true);
   }
 
@@ -578,7 +578,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     let suppressed = Array(rows)
       .fill(0)
       .map(() => Array(cols).fill(0));
-    console.log("suppressedIntial:", suppressed);
+   // console.log("suppressedIntial:", suppressed);
     //initialize animated suppressed matrix
     setAnimatedSuppressed(
       Array(rows)
@@ -589,7 +589,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     for (let i = 1; i < rows - 1; i++) {
       for (let j = 1; j < cols - 1; j++) {
         let angle = quantize[i][j];
-        console.log("nonmax:", "angle:", angle, i, j);
+        //console.log("nonmax:", "angle:", angle, i, j);
         let current = parseFloat(gradientMag[i][j]);
         let neighbor1 = 0;
         let neighbor2 = 0;
@@ -727,7 +727,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         setThresholdExplanation([]);
 
         //  Highlight pixel
-    await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 300));
 
         setThresholdExplanation([
           { text: `Current Magnitude: ${current}` },
@@ -759,11 +759,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
         await new Promise((r) => setTimeout(r, 400));
 
-    // 4️⃣ Update grid visually
-    setThresholdGrid(tempGrid.map((r) => [...r]));
+        // 4️⃣ Update grid visually
+        setThresholdGrid(tempGrid.map((r) => [...r]));
 
-    await new Promise((r) => setTimeout(r, 250));
-
+        await new Promise((r) => setTimeout(r, 250));
       }
     }
     //setIsThresholdRunning(false);
@@ -930,16 +929,22 @@ export default function CannyExplanation({ handleClose3Modal }) {
     tutorBtnRefSim,
     isSpeaking,
     isPaused,
+    tutorStepsSim,
     setTutorStepsSim,
+    setTutorStepSim,
+    isTutorOpenSim,
     isSimPlaying,
     setIsSimPlaying,
     resetTutorSim,
   } = useContext(SimContext);
 
-  // Update tutor steps when individual states change
-  useEffect(() => {
-    const baseSteps = [
-      {
+
+  // Tutorial Steps for Canny Edge Detection
+ 
+  function page1Tutorial() {
+    let steps = [];
+     steps = [
+            {
         title: "Welcome to Canny Edge Detection Simulation",
         content:
           "This guided walkthrough demonstrates every mathematical stage of the Canny Edge Detection algorithm on a 7×7 matrix image. Follow the highlighted steps carefully.",
@@ -962,19 +967,21 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       },
     ];
+
     // step 1: Select an Image
     if (original === null || original === undefined) {
-      baseSteps.push({
+      steps.push({
         title: "Action Required",
         content: "Please select any image to initialize the simulation.",
         targetId: "main-image-box-canny",
         placement: "bottom",
         offset: [0, 10],
       });
-      setTutorStepsSim(baseSteps);
-      return;
+    return steps;
+      
     }
-    baseSteps.push(
+
+    steps.push(
       {
         title: "Original Image Matrix",
         content:
@@ -1003,7 +1010,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     );
 
     if (!gKernel) {
-      baseSteps.push({
+      steps.push({
         title: "Action Required",
         content:
           "Please adjust the Sigma slider to generate the Gaussian kernel matrix.",
@@ -1012,10 +1019,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+    return steps;
+      
     }
-    baseSteps.push(
+    steps.push(
       {
         title: "Generated Gaussian Kernel (3×3)",
         content:
@@ -1033,7 +1040,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       },
     );
     if (index === 0) {
-      baseSteps.push({
+      steps.push({
         title: "Action Required",
         content: "Click the 'Next' button to continue to the next step.",
         targetId: "next-btn-zone",
@@ -1041,12 +1048,15 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return steps;
+
     }
 
-    //      STEP 2 — PADDING ORIGINAL IMAGE
-    baseSteps.push(
+    return steps;
+  }
+  function page2Tutorial(){
+     const baseSteps=[];
+     baseSteps.push(
       {
         title: "Padding Before Convolution",
         content:
@@ -1070,8 +1080,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+    
+      return baseSteps;
+      
     }
     baseSteps.push(
       {
@@ -1099,12 +1110,14 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+    return baseSteps;
+     
     }
-
-    //  STEP 3 — GAUSSIAN BLUR
-    baseSteps.push(
+    return baseSteps;
+  }
+  function page3Tutorial (){
+     const baseSteps=[];
+        baseSteps.push(
       {
         title: " Padded Image",
         content:
@@ -1136,8 +1149,8 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      
+      return baseSteps;
     }
     baseSteps.push(
       {
@@ -1174,13 +1187,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
-    //     STEP 4 — PADDING BLURRED IMAGE
-    // STEP 4 — PADDING AFTER GAUSSIAN BLUR
-
-    baseSteps.push(
+    return baseSteps;
+  }
+  function page4Tutorial (){
+     const baseSteps=[];
+         baseSteps.push(
       {
         title: "Gaussian Blurred Image (7×7)",
         content:
@@ -1215,8 +1228,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
 
     baseSteps.push(
@@ -1246,116 +1258,118 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
-    // STEP 5 — SOBEL CONVOLUTION
+
+     return baseSteps;
+
+  }
+  function page5Tutorial (){
+     const baseSteps=[];
+         baseSteps.push(
+      {
+        title: "Step 5: Gradient Computation using Sobel Operator",
+        content:
+          "In this stage, we compute the intensity gradient of the Gaussian-smoothed image using Sobel operators. The gradient identifies regions of rapid intensity change, which correspond to potential edges.",
+        targetId: "padded-blurred-image-matrix-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Sobel Kernels ",
+        content:
+          "The Sobel X and Sobel Y kernels approximate first-order partial derivatives along horizontal (Gx) and vertical (Gy) directions. These kernels emphasize intensity changes while incorporating slight smoothing.",
+        targetId: "sobel-kernel-div",
+        placement: "left",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Apply Sobel Convolution",
+        content:
+          "Click the 'Apply Sobel' button to begin animated convolution. Each 3×3 neighborhood is multiplied element-wise with the Sobel kernels, and the products are summed to compute Gx and Gy at that pixel location.",
+        targetId: "apply-sobel-button-zone",
+        placement: "bottom",
+      },
+    );
+
+    // Action gating
+    if (!convolutedx || !convolutedy) {
+      baseSteps.push({
+        title: "Action Required",
+        content:
+          "Please click the 'Apply Sobel' button to compute the horizontal and vertical gradient components.",
+        targetId: "apply-sobel-button-zone",
+        placement: "bottom",
+      });
+
+      return baseSteps;
+    }
+
     baseSteps.push(
-  {
-    title: "Step 5: Gradient Computation using Sobel Operator",
-    content:
-      "In this stage, we compute the intensity gradient of the Gaussian-smoothed image using Sobel operators. The gradient identifies regions of rapid intensity change, which correspond to potential edges.",
-    targetId: "padded-blurred-image-matrix-zone",
-    placement: "bottom",
-    offset: [0, 10],
-  },
-  {
-    title: "Sobel Kernels ",
-    content:
-      "The Sobel X and Sobel Y kernels approximate first-order partial derivatives along horizontal (Gx) and vertical (Gy) directions. These kernels emphasize intensity changes while incorporating slight smoothing.",
-    targetId: "sobel-kernel-div",
-    placement: "left",
-    offset: [0, 10],
-  },
-  
-  {
-    title: "Apply Sobel Convolution",
-    content:
-      "Click the 'Apply Sobel' button to begin animated convolution. Each 3×3 neighborhood is multiplied element-wise with the Sobel kernels, and the products are summed to compute Gx and Gy at that pixel location.",
-    targetId: "apply-sobel-button-zone",
-    placement: "bottom",
-  }
-);
-
-// Action gating
-      if (!convolutedx || !convolutedy) {
-  baseSteps.push({
-    title: "Action Required",
-    content:
-      "Please click the 'Apply Sobel' button to compute the horizontal and vertical gradient components.",
-    targetId: "apply-sobel-button-zone",
-    placement: "bottom",
-  });
-
-  setTutorStepsSim(baseSteps);
-  return;
-      }
-      
-        baseSteps.push(
-            {
-          title: "Sliding Window Operation",
-          content:
-            "The highlighted orange window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
-          targetId: "kernel-sliding-box",
-          placement: "top",
-          offset: [-10, 12],
-        },
-  {
-    title: "Horizontal Gradient (Gx)",
-    content:
-      "This matrix represents the horizontal gradient component computed using the Sobel X kernel. Large magnitude values indicate strong vertical edges in the image.",
-    targetId: "sobel-x-canny",
-    placement: "top",
-  },
-  {
-    title: "Vertical Gradient (Gy)",
-    content:
-      "This matrix represents the vertical gradient component computed using the Sobel Y kernel. Large magnitude values indicate strong horizontal edges.",
-    targetId: "sobel-y-canny",
-    placement: "top",
-  },
-  {
-  title: "Live Gradient Direction Computation",
-  content:
-    "The edge orientation is calculated using above formula. The substituted expression shown here corresponds to the exact horizontal and vertical gradient components computed for this pixel. The resulting angle indicates the direction of maximum intensity variation and will later be quantized during Non-Maximum Suppression.",
-  targetId: "gradient-direction-canny-zone",
-  placement: "right",
-  offset: [0, 10],
-},
-  {
-  title: "Gradient Direction (Edge Orientation)",
-  content:
-    "The gradient direction θ, derived from Gy and Gx, indicates the orientation of maximum intensity change and defines the edge direction.",
-  targetId: "gradient-direction-matrix-zone",
-  placement: "bottom",
-  offset: [0, 10],
-},
-{
-  title: "Live Gradient Magnitude Computation",
-  content:
-    "For the currently highlighted pixel, the gradient magnitude is computed using above formula. The displayed expression shows the actual substituted values of Gx and Gy obtained from convolution. This represents the Euclidean norm of the gradient vector and quantifies the edge strength at that pixel location.",
-  targetId: "gradient-magnitude-canny-zone",
-  placement: "right",
-  offset: [0, 10],
-},
-{
-  title: "Gradient Magnitude (Edge Strength)",
-  content:
-    "The gradient magnitude G quantifies how rapidly the image intensity changes at a pixel. It is computed as the Euclidean norm of the gradient vector formed by (Gx, Gy). Larger magnitude values correspond to sharper transitions in intensity, indicating stronger potential edges.",
-  targetId: "gradient-magnitude-matrix-zone",
-  placement: "bottom",
-  offset: [0, 10],
-},
-  {
-    title: "Next Step",
-    content:
-      "Click the 'Next' button to continue to the next step.",
-    targetId: "next-btn-zone",
-    placement: "left",
-    offset: [0, 10],
-  }
-      );
-      if (index === 4) {
+      {
+        title: "Sliding Window Operation",
+        content:
+          "The highlighted orange window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+        targetId: "kernel-sliding-box",
+        placement: "top",
+        offset: [-10, 12],
+      },
+      {
+        title: "Horizontal Gradient (Gx)",
+        content:
+          "This matrix represents the horizontal gradient component computed using the Sobel X kernel. Large magnitude values indicate strong vertical edges in the image.",
+        targetId: "sobel-x-canny",
+        placement: "top",
+      },
+      {
+        title: "Vertical Gradient (Gy)",
+        content:
+          "This matrix represents the vertical gradient component computed using the Sobel Y kernel. Large magnitude values indicate strong horizontal edges.",
+        targetId: "sobel-y-canny",
+        placement: "top",
+      },
+      {
+        title: "Live Gradient Direction Computation",
+        content:
+          "The edge orientation is calculated using above formula. The substituted expression shown here corresponds to the exact horizontal and vertical gradient components computed for this pixel. The resulting angle indicates the direction of maximum intensity variation and will later be quantized during Non-Maximum Suppression.",
+        targetId: "gradient-direction-canny-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Gradient Direction (Edge Orientation)",
+        content:
+          "The gradient direction θ, derived from Gy and Gx, indicates the orientation of maximum intensity change and defines the edge direction.",
+        targetId: "gradient-direction-matrix-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Live Gradient Magnitude Computation",
+        content:
+          "For the currently highlighted pixel, the gradient magnitude is computed using above formula. The displayed expression shows the actual substituted values of Gx and Gy obtained from convolution. This represents the Euclidean norm of the gradient vector and quantifies the edge strength at that pixel location.",
+        targetId: "gradient-magnitude-canny-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Gradient Magnitude (Edge Strength)",
+        content:
+          "The gradient magnitude G quantifies how rapidly the image intensity changes at a pixel. It is computed as the Euclidean norm of the gradient vector formed by (Gx, Gy). Larger magnitude values correspond to sharper transitions in intensity, indicating stronger potential edges.",
+        targetId: "gradient-magnitude-matrix-zone",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+      {
+        title: "Next Step",
+        content: "Click the 'Next' button to continue to the next step.",
+        targetId: "next-btn-zone",
+        placement: "left",
+        offset: [0, 10],
+      },
+    );
+    if (index === 4) {
       baseSteps.push({
         title: "Action Required",
         content: "Click the 'Next' button to continue to the next step.",
@@ -1364,13 +1378,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
-      }
-
-    // STEP 6 — GRADIENT QUANTISATION
-
-    baseSteps.push(
+      return baseSteps;
+    }
+     return baseSteps;
+  }
+  function  page6Tutorial (){
+     const baseSteps=[];
+         baseSteps.push(
       {
         title: "Gradient Direction Matrix",
         content:
@@ -1385,7 +1399,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
           "For Non-Maximum Suppression, we only need four principal directions: 0°, 45°, 90°, and 135°. Therefore, each gradient angle is approximated to the nearest of these four directions.",
         targetId: "step-six-quantise-button",
         placement: "bottom",
-        
       },
       {
         title: "Start Quantisation",
@@ -1405,19 +1418,18 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
 
     baseSteps.push(
       {
-  title: "Live Gradient Direction Quantization",
-  content:
-    "For the currently highlighted pixel, the computed gradient angle is first normalized to the range [0°, 180°). It is then compared against predefined angular intervals to determine the closest principal direction (0°, 45°, 90°, or 135°). This quantized direction defines the axis along which neighboring pixels will be examined in the next stage.",
-  targetId: "convStepsQuant",
-  placement: "right",
-  offset: [0, 10],
-},
+        title: "Live Gradient Direction Quantization",
+        content:
+          "For the currently highlighted pixel, the computed gradient angle is first normalized to the range [0°, 180°). It is then compared against predefined angular intervals to determine the closest principal direction (0°, 45°, 90°, or 135°). This quantized direction defines the axis along which neighboring pixels will be examined in the next stage.",
+        targetId: "convStepsQuant",
+        placement: "right",
+        offset: [0, 10],
+      },
       {
         title: "Quantised Direction Matrix",
         content:
@@ -1451,69 +1463,70 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
 
-    //  STEP 7 — NON-MAX SUPPRESSION
-    baseSteps.push(
-{
-    title: "Resultant Gradient Magnitude",
-    content:
-      "This matrix represents the gradient magnitude computed using Sobel derivatives. Each value indicates the edge strength at that pixel. Higher magnitudes correspond to stronger intensity transitions and potential edge locations.",
-    targetId: "step-seven-gradient-mag-matrix",
-    placement: "right",
-    offset: [0, 10],
-  },
+     return baseSteps;
+  }
+  function page7Tutorial (){
+     const baseSteps=[];
+         baseSteps.push(
+      {
+        title: "Resultant Gradient Magnitude",
+        content:
+          "This matrix represents the gradient magnitude computed using Sobel derivatives. Each value indicates the edge strength at that pixel. Higher magnitudes correspond to stronger intensity transitions and potential edge locations.",
+        targetId: "step-seven-gradient-mag-matrix",
+        placement: "right",
+        offset: [0, 10],
+      },
 
-  {
-    title: "Quantised Gradient Direction",
-    content:
-      "Each pixel's gradient direction has been quantized to one of four principal orientations: 0°, 45°, 90°, or 135°. This discretization determines the axis along which neighboring pixels will be compared during non-maximum suppression.",
-    targetId: "step-seven-quantise-matrix",
-    placement: "left",
-    offset: [0, 10],
-  },
-  {
-    title:"Click Process Button",
-    content:"Click 'Process' to thin edges by removing non-maximal gradient pixels.",
-    targetId: "step-seven-process-btn",
-    placement: "bottom",
-    
-  }   
+      {
+        title: "Quantised Gradient Direction",
+        content:
+          "Each pixel's gradient direction has been quantized to one of four principal orientations: 0°, 45°, 90°, or 135°. This discretization determines the axis along which neighboring pixels will be compared during non-maximum suppression.",
+        targetId: "step-seven-quantise-matrix",
+        placement: "left",
+        offset: [0, 10],
+      },
+      {
+        title: "Click Process Button",
+        content:
+          "Click 'Process' to thin edges by removing non-maximal gradient pixels.",
+        targetId: "step-seven-process-btn",
+        placement: "bottom",
+      },
     );
-    // if (!supressed) {
-    //   console.log("supressed", supressed);
-    //   console.log(baseSteps.length);
-    //   baseSteps.push({
-    //     title: "Action Required",
-    //     content:
-    //       "Click 'Process' to apply Non-Maximum Suppression.",
-    //     targetId: "step-seven-process-btn",
-    //     placement: "bottom",
-    //   });
+    if (!supressed) {
+     // console.log("supressed", supressed);
+     // console.log(baseSteps.length);
+      baseSteps.push({
+        title: "Action Required",
+        content:
+          "Click 'Process' to apply Non-Maximum Suppression.",
+        targetId: "step-seven-process-btn",
+        placement: "bottom",
+      });
 
-    //   setTutorStepsSim(baseSteps);
-    //   return;
-    // }
+      return baseSteps;
+    }
     baseSteps.push(
- {
-    title: "Non-Maximum Suppression Explanation",
-    content:
-      "For the highlighted pixel, the algorithm selects two neighboring pixels along the quantized gradient direction. If the current magnitude is greater than or equal to both neighbors, it is preserved as a local maximum. Otherwise, it is suppressed to zero. Highlighted cells indicate the active pixel and its comparison neighbors.",
-    targetId: "step-seven-nms-explanation-container",
-    placement: "left",
-    offset: [0, 10],
-  },
+      {
+        title: "Non-Maximum Suppression Explanation",
+        content:
+          "For the highlighted pixel, the algorithm selects two neighboring pixels along the quantized gradient direction. If the current magnitude is greater than or equal to both neighbors, it is preserved as a local maximum. Otherwise, it is suppressed to zero. Highlighted cells indicate the active pixel and its comparison neighbors.",
+        targetId: "step-seven-nms-explanation-container",
+        placement: "left",
+        offset: [0, 10],
+      },
 
-  {
-    title: "Suppressed Gradient",
-    content:
-      "After processing all pixels, only local maxima remain. Non-maximal pixels are suppressed to zero, resulting in thin, well-localized edges. This refined edge map is the output of the Non-Maximum Suppression stage.",
-    targetId: "step-seven-suppressed-gradient-matrix",
-    placement: "top",
-    offset: [0, 10],
-  },
+      {
+        title: "Suppressed Gradient",
+        content:
+          "After processing all pixels, only local maxima remain. Non-maximal pixels are suppressed to zero, resulting in thin, well-localized edges. This refined edge map is the output of the Non-Maximum Suppression stage.",
+        targetId: "step-seven-suppressed-gradient-matrix",
+        placement: "top",
+        offset: [0, 10],
+      },
       {
         title: "Next Step",
         content: "Click the 'Next' button to continue to the next step.",
@@ -1531,134 +1544,182 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+        return baseSteps;
     }
+     return baseSteps;
+  }
+  function page8Tutorial (){
+     const baseSteps=[];
+         baseSteps.push(
+      {
+        title: "Suppressed Gradient",
+        content:
+          "This matrix is the output of Non-Maximum Suppression. It contains thin edge responses where only local maxima were retained. These values will now be classified using double thresholding.",
+        targetId: "step-eight-suppressed-gradient",
+        placement: "top",
+        offset: [0, 10],
+      },
 
+      {
+        title: "Set Threshold Ratios (T_low and T_high)",
+        content:
+          "Adjust the T low and T high sliders. These ratios are multiplied with the maximum gradient magnitude to compute the actual threshold values. T high identifies strong edges, while T low determines potential weak edges.",
+        targetId: "step-eight-thresholding-container",
+        placement: "bottom",
+        offset: [0, 10],
+      },
 
-    // STEP 8 — DOUBLE THRESHOLD
-    baseSteps.push(
-        {
-    title: "Suppressed Gradient",
-    content:
-      "This matrix is the output of Non-Maximum Suppression. It contains thin edge responses where only local maxima were retained. These values will now be classified using double thresholding.",
-    targetId: "step-eight-suppressed-gradient",
-    placement: "top",
-    offset: [0, 10],
-  },
-
-  {
-    title: "Set Threshold Ratios (T_low and T_high)",
-    content:
-      "Adjust the T low and T high sliders. These ratios are multiplied with the maximum gradient magnitude to compute the actual threshold values. T high identifies strong edges, while T low determines potential weak edges.",
-    targetId: "step-eight-thresholding-container",
-    placement: "bottom",
-    offset: [0, 10],
-  },
-
-  {
-    title: "Click Double Threshold Button",
-    content:
-      "Click 'Run Double Threshold' to classify pixels. ",
-    targetId: "step-eight-run-double-threshold",
-    placement: "bottom",
-    offset: [0, 10],
-  },
-    )
+      {
+        title: "Click Double Threshold Button",
+        content: "Click 'Run Double Threshold' to classify pixels. ",
+        targetId: "step-eight-run-double-threshold",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+    );
 
     if (!isThresholdRunning) {
       baseSteps.push({
         title: "Action Required",
-        content:
-          " Click 'Run Double Threshold' to classify pixels. ",
+        content: " Click 'Run Double Threshold' to classify pixels. ",
         targetId: myThresButton?.current?.id || "final-grid-canny",
         placement: "bottom",
       });
 
-      setTutorStepsSim(baseSteps);
-      return;
+      return baseSteps;
     }
-    baseSteps.push({
-   title:"Calculated T_low and T_high Values",
-   content:"The algorithm computes the actual T low and T high values by multiplying the ratios with the maximum gradient magnitude. T_high identifies strong edges, while T_low determines potential weak edges.",
-   targetId: "step-eight-dlLow-live-explanation",
-   placement: "right",
-    offset: [0, 10],
- },
-  {
-    title: "Double Threshold Live Explanation",
-    content:
-      "For the highlighted pixel, the algorithm displays its magnitude, computed T_low and T_high values, and its classification result. The matrix updates progressively to show strong (white), weak (gray), and suppressed (black) pixels.",
-    targetId: "step-eight-dl-live-explanation",
-    placement: "left",
-    offset: [0, 10],
-  },
-  {
-    title: "Double Threshold Matrix",
-    content:
-      "This matrix displays the result of double thresholding. Strong edges are white, weak edges are gray, and suppressed edges are black.",
-    targetId: "step-eight-threshold-matrix",
-    placement: "right",
-    offset: [0, 10],
-  },
+    baseSteps.push(
+      {
+        title: "Calculated T_low and T_high Values",
+        content:
+          "The algorithm computes the actual T low and T high values by multiplying the ratios with the maximum gradient magnitude. T_high identifies strong edges, while T_low determines potential weak edges.",
+        targetId: "step-eight-dlLow-live-explanation",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Double Threshold Live Explanation",
+        content:
+          "For the highlighted pixel, the algorithm displays its magnitude, computed T_low and T_high values, and its classification result. The matrix updates progressively to show strong (white), weak (gray), and suppressed (black) pixels.",
+        targetId: "step-eight-dl-live-explanation",
+        placement: "left",
+        offset: [0, 10],
+      },
+      {
+        title: "Double Threshold Matrix",
+        content:
+          "This matrix displays the result of double thresholding. Strong edges are white, weak edges are gray, and suppressed edges are black.",
+        targetId: "step-eight-threshold-matrix",
+        placement: "right",
+        offset: [0, 10],
+      },
 
-  {
-    title: "Run Hysteresis",
-    content:
-      "Now, Click 'Run Hysteresis' to refine edges.",
-    targetId: "step-eight-run-hysteresis",
-    placement: "bottom",
-    offset: [0, 10],
-  },
-);
- if(!isHysteresisRunning){
-  baseSteps.push({
-    title: "Action Required",
-    content:
-      " Click 'Run Hysteresis' to refine edges.",
-    targetId: "step-eight-run-hysteresis",
-    placement: "bottom",
-    offset: [0, 10],
-  });
- }
-baseSteps.push(
-  
-  {
-    title: "Hysteresis Live Explanation",
-    content:
-      "If a weak pixel is connected to at least one strong neighbor, it is promoted to STRONG (255). Otherwise, it is suppressed to zero. Highlighted neighbors indicate the connectivity check.",
-    targetId: "step-eight-hytresis-live-explanation",
-    placement: "left",
-    offset: [0, 10],
-  },
+      {
+        title: "Run Hysteresis",
+        content: "Now, Click 'Run Hysteresis' to refine edges.",
+        targetId: "step-eight-run-hysteresis",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+    );
+    if (!isHysteresisRunning) {
+      baseSteps.push({
+        title: "Action Required",
+        content: " Click 'Run Hysteresis' to refine edges.",
+        targetId: "step-eight-run-hysteresis",
+        placement: "bottom",
+        offset: [0, 10],
+      });
+    }
+    baseSteps.push(
+      {
+        title: "Hysteresis Live Explanation",
+        content:
+          "If a weak pixel is connected to at least one strong neighbor, it is promoted to STRONG (255). Otherwise, it is suppressed to zero. Highlighted neighbors indicate the connectivity check.",
+        targetId: "step-eight-hytresis-live-explanation",
+        placement: "left",
+        offset: [0, 10],
+      },
 
-  {
-    title: "Final Edge Map",
-    content:
-      "After hysteresis, only strong and connected edge pixels remain. This final binary edge map represents the complete output of the Canny Edge Detection algorithm.",
-    targetId: "step-eight-final-grid-matrix",
-    placement: "top",
-    offset: [0, 10],
-  },
+      {
+        title: "Final Edge Map",
+        content:
+          "After hysteresis, only strong and connected edge pixels remain. This final binary edge map represents the complete output of the Canny Edge Detection algorithm.",
+        targetId: "step-eight-final-grid-matrix",
+        placement: "top",
+        offset: [0, 10],
+      },
 
-  {
-    title: "Simulation Completed",
-    content:
-      "Congratulations! All stages of the Canny Edge Detection algorithm have now been executed: Gradient Computation, Quantization, Non-Maximum Suppression, Double Thresholding, and Hysteresis.",
-    targetId: "step-eight-final-grid-matrix",
-    placement: "bottom",
-    offset: [0, 10],
+      {
+        title: "Simulation Completed",
+        content:
+          "Congratulations! All stages of the Canny Edge Detection algorithm have now been executed: Gradient Computation, Quantization, Non-Maximum Suppression, Double Thresholding, and Hysteresis.",
+        targetId: "step-eight-final-grid-matrix",
+        placement: "bottom",
+        offset: [0, 10],
+      },
+    );
+
+     return baseSteps;
   }
-)
 
-    setTutorStepsSim(baseSteps);
+  // Dynamic Tutor Steps for Cnanny Edge Detection Simulation 
+  useEffect(() => {
+    let pageSteps = [
+      {
+        title: "Step 1: Select an Image",
+        content:
+          "Choose one of the 7×7 binary sample images. This will act as the input signal for edge detection.",
+        targetId: "main-image-box-canny",
+        placement: "bottom",
+        offset: [0, 10],
+      }
+    ];
+   // console.log("index",index);
+
+    switch (index) {
+      case 0:
+        pageSteps = page1Tutorial();
+        break;
+
+      case 1:
+        pageSteps = page2Tutorial();
+        break;
+
+      case 2:
+        pageSteps = page3Tutorial();
+        break;
+
+      case 3:
+        pageSteps = page4Tutorial();
+        break;
+
+      case 4:
+        pageSteps = page5Tutorial();
+        break;
+
+      case 5:
+        pageSteps = page6Tutorial();
+        break;
+
+      case 6:
+        pageSteps = page7Tutorial();
+        break;
+
+      case 7:
+        pageSteps = page8Tutorial();
+        break;
+    }
+
+    setTutorStepsSim(pageSteps);
+    
   }, [
     original,
-   
+
     image,
     gKernel,
     padded,
-   startBlur,
+    startBlur,
     padBlur,
     convolutedx,
     gradient,
@@ -1669,8 +1730,19 @@ baseSteps.push(
     index,
     isHysteresisRunning,
     isBoxRunning,
-
   ]);
+useEffect(() => {
+  //console.log("tutorStepsSim",tutorStepsSim);
+  setTimeout(() => {
+   if (isTutorOpenSim && tutorStepsSim.length > 0) {
+    //console.log("tutorStepsSimwITH iNDEX cHNAGE",tutorStepsSim);
+    setTutorStepSim(0);
+  }}, 10);
+}, [index]);
+useEffect(() => {
+ // console.log("tutorStepsSim",tutorStepsSim);
+
+}, [tutorStepsSim]);
 
   const maxGrad =
     gradientMag && Math.max(...gradientMag.flat().map(Number)) > 0
@@ -2425,7 +2497,7 @@ baseSteps.push(
 
                     {padBlur && (
                       <div
-                      id="padded-blurred-image-matrix-zone"
+                        id="padded-blurred-image-matrix-zone"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(9, 1fr)",
@@ -2450,7 +2522,7 @@ baseSteps.push(
                     )}
                     {sobelPosX !== -1 && sobelPosY !== -1 && (
                       <div
-                      id="kernel-sliding-box"
+                        id="kernel-sliding-box"
                         style={{
                           position: "absolute",
                           top: `${sobelPosX * ((document.getElementById("sobel-cell")?.offsetWidth || 0) - 0) + ((document.getElementById("sobel-cell")?.offsetTop || 0) - 37)}px`,
@@ -2571,7 +2643,7 @@ baseSteps.push(
                         }}
                       >
                         <Button
-                        id="apply-sobel-button-zone"
+                          id="apply-sobel-button-zone"
                           className="btn"
                           ref={mySobelButton}
                           onClick={applySobelConvolution}
@@ -2679,7 +2751,10 @@ baseSteps.push(
                       {gradient && <h4>Resultant Gradient Direction</h4>}
                       {gradient && <BlockMath math={equation1} />}
                       {gradient && (
-                        <div id="gradient-direction-canny-zone" className="sobel-gradient-conv">
+                        <div
+                          id="gradient-direction-canny-zone"
+                          className="sobel-gradient-conv"
+                        >
                           {convSteps.direction.map((item, index) => (
                             <span key={index}>{item}</span>
                           ))}{" "}
@@ -2727,7 +2802,10 @@ baseSteps.push(
                       )}
                       {gradient && <BlockMath math={equation2} />}
                       {gradient && (
-                        <div id="gradient-magnitude-canny-zone" className="sobel-gradient-conv">
+                        <div
+                          id="gradient-magnitude-canny-zone"
+                          className="sobel-gradient-conv"
+                        >
                           {convSteps.result.map((item, index) => (
                             <span key={index}>{item}</span>
                           ))}{" "}
@@ -2925,7 +3003,7 @@ baseSteps.push(
                       )}
 
                       <div
-                      id="step-seven-gradient-mag-matrix"
+                        id="step-seven-gradient-mag-matrix"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -3021,7 +3099,7 @@ baseSteps.push(
                         </h4>
                       )}
                       <div
-                      id="step-seven-suppressed-gradient-matrix"
+                        id="step-seven-suppressed-gradient-matrix"
                         style={{
                           display: "grid",
                           gridTemplateColumns: "repeat(7, 1fr)",
@@ -3064,9 +3142,10 @@ baseSteps.push(
                     </div>
                   </div>
                   {animatedSuppressed && (
-                    <div 
-                    id="step-seven-nms-explanation-container"
-                    className="nms-live-explanation-container">
+                    <div
+                      id="step-seven-nms-explanation-container"
+                      className="nms-live-explanation-container"
+                    >
                       <h3 style={{ textAlign: "center", fontSize: "14px" }}>
                         Non-Maximum Suppression Explanation
                       </h3>
@@ -3129,7 +3208,7 @@ baseSteps.push(
                     </div>
                   )}
                   <Button
-                  id="step-seven-process-btn"
+                    id="step-seven-process-btn"
                     className="btn"
                     ref={myNonMaxButton}
                     onClick={dnonmax}
@@ -3156,10 +3235,10 @@ baseSteps.push(
                   </div>
                   {/* slider */}
                   <div
-                  id="step-eight-thresholding-container"
-                   className="final-grid-slider">
-                    <div 
-                     id="tLow_slider">
+                    id="step-eight-thresholding-container"
+                    className="final-grid-slider"
+                  >
+                    <div id="tLow_slider">
                       <h4
                         style={{
                           margin: "5px 0px",
@@ -3213,8 +3292,9 @@ baseSteps.push(
                   </div>
                   {isBoxRunning && (
                     <div
-                    id="step-eight-dlLow-live-explanation"
-                     className="dlLow-live-explanation-container">
+                      id="step-eight-dlLow-live-explanation"
+                      className="dlLow-live-explanation-container"
+                    >
                       {tLowHighExplanation?.map((item) => (
                         <div key={item.text1}>{item.text1}</div>
                       ))}
@@ -3319,12 +3399,12 @@ baseSteps.push(
                               const isNeighbor = activeHystNeighbors?.some(
                                 ([x, y]) => x === rowIndex && y === colIndex,
                               );
-                              console.log(
-                                "isCurrent",
-                                isCurrent,
-                                "isNeighbor",
-                                isNeighbor,
-                              );
+                              // console.log(
+                              //   "isCurrent",
+                              //   isCurrent,
+                              //   "isNeighbor",
+                              //   isNeighbor,
+                              // );
 
                               return (
                                 <div
@@ -3395,7 +3475,6 @@ baseSteps.push(
 
                                   return (
                                     <div
-                                      
                                       key={`${rowIndex}-${colIndex}`}
                                       className={`threshold-cell
 
@@ -3454,8 +3533,9 @@ baseSteps.push(
 
                   {isBoxRunning && (
                     <div
-                    id="step-eight-dl-live-explanation"
-                     className="dl-live-explanation-container">
+                      id="step-eight-dl-live-explanation"
+                      className="dl-live-explanation-container"
+                    >
                       <h4>
                         {activeThreshPixel &&
                           `Checking Pixel (${activeThreshPixel[0]}, ${activeThreshPixel[1]})`}
@@ -3468,8 +3548,9 @@ baseSteps.push(
                   )}
                   {isBoxRunning && isHysteresisRunning && (
                     <div
-                    id="step-eight-hytresis-live-explanation"
-                     className="dl-live-explanation-container">
+                      id="step-eight-hytresis-live-explanation"
+                      className="dl-live-explanation-container"
+                    >
                       <h4>
                         {activeHystPixel &&
                           `Checking Pixel (${activeHystPixel[0]}, ${activeHystPixel[1]})`}
