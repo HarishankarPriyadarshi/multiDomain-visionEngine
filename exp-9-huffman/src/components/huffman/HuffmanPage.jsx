@@ -358,7 +358,7 @@ export default function HuffmanPage() {
   return (
     <OpenCvProvider>
       <div id="main-box">
-        <div id="bottom-footer"> &copy; 2025 Virtual Labs, IIT Roorkee</div>
+        <div id="bottom-footer"> &copy; 2026 Virtual Labs, IIT Roorkee</div>
 
         <div id="top-header">
           {/* Hamburger Icon for Mobile */}
