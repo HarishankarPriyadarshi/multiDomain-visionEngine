@@ -113,7 +113,7 @@ export default function SplittingAndMergingPage() {
   const [openSplitModal, setOpenSplitModal] = useState(false);
 
   const exp2 = () => {
-    setOpenMorphModal(true);
+    setOpenSplitModal(true);
     setIsTutorOpen(false);
     setTutorStep(0);
     setShowWelcome(false);
@@ -1096,7 +1096,7 @@ export default function SplittingAndMergingPage() {
                     </div>
                   </DialogTitle> */}
 
-                  <DialogContent sx={{ padding: "0px", height: "1200px" }}>
+                  <DialogContent sx={{ padding: "0px", height: "1200px",overflow: "clip" }}>
                     {openSplitModal && (
                       <SplitAndMerge handleClose3Modal={handleClose3Modal} />
                     )}
