@@ -319,20 +319,12 @@ export default function SplittingAndMergingPage() {
         placement: "right-start",
         offset: [-35, 22],
       },
-      {
-        title: "Morphological Operation",
-        content:
-          "Select the operation to perform. Dilation expands objects, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
-        targetId: "morph-operation-zone",
-        placement: "right",
-        offset: [0, 10],
-      },
 
       {
         title: "Kernel Size",
         content:
           "Choose the kernel size. Larger kernels produce stronger morphological effects because more neighboring pixels participate in the operation.",
-        targetId: "kernel-size-zone",
+        targetId: "std-deviation-zone",
         placement: "right",
         offset: [0, 10],
       },
@@ -341,7 +333,7 @@ export default function SplittingAndMergingPage() {
         title: "Kernel Shape",
         content:
           "Choose the kernel shape. Rectangle, Ellipse, and Cross kernels influence how neighboring pixels are considered during processing.",
-        targetId: "kernel-shape-zone",
+        targetId: "size-thresold-zone",
         placement: "right",
         offset: [0, 10],
       },
@@ -638,6 +630,7 @@ export default function SplittingAndMergingPage() {
                           Choose an Image:
                         </h4>
                         <div
+                          id="image-selection-zone"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -756,6 +749,7 @@ export default function SplittingAndMergingPage() {
                           Standard Deviation Threshold:
                         </h4>
                         <input
+                          id="std-deviation-zone"
                           className="input-btn"
                           type="number"
                           value={stdThresh}
@@ -778,6 +772,7 @@ export default function SplittingAndMergingPage() {
                           Size Threshold:
                         </h4>
                         <input
+                          id="size-thresold-zone"
                           type="number"
                           className="input-btn"
                           value={sizeThresh}
@@ -997,6 +992,7 @@ export default function SplittingAndMergingPage() {
                   }}
                 >
                   <Button
+                    id="process-button-zone"
                     ref={myProcess2Button}
                     class="tool_btn"
                     onClick={splitAndMerge}
@@ -1010,6 +1006,7 @@ export default function SplittingAndMergingPage() {
                   </Button>
 
                   <Button
+                    id="print-button-zone"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -1021,6 +1018,7 @@ export default function SplittingAndMergingPage() {
                     </svg>
                   </Button>
                   <Button
+                    id="concept-button-zone"
                     class="tool_btn"
                     onClick={exp2}
                     variant="outlined"
