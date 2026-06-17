@@ -49,9 +49,12 @@ function TabPanel(props) {
 }
 
 export default function SplittingAndMergingPage() {
-  const myProcess1Button = useRef(null);
   const myProcess2Button = useRef(null);
-  const myProcess3Button = useRef(null);
+  const [uploadedImageName, setUploadedImageName] = useState(null);
+  const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
+    useState(false);
+  const [isImageProcessed, setIsImageProcessed] = useState(false);
+  const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
 
   const notifyE = (msg) => {
     toast.error(msg, {
@@ -82,9 +85,8 @@ export default function SplittingAndMergingPage() {
   };
 
   const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
-  const [openRegionModal, setOpenRegionModal] = useState(false);
+
   const [openSplitModal, setOpenSplitModal] = useState(false);
-  const [openWaterModal, setOpenWaterModal] = useState(false);
 
   const instr = () => {
     setOpenInstructionsModal(true);
@@ -206,6 +208,11 @@ export default function SplittingAndMergingPage() {
 
     // Display the final segmented image
     cv.imshow("finalImage", result);
+    setIsImageProcessed(true);
+    setIsAnimationPlaying(true);
+    setTimeout(() => {
+      setIsAnimationPlaying(false);
+    }, 1000);
     notifyS("Process Completed !!");
     // myProcess2Button.current.disabled=true
     // Cleanup
@@ -227,7 +234,13 @@ export default function SplittingAndMergingPage() {
 
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
+    setIsImageProcessed(false);
     if (file) {
+      setUploadedImageName(file.name);
+      setIsInputImageAnimationPlaying(true);
+      setTimeout(() => {
+        setIsInputImageAnimationPlaying(false);
+      }, 1200);
       // Create a URL for the image file
       const imageUrl = URL.createObjectURL(file);
 
@@ -245,6 +258,11 @@ export default function SplittingAndMergingPage() {
 
   const handleImageClick = (index) => {
     setSelectedImage(index);
+    setIsImageProcessed(false);
+    setIsInputImageAnimationPlaying(true);
+    setTimeout(() => {
+      setIsInputImageAnimationPlaying(false);
+    }, 500);
     setImageName(`Sample ${index + 1}`);
   };
 
@@ -328,11 +346,27 @@ export default function SplittingAndMergingPage() {
                   <Box
                     sx={{
                       width: "100%",
-                      height: "80%",
+                      height: "85%",
                       display: "flex",
                       flexDirection: "column",
                       border: 1,
+                      borderColor: "divider",
                       borderRadius: 2,
+                      backgroundColor: "#ffffffff",
+                      boxShadow: `
+    0 4px 8px rgba(0,0,0,0.15),
+    0 8px 16px rgba(0,0,0,0.10),
+    0 16px 24px rgba(0,0,0,0.05)
+  `,
+                      transition: "all 0.3s ease-in-out",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: `
+      0 6px 12px rgba(0,0,0,0.2),
+      0 12px 24px rgba(0,0,0,0.15),
+      0 20px 40px rgba(0,0,0,0.1)
+    `,
+                      },
                     }}
                   >
                     <Box
@@ -344,8 +378,8 @@ export default function SplittingAndMergingPage() {
                         borderTopRightRadius: 8,
                         borderTopLeftRadius: 8,
                         borderColor: "divider",
-                        backgroundColor: "#1D2A6D",
-                        color: "#fff5ee",
+                        backgroundColor: "#CDD5E7",
+                        color: "#1D2A6D",
                         height: "50px",
                         display: "flex",
                         alignContent: "center",
@@ -393,6 +427,7 @@ export default function SplittingAndMergingPage() {
                         >
                           <div
                             id="row"
+                            className="image-grid"
                             style={{
                               display: "flex",
                               justifyContent: "center",
@@ -402,7 +437,7 @@ export default function SplittingAndMergingPage() {
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageOne"
                               onClick={() => handleImageClick(0)}
                             >
                               <img
@@ -412,7 +447,7 @@ export default function SplittingAndMergingPage() {
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageTwo"
                               onClick={() => handleImageClick(1)}
                             >
                               <img
@@ -432,7 +467,7 @@ export default function SplittingAndMergingPage() {
                             }}
                           >
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageThree"
                               onClick={() => handleImageClick(2)}
                             >
                               <img
@@ -442,7 +477,7 @@ export default function SplittingAndMergingPage() {
                               />
                             </div>
                             <div
-                              className="gridImage"
+                              className="gridImage gridImageFour"
                               onClick={() => handleImageClick(3)}
                             >
                               <img
@@ -454,23 +489,39 @@ export default function SplittingAndMergingPage() {
                           </div>
                         </div>
 
-                        <div style={{ marginTop: "10px" }}>
-                          <div className="relative inline-block">
-                            <label
-                              htmlFor="file-upload"
-                              className="cursor-pointer inline-block text-sm font-semibold py-2 px-4 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        <div style={{ marginTop: "15px", textAlign: "center" }}>
+                          <label
+                            id="upload-btn-zone"
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                          >
+                            <svg
+                              className="upload-icon"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
                             >
-                              Upload file
-                            </label>
-                            <input
-                              id="file-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={handleImageChange}
-                              className="hidden"
-                            />
-                          </div>
+                              <path d="M12 16V4" />
+                              <path d="M8 8l4-4 4 4" />
+                              <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                            </svg>
+                            Upload file
+                          </label>
+
+                          <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            hidden
+                          />
                         </div>
+                        {uploadedImageName && (
+                          <p className="upload-success">
+                            {uploadedImageName} image uploaded
+                          </p>
+                        )}
                       </div>
                       <div>
                         <h4
@@ -483,7 +534,8 @@ export default function SplittingAndMergingPage() {
                           Standard Deviation Threshold:
                         </h4>
                         <input
-                          type="text"
+                          className="input-btn"
+                          type="number"
                           value={stdThresh}
                           onChange={(e) => setStdThresh(Number(e.target.value))}
                           placeholder="Enter std threshold"
@@ -504,7 +556,8 @@ export default function SplittingAndMergingPage() {
                           Size Threshold:
                         </h4>
                         <input
-                          type="text"
+                          type="number"
+                          className="input-btn"
                           value={sizeThresh}
                           onChange={(e) =>
                             setSizeThresh(Number(e.target.value))
@@ -541,8 +594,35 @@ export default function SplittingAndMergingPage() {
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: isInputImageAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
-                        marginRight: "5%",
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isInputImageAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isInputImageAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isInputImageAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                        },
                       }}
                     >
                       <Box
@@ -550,8 +630,8 @@ export default function SplittingAndMergingPage() {
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -579,13 +659,42 @@ export default function SplittingAndMergingPage() {
                       </Box>
                     </Box>
                     <Box
+                      id="output-image-zone"
                       sx={{
                         width: "auto",
                         height: "100%",
                         display: "flex",
                         flexDirection: "column",
                         border: 1,
+                        borderColor: isAnimationPlaying
+                          ? "#1C2A6D"
+                          : "#9e9e9ec6",
                         borderRadius: 2,
+                        backgroundColor: "#ffffff",
+
+                        boxShadow:
+                          isAnimationPlaying === true
+                            ? `0 0 0 3px rgba(28, 42, 109, 0.25),
+           0 8px 24px rgba(28, 42, 109, 0.35)`
+                            : `
+           0 4px 8px rgba(0,0,0,0.15),
+           0 8px 16px rgba(0,0,0,0.10),
+           0 16px 24px rgba(0,0,0,0.05)
+         `,
+
+                        transform: isAnimationPlaying
+                          ? "scale(1.02)"
+                          : "scale(1)",
+
+                        transition: "all 0.4s ease-in-out",
+
+                        animation: isAnimationPlaying
+                          ? "highlightPulse 1.2s ease-in-out 2"
+                          : "none",
+
+                        "&:hover": {
+                          transform: "translateY(-4px)",
+                        },
                       }}
                     >
                       <Box
@@ -593,8 +702,8 @@ export default function SplittingAndMergingPage() {
                           p: 2,
                           borderBottom: 1,
                           borderColor: "divider",
-                          backgroundColor: "#1D2A6D",
-                          color: "#fff5ee",
+                          backgroundColor: " #EAF2F9",
+                          color: "#1D2A6D",
                           display: "flex",
                           height: "10px",
                           flexDirection: "column",
@@ -615,10 +724,42 @@ export default function SplittingAndMergingPage() {
                         }}
                       >
                         <canvas
-                          style={{ minHeight: "190px" }}
+                          style={{
+                            minHeight: "190px",
+                            display:
+                              isImageProcessed === true ? "block" : "none",
+                          }}
                           id="finalImage"
                           alt="Output Image"
                         />
+                        {/* <p>Output Image</p> */}
+                        {isImageProcessed === false && (
+                          <div className="process-message-container">
+                            <div className="placeholder-content">
+                              <div className="file-icon">
+                                {" "}
+                                <svg
+                                  viewBox="0 0 24 24"
+                                  width="20"
+                                  height="20"
+                                  stroke="currentColor"
+                                  stroke-width="2"
+                                  fill="none"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  class="css-i6dzq1"
+                                >
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                  <polyline points="14 2 14 8 20 8"></polyline>
+                                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                                  <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                              </div>
+                              <p>Process an image to view results.</p>
+                            </div>
+                          </div>
+                        )}
                       </Box>
                     </Box>
                   </div>
@@ -646,6 +787,17 @@ export default function SplittingAndMergingPage() {
                   </Button>
 
                   <Button
+                    class="tool_btn print_btn"
+                    onClick={handlePrint}
+                    variant="outlined"
+                    sx={{ borderColor: "#1D2A6D", color: "#1D2A6D" }}
+                  >
+                    Print
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 8V5c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v3h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h2zm2-3h8V5H8v3zM4 10v8h16V10H4zm8 10h-2v2h2v-2z" />
+                    </svg>
+                  </Button>
+                  <Button
                     class="tool_btn"
                     onClick={exp2}
                     variant="outlined"
@@ -661,17 +813,6 @@ export default function SplittingAndMergingPage() {
                     >
                       <path d="M20 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 19V5h16l.002 14H4z" />
                       <path d="M6 7h12v2H6zm0 4h12v2H6zm0 4h6v2H6z" />
-                    </svg>
-                  </Button>
-                  <Button
-                    class="tool_btn"
-                    onClick={handlePrint}
-                    variant="outlined"
-                    sx={{ borderColor: "#1D2A6D", color: "#1D2A6D" }}
-                  >
-                    Print
-                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M6 8V5c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v3h2c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V10c0-1.1.9-2 2-2h2zm2-3h8V5H8v3zM4 10v8h16V10H4zm8 10h-2v2h2v-2z" />
                     </svg>
                   </Button>
                 </div>
