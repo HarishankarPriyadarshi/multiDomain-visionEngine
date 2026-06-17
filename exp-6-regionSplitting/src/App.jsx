@@ -9,18 +9,26 @@ import {
 } from "react-router-dom";
 
 import SplittingAndMergingPage from "./components/splittingAndMerging/splittingAndMergingPage";
+import ErrorPage from "./components/ErrorPage";
+import { HomeContextProvider } from "./components/context/HomeContext";
+import { SimContextProvider } from "./components/context/SimContext";
 
 function App() {
   const router = createBrowserRouter([
     {
       path: "/",
       element: <SplittingAndMergingPage />,
+      errorElement: <ErrorPage />,
     },
   ]);
 
   return (
     <OpenCvProvider>
-      <RouterProvider router={router} />
+      <HomeContextProvider>
+        <SimContextProvider>
+          <RouterProvider router={router} />
+        </SimContextProvider>
+      </HomeContextProvider>
     </OpenCvProvider>
   );
 }

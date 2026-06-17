@@ -15,7 +15,7 @@ import {
 import Tab from "@mui/material/Tab";
 import Button from "../styledbutton";
 import Select from "../styledselect";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
@@ -30,6 +30,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
 import SplitAndMerge from "../SplitAndMerge";
+import Tutor from "../features/tutor/Tutor";
+import { HomeContext } from "../context/HomeContext";
 
 //returns a tab panel
 function TabPanel(props) {
@@ -49,6 +51,30 @@ function TabPanel(props) {
 }
 
 export default function SplittingAndMergingPage() {
+  const {
+    isMobile,
+    setIsImageProcessed: setTutorImageProcessed,
+    isInstructionOpen,
+    setIsInstructionOpen,
+    setInstructionsList,
+    setTutorSteps,
+    startTutor,
+    handleSpeechToggle,
+    tutorBtnRef,
+    isSpeaking,
+    isPausedSpeaking,
+    sentences,
+    currentSentenceIndex,
+    instructionsList,
+    closeInstructions,
+    setIsTutorOpen,
+    setTutorStep,
+    setShowWelcome,
+    stop,
+    isTutorOpen,
+    tutorStep,
+  } = useContext(HomeContext);
+
   const myProcess2Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
@@ -84,84 +110,42 @@ export default function SplittingAndMergingPage() {
     window.print(); // Triggers the print dialog
   };
 
-  const [openInstructionsModal, setOpenInstructionsModal] = useState(false);
-
   const [openSplitModal, setOpenSplitModal] = useState(false);
 
-  const instr = () => {
-    setOpenInstructionsModal(true);
-  };
-
-  const exp = () => {
-    setOpenRegionModal(true);
-  };
-
   const exp2 = () => {
-    setOpenSplitModal(true);
+    setOpenMorphModal(true);
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    stop();
   };
 
-  const exp3 = () => {
-    setOpenWaterModal(true);
-  };
-
-  const instructionsList = {
-    1: [
-      "Select an image from the available options or upload one using the Upload File button.",
-      "Enter the value for the Standard Deviation Threshold.",
-      "Enter the value for the Size Threshold.",
-      "Click the Process button to continue.",
-      "Click the Print button to print the result.",
-      "Note: Click the Concept button to get a detailed explanation.",
-    ],
-  };
-
-  // const getInstructionsText = () => {
-  //   const steps = instructionsList[indexTabValue];
-  //   return steps ? steps.join("\n") : "No instructions available.";
-  // };
-
-  // const getInstructions = () => {
-  //   const steps = instructionsList[indexTabValue];
-  //   if (!steps) return <p>No instructions available.</p>;
-
-  //   const normalSteps = [];
-  //   const notes = [];
-
-  //   steps.forEach((step) => {
-  //     if (step.trim().startsWith("Note:")) {
-  //       const noteHtml = step
-  //         .replace(/(Concept)/g, "<b>$1</b>")
-  //         .replace(/^Note:/, '<b style="color:blue">Note:</b>');
-  //       notes.push(noteHtml);
-  //     } else {
-  //       const stepHtml = step.replace(
-  //         /(Upload File|Process|Print|Kernel Shape|Lower|Upper|Threshold|Standard Deviation Threshold|Size Threshold)/g,
-  //         "<b>$1</b>",
-  //       );
-  //       normalSteps.push(stepHtml);
-  //     }
-  //   });
-
-  //   return (
-  //     <div>
-  //       <ol>
-  //         {normalSteps.map((html, idx) => (
-  //           <li key={idx} dangerouslySetInnerHTML={{ __html: html }} />
-  //         ))}
-  //       </ol>
-  //       {notes.map((note, idx) => (
-  //         <p key={`note-${idx}`} dangerouslySetInnerHTML={{ __html: note }} />
-  //       ))}
-  //     </div>
-  //   );
-  // };
-
-  const [stdThresh, setStdThresh] = useState(15);
-  const [sizeThresh, setSizeThresh] = useState(4);
+  const [stdThresh, setStdThresh] = useState();
+  const [sizeThresh, setSizeThresh] = useState();
 
   function splitAndMerge() {
     let imgElement = document.getElementById("inputImage");
     let src = cv.imread(imgElement);
+
+    // alert if if input is not given
+    if (isNaN(stdThresh) && isNaN(sizeThresh)) {
+      notifyE(
+        "Please enter the value for Standard Deviation Threshold and Size Thresold.",
+      );
+
+      return;
+    }
+
+    if (isNaN(sizeThresh)) {
+      notifyE("Please enter the value for Size Threshold.");
+
+      return;
+    }
+    if (isNaN(stdThresh)) {
+      notifyE("Please enter the value for Standard Deviation Threshold.");
+
+      return;
+    }
 
     // Convert to grayscale
     let gray = new cv.Mat();
@@ -235,6 +219,10 @@ export default function SplittingAndMergingPage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
     if (file) {
       setUploadedImageName(file.name);
       setIsInputImageAnimationPlaying(true);
@@ -258,22 +246,194 @@ export default function SplittingAndMergingPage() {
 
   const handleImageClick = (index) => {
     setSelectedImage(index);
+    setUploadedImageName("");
     setIsImageProcessed(false);
+    // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
       setIsInputImageAnimationPlaying(false);
     }, 500);
     setImageName(`Sample ${index + 1}`);
   };
+  const instr = () => {
+    setIsInstructionOpen(true);
+  };
 
   const handleClose3Modal = () => {
     setOpenSplitModal(false); // Close the modal
+    setIsTutorOpen(false);
+    setTutorStep(0);
+    setShowWelcome(false);
+    // Stop speech completely
+    stop();
   };
+
+  // Tutor related state updates when image is processed
+  useEffect(() => {
+    setTutorImageProcessed(isImageProcessed);
+  }, [isImageProcessed, setTutorImageProcessed]);
+
+  // Tutor steps
+  useEffect(() => {
+    const steps = [
+      {
+        title: "Welcome",
+        content:
+          "Welcome to the Morphological Operations experiment. This experiment demonstrates how Dilation, Erosion, Opening, and Closing modify image structures using different kernels.",
+        targetId: "guided-tutor-btn",
+        placement: "bottom",
+      },
+
+      {
+        title: "Read Instructions",
+        content:
+          "Click here to view detailed instructions about performing the morphology experiment and understanding the generated results.",
+        targetId: "instruction-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Sound Control",
+        content:
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+      {
+        title: "Select Image",
+        content:
+          "Select one of the sample images. The chosen image will be used as the input for the selected morphological operation.",
+        targetId: "image-selection-zone",
+        placement: "right-start",
+        offset: [-70, 12],
+      },
+      {
+        title: "Upload Image",
+        content:
+          "Alternatively, you may upload your own image to observe how the morphology operation works on different patterns.",
+        targetId: "upload-btn-zone",
+        placement: "right-start",
+        offset: [-35, 22],
+      },
+      {
+        title: "Morphological Operation",
+        content:
+          "Select the operation to perform. Dilation expands objects, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
+        targetId: "morph-operation-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Kernel Size",
+        content:
+          "Choose the kernel size. Larger kernels produce stronger morphological effects because more neighboring pixels participate in the operation.",
+        targetId: "kernel-size-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+
+      {
+        title: "Kernel Shape",
+        content:
+          "Choose the kernel shape. Rectangle, Ellipse, and Cross kernels influence how neighboring pixels are considered during processing.",
+        targetId: "kernel-shape-zone",
+        placement: "right",
+        offset: [0, 10],
+      },
+      {
+        title: "Process Image",
+        content:
+          "Click the Process button to apply the selected morphological operation using the chosen kernel size and shape.",
+        targetId: "process-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+    ];
+
+    //Only push this step if image is processed
+    if (!isImageProcessed) {
+      steps.push({
+        title: "Action Required",
+        content: "Click the 'Process' button to continue to the next step.",
+        targetId: "process-button-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+      setTutorSteps(steps);
+    }
+    steps.push(
+      {
+        title: "Output Image",
+        content:
+          "The output panel displays the processed image. Compare it with the input image to understand the effect of the selected operation.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+
+      {
+        title: "Print Results",
+        content:
+          "Click Print to save or document the experimental results and observations.",
+        targetId: "print-button-zone",
+        placement: "bottom",
+        offset: [-60, 12],
+      },
+
+      {
+        title: "Explore Concept",
+        content:
+          "Must click the Concept button to understand the theory behind Dilation, Erosion, Opening, Closing, kernels, and structuring elements.",
+        targetId: "concept-button-zone",
+        placement: "top",
+        offset: [-60, 12],
+      },
+    );
+    setTutorSteps(steps);
+  }, [setTutorSteps, isImageProcessed]);
+  // Instructions list
+  useEffect(() => {
+    setInstructionsList({
+      0: [
+        " Step:1 Select an image from the available options or upload one using the Upload File button.",
+        "Step:2 Enter the value for the Standard Deviation Threshold.",
+        "Step:3 Enter the value for the Size Threshold.",
+        "Step:4 Click the Process button to continue.",
+        "Step:5 Click the Print button to print the result.",
+        "Note: Click the Concept button to get a detailed explanation.",
+      ],
+    });
+  }, [setInstructionsList]);
+  const boldKeywords = [
+    "Upload File",
+    "Process",
+    "Print",
+    "Concept",
+    "Standard Deviation Threshold",
+    "Size Threshold",
+    "Kernel Size",
+    "Morphological Operation",
+    "Kernel Shape",
+    "Step",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "Note",
+  ];
 
   return (
     <OpenCvProvider>
       <div id="main-box">
-        <div id="bottom-footer"> &copy; 2025 Virtual Labs, IIT Roorkee</div>
+        <div id="bottom-footer"> &copy; 2026 Virtual Labs, IIT Roorkee</div>
 
         <div id="top-header">
           {/* Hamburger Icon for Mobile */}
@@ -284,58 +444,120 @@ export default function SplittingAndMergingPage() {
           <h2 className="header-heading">
             Region Splitting and Merging Segmentation
           </h2>
-          {/* <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+          <div id="header_button">
+            <Button
+              id="sound-btn"
+              title={isSpeaking && !isPausedSpeaking ? "Pause" : "Play"}
+              onClick={handleSpeechToggle}
+            >
               <img
-                src={voice}
+                src={isSpeaking && !isPausedSpeaking ? voice_pause : voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-                onClick={speak}
               />
             </Button>
 
-            <Button ref={voicePause} title="Pause" style={{ display: "none" }}>
-              <img
-                src={voice_pause}
-                alt="voice"
-                style={{ width: "40px", height: "auto" }}
-                onClick={speak}
-              />
-            </Button>
-
-            <Button style={{ color: "#D1D3D8" }} onClick={instr}>
+            <Button
+              id="instruction-btn"
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#ffffffff",
+                fontWeight: "bold",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+              }}
+              onClick={instr}
+            >
               Instructions
             </Button>
-          </div> */}
+            <Button
+              id="guided-tutor-btn"
+              ref={tutorBtnRef}
+              style={{
+                color: "#1D2A6D",
+                backgroundColor: "#FFD700",
+                fontWeight: "bold",
+
+                margin: "auto auto",
+                marginLeft: "10px",
+                borderRadius: "20px",
+                padding: "5px 15px",
+                height: "40px",
+              }}
+              onClick={startTutor}
+            >
+              {isMobile ? "Tutor" : "Guided Tutor"}
+            </Button>
+          </div>
 
           {/* Instructions Modal */}
-          {/* <Dialog
-            open={openInstructionsModal}
-            onClose={handleCloseModal}
+          <Dialog
+            open={isInstructionOpen}
+            onClose={closeInstructions}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
             style={{ height: "80%" }}
           >
             <DialogTitle id="instructions-dialog-title">
-              Instructions
+              Instructions – Morphological Operation
             </DialogTitle>
+
             <DialogContent style={{ paddingTop: "10px" }}>
-              <p style={{ color: "#1D2A6D", fontWeight: "bold" }}>
-                {tabValue === 0
-                  ? "Growing"
-                  : tabValue === 1
-                    ? "Splitting and Merging"
-                    : "Watershed Segmentation"}
-                :
-              </p>
-              {getInstructions()}
+              <ul style={{ lineHeight: "1.8", listStyleType: "none" }}>
+                {instructionsList[0]?.map((step, index) => {
+                  // Find if this step contains the currently spoken sentence
+                  // This is a bit tricky because useSpeechController splits by sentences
+                  // but each step in instructionsList might be one or more sentences.
+                  // For simplicity, we'll check if the current sentence is part of this step.
+                  const isCurrentStepSpeaking =
+                    isSpeaking &&
+                    !isPausedSpeaking &&
+                    isInstructionOpen &&
+                    sentences[currentSentenceIndex] &&
+                    step.includes(sentences[currentSentenceIndex]);
+
+                  return (
+                    <li
+                      key={index}
+                      className={
+                        isCurrentStepSpeaking ? "highlight-sentence" : ""
+                      }
+                      style={{
+                        transition: "background-color 0.3s ease",
+                        borderRadius: "4px",
+                        padding: "2px 4px",
+                      }}
+                    >
+                      {step
+                        .split(new RegExp(`(${boldKeywords.join("|")})`, "g"))
+                        .map((part, i) =>
+                          boldKeywords.includes(part) ? (
+                            <strong key={i}>{part}</strong>
+                          ) : (
+                            part
+                          ),
+                        )}
+                    </li>
+                  );
+                })}
+              </ul>
             </DialogContent>
+
             <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button
+                onClick={closeInstructions}
+                color="primary"
+                style={{
+                  borderRadius: "20px",
+                  backgroundColor: "#162882ff",
+                  color: "#ffffffff",
+                }}
+              >
                 Close
               </Button>
             </DialogActions>
-          </Dialog> */}
+          </Dialog>
         </div>
 
         <div id="mainbox" style={{ top: "50px" }}>
@@ -655,6 +877,7 @@ export default function SplittingAndMergingPage() {
                           id="inputImage"
                           src={images[selectedImage]}
                           alt="Input Image"
+                          style={{ maxWidth: "190px", minHeight: "190px" }}
                         />
                       </Box>
                     </Box>
@@ -827,7 +1050,7 @@ export default function SplittingAndMergingPage() {
                     id: "explanation-dialog",
                   }}
                 >
-                  <DialogTitle id="instructions-dialog-title">
+                  {/* <DialogTitle id="instructions-dialog-title">
                     <div style={{ width: "50%" }}>
                       {" "}
                       Splitting & Merging Concept
@@ -851,13 +1074,17 @@ export default function SplittingAndMergingPage() {
                         Close
                       </Button>
                     </div>
-                  </DialogTitle>
+                  </DialogTitle> */}
 
                   <DialogContent sx={{ padding: "0px", height: "1200px" }}>
-                    {openSplitModal && <SplitAndMerge />}
+                    {openSplitModal && (
+                      <SplitAndMerge handleClose3Modal={handleClose3Modal} />
+                    )}
                     {/* {SplitAndMerge()} */}
                   </DialogContent>
                 </Dialog>
+                {/* tutor modal */}
+                <Tutor />
               </div>
             </div>
           </TabPanel>
