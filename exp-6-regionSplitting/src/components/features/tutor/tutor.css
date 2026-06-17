@@ -1,5 +1,15 @@
 /* tutor modal */
 
+.tutor-title-action {
+  color: hsl(0, 62%, 47%);
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+  font-weight: bold !important;
+}
+
 .tutor-popper {
   z-index: 1100;
   pointer-events: auto;

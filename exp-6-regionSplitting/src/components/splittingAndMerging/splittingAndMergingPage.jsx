@@ -219,9 +219,9 @@ export default function SplittingAndMergingPage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     setIsImageProcessed(false);
-    // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
-    if (isTutorOpen && tutorStep >= 9) {
-      setTutorStep(9);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
     }
     if (file) {
       setUploadedImageName(file.name);
@@ -248,9 +248,9 @@ export default function SplittingAndMergingPage() {
     setSelectedImage(index);
     setUploadedImageName("");
     setIsImageProcessed(false);
-    // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
-    if (isTutorOpen && tutorStep >= 9) {
-      setTutorStep(9);
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    if (isTutorOpen && tutorStep >= 8) {
+      setTutorStep(8);
     }
     setIsInputImageAnimationPlaying(true);
     setTimeout(() => {
@@ -282,7 +282,7 @@ export default function SplittingAndMergingPage() {
       {
         title: "Welcome",
         content:
-          "Welcome to the Morphological Operations experiment. This experiment demonstrates how Dilation, Erosion, Opening, and Closing modify image structures using different kernels.",
+          "Welcome to the Region Splitting and Merging experiment. This experiment demonstrates how an image is recursively divided into smaller homogeneous regions and how similar regions are combined to obtain the final segmentation.",
         targetId: "guided-tutor-btn",
         placement: "bottom",
       },
@@ -290,7 +290,7 @@ export default function SplittingAndMergingPage() {
       {
         title: "Read Instructions",
         content:
-          "Click here to view detailed instructions about performing the morphology experiment and understanding the generated results.",
+          "Click here to view detailed instructions about performing the region splitting and merging process experiment and understanding the generated results.",
         targetId: "instruction-btn",
         placement: "bottom",
         offset: [-60, 12],
@@ -306,7 +306,7 @@ export default function SplittingAndMergingPage() {
       {
         title: "Select Image",
         content:
-          "Select one of the sample images. The chosen image will be used as the input for the selected morphological operation.",
+          "Select one of the sample images. The selected image will serve as the input for region splitting and merging segmentation. By default the first image is selected.",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -314,38 +314,58 @@ export default function SplittingAndMergingPage() {
       {
         title: "Upload Image",
         content:
-          "Alternatively, you may upload your own image to observe how the morphology operation works on different patterns.",
+          "Alternatively, you may upload your own image to observe how the region splitting and merging process works on different patterns.",
         targetId: "upload-btn-zone",
         placement: "right-start",
         offset: [-35, 22],
       },
+    ];
 
-      {
-        title: "Kernel Size",
-        content:
-          "Choose the kernel size. Larger kernels produce stronger morphological effects because more neighboring pixels participate in the operation.",
+    steps.push({
+      title: "Standard Deviation Threshold",
+      content:
+        "Specify the Standard Deviation Threshold. This value determines whether a region is sufficiently homogeneous. Regions with intensity variation greater than this threshold are further divided into smaller subregions.",
+      targetId: "std-deviation-zone",
+      placement: "right",
+      offset: [0, 10],
+    });
+    if (isNaN(stdThresh)) {
+      steps.push({
+        title: "Action Required",
+        content: "first enter the standard deviation threshold.",
         targetId: "std-deviation-zone",
         placement: "right",
         offset: [0, 10],
-      },
+      });
+      setTutorSteps(steps);
+    }
 
-      {
-        title: "Kernel Shape",
-        content:
-          "Choose the kernel shape. Rectangle, Ellipse, and Cross kernels influence how neighboring pixels are considered during processing.",
+    steps.push({
+      title: "Size Threshold",
+      content:
+        "Specify the Size Threshold. It defines the minimum allowable size of a region. Once a region becomes smaller than this value, no further splitting is performed.",
+      targetId: "size-thresold-zone",
+      placement: "right",
+      offset: [0, 10],
+    });
+    if (isNaN(sizeThresh)) {
+      steps.push({
+        title: "Action Required",
+        content: "first enter the size threshold.",
         targetId: "size-thresold-zone",
         placement: "right",
         offset: [0, 10],
-      },
-      {
-        title: "Process Image",
-        content:
-          "Click the Process button to apply the selected morphological operation using the chosen kernel size and shape.",
-        targetId: "process-button-zone",
-        placement: "bottom",
-        offset: [-60, 12],
-      },
-    ];
+      });
+      setTutorSteps(steps);
+    }
+    steps.push({
+      title: "Process Image",
+      content:
+        "Click the Process button to begin recursive region splitting. Homogeneous regions are retained and merged to produce the final segmented image.",
+      targetId: "process-button-zone",
+      placement: "bottom",
+      offset: [-60, 12],
+    });
 
     //Only push this step if image is processed
     if (!isImageProcessed) {
@@ -362,7 +382,7 @@ export default function SplittingAndMergingPage() {
       {
         title: "Output Image",
         content:
-          "The output panel displays the processed image. Compare it with the input image to understand the effect of the selected operation.",
+          "The output panel displays the segmented image obtained after recursively splitting non-homogeneous regions and merging homogeneous ones. Compare the output with the input image to understand how region-based segmentation separates areas having similar intensity characteristics.",
         targetId: "output-image-zone",
         placement: "top",
         offset: [0, 12],
@@ -380,14 +400,14 @@ export default function SplittingAndMergingPage() {
       {
         title: "Explore Concept",
         content:
-          "Must click the Concept button to understand the theory behind Dilation, Erosion, Opening, Closing, kernels, and structuring elements.",
+          "Click the Concept button to understand the theory of quadtree decomposition, homogeneity criteria, recursive splitting, and region merging used in this segmentation technique.",
         targetId: "concept-button-zone",
         placement: "top",
         offset: [-60, 12],
       },
     );
     setTutorSteps(steps);
-  }, [setTutorSteps, isImageProcessed]);
+  }, [setTutorSteps, isImageProcessed, stdThresh, sizeThresh]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -544,6 +564,8 @@ export default function SplittingAndMergingPage() {
                   borderRadius: "20px",
                   backgroundColor: "#162882ff",
                   color: "#ffffffff",
+                  width: "100px",
+                  height: "40px",
                 }}
               >
                 Close
