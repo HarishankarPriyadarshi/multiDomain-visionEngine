@@ -1096,7 +1096,7 @@ export default function SplittingAndMergingPage() {
                     </div>
                   </DialogTitle> */}
 
-                  <DialogContent sx={{ padding: "0px", height: "1200px",overflow: "clip" }}>
+                  <DialogContent sx={{ padding: "0px",overflow: "clip" }}>
                     {openSplitModal && (
                       <SplitAndMerge handleClose3Modal={handleClose3Modal} />
                     )}
