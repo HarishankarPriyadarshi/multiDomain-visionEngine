@@ -6,6 +6,24 @@ import { Button, DialogTitle } from "@mui/material";
 import { ToastContainer } from "react-toastify";
 
 const MATRIX_SIZE = 8;
+const REGION_COLORS = [
+  "#DCFCE7",
+  "#DBEAFE",
+  "#FCE7F3",
+  "#FEF3C7",
+  "#E0E7FF",
+  "#FDE68A",
+  "#FECACA",
+  "#D1FAE5",
+  "#E9D5FF",
+  "#FED7AA",
+  "#BFDBFE",
+  "#DDD6FE",
+];
+const TREE_NODE_SIZE = 55;
+const TREE_X_GAP = 34;
+const TREE_Y_GAP = 92;
+const TREE_PADDING = 28;
 
 function buildMatrix(seed = 0) {
   const topLeftValue = (seed % 3) + 1;
@@ -51,7 +69,6 @@ function getStandardDeviation(values) {
 }
 
 function buildSplitSteps(matrix, threshold) {
-  let regionCounter = 0;
   const steps = [];
   const tree = {
     id: "R0",
@@ -85,8 +102,8 @@ function buildSplitSteps(matrix, threshold) {
       { x: node.x, y: node.y + half },
       { x: node.x + half, y: node.y },
       { x: node.x + half, y: node.y + half },
-    ].map((region) => ({
-      id: `R${++regionCounter}`,
+    ].map((region, index) => ({
+      id: `${node.id}${index + 1}`,
       x: region.x,
       y: region.y,
       size: half,
@@ -96,6 +113,15 @@ function buildSplitSteps(matrix, threshold) {
 
     node.children = children;
     steps[steps.length - 1].childIds = children.map((child) => child.id);
+    steps.push({
+      type: "children",
+      nodeId: node.id,
+      x: node.x,
+      y: node.y,
+      size: node.size,
+      sigma,
+      childIds: children.map((child) => child.id),
+    });
     children.forEach(recursiveSplit);
     steps.push({
       type: "merged",
@@ -112,33 +138,112 @@ function buildSplitSteps(matrix, threshold) {
   return { steps, tree };
 }
 
-function getStatusesForStep(steps, currentStep) {
+function getStatusesForStep(steps, currentStep, tree) {
   const statuses = {};
+  statuses[tree.id] = "unprocessed";
 
   steps.slice(0, currentStep + 1).forEach((step, index) => {
     if (step.type === "split") statuses[step.nodeId] = "split";
     if (step.type === "homogeneous") statuses[step.nodeId] = "homogeneous";
     if (step.type === "merged") statuses[step.nodeId] = "merged";
+    if (step.type === "children") {
+      statuses[step.nodeId] = "split";
+      step.childIds.forEach((childId) => {
+        if (!statuses[childId]) statuses[childId] = "unprocessed";
+      });
+    }
     if (index === currentStep) statuses[step.nodeId] = "current";
   });
 
   return statuses;
 }
 
-function getVisibleRegions(steps, currentStep) {
-  const regionsByNode = {};
-
-  steps.slice(0, currentStep + 1).forEach((step, index) => {
-    regionsByNode[step.nodeId] = {
-      ...step,
-      isCurrent: index === currentStep,
-    };
-  });
-
-  return Object.values(regionsByNode);
+function flattenTree(node, regionsById = {}) {
+  regionsById[node.id] = node;
+  node.children.forEach((child) => flattenTree(child, regionsById));
+  return regionsById;
 }
 
-function MatrixView({ matrix, visibleRegions = [], animated = false }) {
+function getRegionColor(regionId) {
+  const digits = regionId.replace(/\D/g, "");
+  const colorIndex =
+    digits.split("").reduce((sum, digit) => sum + Number(digit), 0) %
+    REGION_COLORS.length;
+  return REGION_COLORS[colorIndex];
+}
+
+function getActiveRegions(steps, currentStep, tree) {
+  const regionsById = flattenTree(tree);
+  const activeRegionIds = new Set([tree.id]);
+
+  steps.slice(0, currentStep + 1).forEach((step) => {
+    if (step.type !== "children") return;
+    activeRegionIds.delete(step.nodeId);
+    step.childIds.forEach((childId) => activeRegionIds.add(childId));
+  });
+
+  return [...activeRegionIds].map((regionId) => regionsById[regionId]);
+}
+
+function buildCellRegionMap(activeRegions) {
+  const cellRegionMap = {};
+
+  activeRegions.forEach((region) => {
+    for (let row = region.x; row < region.x + region.size; row += 1) {
+      for (let col = region.y; col < region.y + region.size; col += 1) {
+        cellRegionMap[`${row},${col}`] = region.id;
+      }
+    }
+  });
+
+  return cellRegionMap;
+}
+
+function getCellRegionStyle(row, col, cellRegionMap, statuses, currentStepData) {
+  const regionId = cellRegionMap[`${row},${col}`] || "R0";
+  const status = statuses[regionId] || "unprocessed";
+  const isCurrentRegion = currentStepData?.nodeId === regionId;
+  const decoration = {
+    current: { color: "#facc15", width: 3 },
+    homogeneous: { color: "#22c55e", width: 3 },
+    split: { color: "#ef4444", width: 3 },
+    merged: { color: "#2563eb", width: 3 },
+  }[status];
+  const isBoundary = (nextRow, nextCol) =>
+    cellRegionMap[`${nextRow},${nextCol}`] !== regionId;
+  const style = {
+    backgroundColor: getRegionColor(regionId),
+  };
+
+  if (!decoration) return style;
+
+  const borderValue = `${decoration.width}px solid ${decoration.color}`;
+  if (row === 0 || isBoundary(row - 1, col)) style.borderTop = borderValue;
+  if (row === MATRIX_SIZE - 1 || isBoundary(row + 1, col)) {
+    style.borderBottom = borderValue;
+  }
+  if (col === 0 || isBoundary(row, col - 1)) style.borderLeft = borderValue;
+  if (col === MATRIX_SIZE - 1 || isBoundary(row, col + 1)) {
+    style.borderRight = borderValue;
+  }
+  if (status === "current") {
+    style.boxShadow = "0 0 18px rgba(250,204,21,.7)";
+    style.zIndex = 2;
+  }
+  if (status === "split" || (isCurrentRegion && currentStepData?.type === "split")) {
+    style.animation = "regionFlashRed 0.65s ease";
+  }
+
+  return style;
+}
+
+function MatrixView({
+  matrix,
+  cellRegionMap = {},
+  statuses = {},
+  currentStepData = null,
+  animated = false,
+}) {
   return (
     <div
       className="matrix-grid-region"
@@ -149,27 +254,24 @@ function MatrixView({ matrix, visibleRegions = [], animated = false }) {
           <div
             key={`${rowIndex}-${cellIndex}-${animated ? "animated" : "base"}`}
             id="original_matrix_region"
-            className={animated ? "matrix-animate" : ""}
+            className={`matrix-cell-region ${animated ? "matrix-animate" : ""}`}
             style={{
               animationDelay: `${rowIndex * 0.08}s`,
+              ...(!animated
+                ? getCellRegionStyle(
+                    rowIndex,
+                    cellIndex,
+                    cellRegionMap,
+                    statuses,
+                    currentStepData,
+                  )
+                : {}),
             }}
           >
             {cell}
           </div>
         )),
       )}
-      {visibleRegions.map((region) => (
-        <div
-          key={`${region.nodeId}-${region.type}`}
-          className={`region-overlay region-${region.type} ${
-            region.isCurrent ? "region-current" : ""
-          }`}
-          style={{
-            gridColumn: `${region.y + 1} / span ${region.size}`,
-            gridRow: `${region.x + 1} / span ${region.size}`,
-          }}
-        />
-      ))}
     </div>
   );
 }
@@ -201,8 +303,11 @@ function ExplanationBox({ step, stepNumber, threshold }) {
             Since: sigma {relation} threshold, region {step.nodeId} is not
             homogeneous.
           </p>
-          <p>Splitting into: {step.childIds.join(", ")}</p>
+          <p>Region {step.nodeId} flashes before its child regions appear.</p>
         </>
+      )}
+      {step.type === "children" && (
+        <p>Region {step.nodeId} splits into: {step.childIds.join(", ")}</p>
       )}
       {step.type === "homogeneous" && (
         <p>
@@ -220,19 +325,127 @@ function ExplanationBox({ step, stepNumber, threshold }) {
   );
 }
 
-function TreeNode({ node, statuses }) {
-  const status = statuses[node.id] || "unprocessed";
+function getVisibleTree(node, revealedParents) {
+  return {
+    ...node,
+    children: revealedParents.has(node.id)
+      ? node.children.map((child) => getVisibleTree(child, revealedParents))
+      : [],
+  };
+}
+
+function getRevealedParents(steps, currentStep) {
+  return new Set(
+    steps
+      .slice(0, currentStep + 1)
+      .filter((step) => step.type === "children")
+      .map((step) => step.nodeId),
+  );
+}
+
+function buildTreeLayout(node) {
+  const nodes = [];
+  const lines = [];
+
+  function measure(currentNode) {
+    if (currentNode.children.length === 0) return TREE_NODE_SIZE;
+    const childWidths = currentNode.children.map(measure);
+    const childrenWidth =
+      childWidths.reduce((sum, width) => sum + width, 0) +
+      TREE_X_GAP * (childWidths.length - 1);
+    return Math.max(TREE_NODE_SIZE, childrenWidth);
+  }
+
+  function place(currentNode, left, depth) {
+    const subtreeWidth = measure(currentNode);
+    const x = left + subtreeWidth / 2;
+    const y = TREE_PADDING + depth * TREE_Y_GAP;
+
+    nodes.push({ id: currentNode.id, x, y });
+
+    let childLeft = left;
+    currentNode.children.forEach((child) => {
+      const childWidth = measure(child);
+      const childPosition = place(child, childLeft, depth + 1);
+      lines.push({
+        fromX: x,
+        fromY: y + TREE_NODE_SIZE / 2,
+        toX: childPosition.x,
+        toY: childPosition.y - TREE_NODE_SIZE / 2,
+      });
+      childLeft += childWidth + TREE_X_GAP;
+    });
+
+    return { x, y, width: subtreeWidth };
+  }
+
+  const width = measure(node) + TREE_PADDING * 2;
+  place(node, TREE_PADDING, 0);
+
+  const maxDepth = nodes.reduce(
+    (largest, item) =>
+      Math.max(largest, Math.round((item.y - TREE_PADDING) / TREE_Y_GAP)),
+    0,
+  );
+  const height = TREE_PADDING * 2 + TREE_NODE_SIZE + maxDepth * TREE_Y_GAP;
+
+  return { nodes, lines, width, height };
+}
+
+function TreeSVG({ lines, width, height }) {
+  return (
+    <svg
+      className="tree-svg-region"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      aria-hidden="true"
+    >
+      {lines.map((line) => (
+        <path
+          key={`${line.fromX}-${line.fromY}-${line.toX}-${line.toY}`}
+          d={`M ${line.fromX} ${line.fromY} V ${(line.fromY + line.toY) / 2} H ${
+            line.toX
+          } V ${line.toY}`}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function QuadtreeView({ tree, steps, currentStep, statuses, currentStepData }) {
+  const visibleTree = useMemo(
+    () => getVisibleTree(tree, getRevealedParents(steps, currentStep)),
+    [tree, steps, currentStep],
+  );
+  const layout = useMemo(() => buildTreeLayout(visibleTree), [visibleTree]);
 
   return (
-    <div className="tree-node-wrap-region">
-      <div className={`tree-node-region tree-${status}`}>{node.id}</div>
-      {node.children.length > 0 && (
-        <div className="tree-children-region">
-          {node.children.map((child) => (
-            <TreeNode key={child.id} node={child} statuses={statuses} />
-          ))}
-        </div>
-      )}
+    <div
+      className="tree-region"
+      style={{ width: `${layout.width}px`, height: `${layout.height}px` }}
+    >
+      <TreeSVG lines={layout.lines} width={layout.width} height={layout.height} />
+      {layout.nodes.map((node) => {
+        const status = statuses[node.id] || "unprocessed";
+        const isCurrentSplit =
+          currentStepData?.nodeId === node.id && currentStepData?.type === "split";
+        const className = `tree-node-region tree-${
+          isCurrentSplit ? "split" : status
+        } ${status === "current" ? "tree-current" : ""}`;
+        return (
+          <div
+            key={node.id}
+            className={className}
+            style={{
+              left: `${node.x - TREE_NODE_SIZE / 2}px`,
+              top: `${node.y - TREE_NODE_SIZE / 2}px`,
+            }}
+          >
+            {node.id}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -249,8 +462,15 @@ export default function SplitAndMerge({ handleClose3Modal }) {
     [original, threshold],
   );
   const currentStepData = currentStep >= 0 ? steps[currentStep] : null;
-  const statuses = getStatusesForStep(steps, currentStep);
-  const visibleRegions = getVisibleRegions(steps, currentStep);
+  const statuses = getStatusesForStep(steps, currentStep, tree);
+  const activeRegions = useMemo(
+    () => getActiveRegions(steps, currentStep, tree),
+    [steps, currentStep, tree],
+  );
+  const cellRegionMap = useMemo(
+    () => buildCellRegionMap(activeRegions),
+    [activeRegions],
+  );
 
   function handleGenerateMatrix() {
     const nextGeneration = generation + 1;
@@ -400,7 +620,9 @@ export default function SplitAndMerge({ handleClose3Modal }) {
             <div id="animated-image-temp-region">
               <MatrixView
                 matrix={original}
-                visibleRegions={visibleRegions}
+                cellRegionMap={cellRegionMap}
+                statuses={statuses}
+                currentStepData={currentStepData}
               />
             </div>
             <ExplanationBox
@@ -441,9 +663,13 @@ export default function SplitAndMerge({ handleClose3Modal }) {
 
         <div id="tree-container-region">
           <h1>Quadtree Representation</h1>
-          <div className="tree-region">
-            <TreeNode node={tree} statuses={statuses} />
-          </div>
+          <QuadtreeView
+            tree={tree}
+            steps={steps}
+            currentStep={currentStep}
+            statuses={statuses}
+            currentStepData={currentStepData}
+          />
         </div>
         <ToastContainer position="bottom-left" />
       </div>
