@@ -1061,16 +1061,24 @@ export default function SplittingAndMergingPage() {
                 </div>
                 {/* ToastContainer must be placed somewhere in the component tree */}
                 <ToastContainer />
-                <Dialog
-                  open={openSplitModal}
-                  onClose={handleClose3Modal}
-                  aria-labelledby="explanation-dialog-title"
-                  aria-describedby="explanation-dialog-description"
-                  PaperProps={{
-                    id: "explanation-dialog",
-                  }}
-                >
-                  {/* <DialogTitle id="instructions-dialog-title">
+
+                {/* tutor modal */}
+                <Tutor />
+              </div>
+            </div>
+          </TabPanel>
+        </div>
+      </div>
+      <Dialog
+        open={openSplitModal}
+        onClose={handleClose3Modal}
+        aria-labelledby="explanation-dialog-title"
+        aria-describedby="explanation-dialog-description"
+        PaperProps={{
+          id: "explanation-dialog",
+        }}
+      >
+        {/* <DialogTitle id="instructions-dialog-title">
                     <div style={{ width: "50%" }}>
                       {" "}
                       Splitting & Merging Concept
@@ -1096,20 +1104,13 @@ export default function SplittingAndMergingPage() {
                     </div>
                   </DialogTitle> */}
 
-                  <DialogContent sx={{ padding: "0px",overflow: "clip" }}>
-                    {openSplitModal && (
-                      <SplitAndMerge handleClose3Modal={handleClose3Modal} />
-                    )}
-                    {/* {SplitAndMerge()} */}
-                  </DialogContent>
-                </Dialog>
-                {/* tutor modal */}
-                <Tutor />
-              </div>
-            </div>
-          </TabPanel>
-        </div>
-      </div>
+        <DialogContent sx={{ padding: "0px", overflow: "clip" }}>
+          {openSplitModal && (
+            <SplitAndMerge handleClose3Modal={handleClose3Modal} />
+          )}
+          {/* {SplitAndMerge()} */}
+        </DialogContent>
+      </Dialog>
     </OpenCvProvider>
   );
 }

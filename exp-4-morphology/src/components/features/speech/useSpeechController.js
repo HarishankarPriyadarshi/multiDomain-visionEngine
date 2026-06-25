@@ -81,7 +81,7 @@ const speak = useCallback(
         utterance.lang = indianVoice.lang;
       }
 
-      utterance.rate = 0.8;
+      utterance.rate = 0.9;
 
       utterance.onstart = () => {
         setIsSpeaking(true);
