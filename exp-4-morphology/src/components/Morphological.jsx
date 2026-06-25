@@ -562,7 +562,7 @@ export default function Morphological({ handleClose4Modal }) {
         title: "Processing In Progress",
         content:
           "The kernel is still scanning the image. Wait until all pixels have been processed.",
-        targetId: "step-counter-zone",
+        targetId: "processed-img-zone",
         placement: "bottom",
         offset: [0, 10],
       });
