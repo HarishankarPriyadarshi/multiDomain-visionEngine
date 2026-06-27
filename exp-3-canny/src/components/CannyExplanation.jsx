@@ -223,7 +223,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
       ], // Divide
     ];
     setOriginal(signs[x]);
-  //  console.log(original);
+    //  console.log(original);
     // handleShow();
     setImagesDisabled(true);
   }
@@ -578,7 +578,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
     let suppressed = Array(rows)
       .fill(0)
       .map(() => Array(cols).fill(0));
-   // console.log("suppressedIntial:", suppressed);
+    // console.log("suppressedIntial:", suppressed);
     //initialize animated suppressed matrix
     setAnimatedSuppressed(
       Array(rows)
@@ -938,13 +938,12 @@ export default function CannyExplanation({ handleClose3Modal }) {
     resetTutorSim,
   } = useContext(SimContext);
 
-
   // Tutorial Steps for Canny Edge Detection
- 
+
   function page1Tutorial() {
     let steps = [];
-     steps = [
-            {
+    steps = [
+      {
         title: "Welcome to Canny Edge Detection Simulation",
         content:
           "This guided walkthrough demonstrates every mathematical stage of the Canny Edge Detection algorithm on a 7×7 matrix image. Follow the highlighted steps carefully.",
@@ -977,8 +976,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
         offset: [0, 10],
       });
-    return steps;
-      
+      return steps;
     }
 
     steps.push(
@@ -1019,8 +1017,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-    return steps;
-      
+      return steps;
     }
     steps.push(
       {
@@ -1049,14 +1046,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
       });
 
       return steps;
-
     }
 
     return steps;
   }
-  function page2Tutorial(){
-     const baseSteps=[];
-     baseSteps.push(
+  function page2Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Padding Before Convolution",
         content:
@@ -1080,9 +1076,7 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-    
       return baseSteps;
-      
     }
     baseSteps.push(
       {
@@ -1110,14 +1104,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-    return baseSteps;
-     
+      return baseSteps;
     }
     return baseSteps;
   }
-  function page3Tutorial (){
-     const baseSteps=[];
-        baseSteps.push(
+  function page3Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: " Padded Image",
         content:
@@ -1149,7 +1142,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
         placement: "bottom",
       });
 
-      
       return baseSteps;
     }
     baseSteps.push(
@@ -1191,9 +1183,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
     }
     return baseSteps;
   }
-  function page4Tutorial (){
-     const baseSteps=[];
-         baseSteps.push(
+  function page4Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Gaussian Blurred Image (7×7)",
         content:
@@ -1261,12 +1253,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
       return baseSteps;
     }
 
-     return baseSteps;
-
+    return baseSteps;
   }
-  function page5Tutorial (){
-     const baseSteps=[];
-         baseSteps.push(
+  function page5Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Step 5: Gradient Computation using Sobel Operator",
         content:
@@ -1380,11 +1371,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
 
       return baseSteps;
     }
-     return baseSteps;
+    return baseSteps;
   }
-  function  page6Tutorial (){
-     const baseSteps=[];
-         baseSteps.push(
+  function page6Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Gradient Direction Matrix",
         content:
@@ -1466,11 +1457,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
       return baseSteps;
     }
 
-     return baseSteps;
+    return baseSteps;
   }
-  function page7Tutorial (){
-     const baseSteps=[];
-         baseSteps.push(
+  function page7Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Resultant Gradient Magnitude",
         content:
@@ -1497,12 +1488,11 @@ export default function CannyExplanation({ handleClose3Modal }) {
       },
     );
     if (!supressed) {
-     // console.log("supressed", supressed);
-     // console.log(baseSteps.length);
+      // console.log("supressed", supressed);
+      // console.log(baseSteps.length);
       baseSteps.push({
         title: "Action Required",
-        content:
-          "Click 'Process' to apply Non-Maximum Suppression.",
+        content: "Click 'Process' to apply Non-Maximum Suppression.",
         targetId: "step-seven-process-btn",
         placement: "bottom",
       });
@@ -1544,13 +1534,13 @@ export default function CannyExplanation({ handleClose3Modal }) {
         offset: [0, 10],
       });
 
-        return baseSteps;
+      return baseSteps;
     }
-     return baseSteps;
+    return baseSteps;
   }
-  function page8Tutorial (){
-     const baseSteps=[];
-         baseSteps.push(
+  function page8Tutorial() {
+    const baseSteps = [];
+    baseSteps.push(
       {
         title: "Suppressed Gradient",
         content:
@@ -1660,10 +1650,10 @@ export default function CannyExplanation({ handleClose3Modal }) {
       },
     );
 
-     return baseSteps;
+    return baseSteps;
   }
 
-  // Dynamic Tutor Steps for Cnanny Edge Detection Simulation 
+  // Dynamic Tutor Steps for Cnanny Edge Detection Simulation
   useEffect(() => {
     let pageSteps = [
       {
@@ -1673,9 +1663,9 @@ export default function CannyExplanation({ handleClose3Modal }) {
         targetId: "main-image-box-canny",
         placement: "bottom",
         offset: [0, 10],
-      }
+      },
     ];
-   // console.log("index",index);
+    // console.log("index",index);
 
     switch (index) {
       case 0:
@@ -1712,7 +1702,6 @@ export default function CannyExplanation({ handleClose3Modal }) {
     }
 
     setTutorStepsSim(pageSteps);
-    
   }, [
     original,
 
@@ -1731,18 +1720,18 @@ export default function CannyExplanation({ handleClose3Modal }) {
     isHysteresisRunning,
     isBoxRunning,
   ]);
-useEffect(() => {
-  //console.log("tutorStepsSim",tutorStepsSim);
-  setTimeout(() => {
-   if (isTutorOpenSim && tutorStepsSim.length > 0) {
-    //console.log("tutorStepsSimwITH iNDEX cHNAGE",tutorStepsSim);
-    setTutorStepSim(0);
-  }}, 10);
-}, [index]);
-useEffect(() => {
- // console.log("tutorStepsSim",tutorStepsSim);
-
-}, [tutorStepsSim]);
+  useEffect(() => {
+    //console.log("tutorStepsSim",tutorStepsSim);
+    setTimeout(() => {
+      if (isTutorOpenSim && tutorStepsSim.length > 0) {
+        //console.log("tutorStepsSimwITH iNDEX cHNAGE",tutorStepsSim);
+        setTutorStepSim(0);
+      }
+    }, 10);
+  }, [index]);
+  useEffect(() => {
+    // console.log("tutorStepsSim",tutorStepsSim);
+  }, [tutorStepsSim]);
 
   const maxGrad =
     gradientMag && Math.max(...gradientMag.flat().map(Number)) > 0
