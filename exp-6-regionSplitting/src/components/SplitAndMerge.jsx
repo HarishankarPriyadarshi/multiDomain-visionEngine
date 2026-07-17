@@ -227,7 +227,156 @@ function buildSplitSteps(matrix, threshold) {
   };
 
   recursiveSplit(tree);
+  steps.push(...buildMergeSteps(matrix, threshold, tree, colorMap));
   return { steps, tree, colorMap };
+}
+
+function getLeafRegions(node) {
+  if (node.children.length === 0) return [node];
+  return node.children.flatMap(getLeafRegions);
+}
+
+function getRegionCells(region) {
+  const cells = [];
+
+  for (let row = region.x; row < region.x + region.size; row += 1) {
+    for (let col = region.y; col < region.y + region.size; col += 1) {
+      cells.push({ row, col });
+    }
+  }
+
+  return cells;
+}
+
+function getMeanFromCells(matrix, cells) {
+  return (
+    cells.reduce((sum, cell) => sum + matrix[cell.row][cell.col], 0) /
+    cells.length
+  );
+}
+
+function areRegionGroupsAdjacent(leftGroup, rightGroup) {
+  const rightCells = new Set(
+    rightGroup.cells.map((cell) => `${cell.row},${cell.col}`),
+  );
+
+  return leftGroup.cells.some((cell) =>
+    [
+      [cell.row - 1, cell.col],
+      [cell.row + 1, cell.col],
+      [cell.row, cell.col - 1],
+      [cell.row, cell.col + 1],
+    ].some(([row, col]) => rightCells.has(`${row},${col}`)),
+  );
+}
+
+function getGroupKey(group) {
+  return [...group.leafIds].sort().join("+");
+}
+
+function getSharedParentId(regionIds) {
+  if (regionIds.length === 0) return "R0";
+  let prefix = regionIds[0];
+
+  regionIds.slice(1).forEach((regionId) => {
+    while (prefix && !regionId.startsWith(prefix)) {
+      prefix = prefix.slice(0, -1);
+    }
+  });
+
+  if (prefix.length > 2) return prefix.slice(0, -1);
+  return "R0";
+}
+
+function buildMergeSteps(matrix, threshold, tree, colorMap) {
+  const leafRegions = getLeafRegions(tree);
+  let mergeCount = 0;
+  let groups = leafRegions.map((region) => {
+    const cells = getRegionCells(region);
+    return {
+      label: region.id,
+      leafIds: [region.id],
+      cells,
+      mean: getMeanFromCells(matrix, cells),
+    };
+  });
+  const checkedPairs = new Set();
+  const mergeSteps = [];
+  let hasMoreDecisions = true;
+
+  while (hasMoreDecisions && mergeSteps.length < 120) {
+    hasMoreDecisions = false;
+
+    for (let leftIndex = 0; leftIndex < groups.length; leftIndex += 1) {
+      let stepCreated = false;
+
+      for (
+        let rightIndex = leftIndex + 1;
+        rightIndex < groups.length;
+        rightIndex += 1
+      ) {
+        const leftGroup = groups[leftIndex];
+        const rightGroup = groups[rightIndex];
+
+        if (!areRegionGroupsAdjacent(leftGroup, rightGroup)) continue;
+
+        const pairKey = [getGroupKey(leftGroup), getGroupKey(rightGroup)]
+          .sort()
+          .join("|");
+        if (checkedPairs.has(pairKey)) continue;
+
+        checkedPairs.add(pairKey);
+        hasMoreDecisions = true;
+
+        const difference = Math.abs(leftGroup.mean - rightGroup.mean);
+        const allowed = difference <= threshold;
+        const mergedId = allowed ? `M${mergeCount + 1}` : undefined;
+        const mergedColor = allowed
+          ? REGION_COLORS[(colorMap.size + mergeCount) % REGION_COLORS.length]
+          : undefined;
+        const mergedLeafIds = [...leftGroup.leafIds, ...rightGroup.leafIds];
+        const mergedCells = [...leftGroup.cells, ...rightGroup.cells];
+
+        mergeSteps.push({
+          type: "merge",
+          nodeId: allowed ? mergedId : leftGroup.label,
+          leftLabel: leftGroup.label,
+          rightLabel: rightGroup.label,
+          leftIds: leftGroup.leafIds,
+          rightIds: rightGroup.leafIds,
+          leftMean: leftGroup.mean,
+          rightMean: rightGroup.mean,
+          difference,
+          threshold,
+          allowed,
+          mergedId,
+          mergedColor,
+          parentId: getSharedParentId(mergedLeafIds),
+        });
+
+        if (allowed) {
+          mergeCount += 1;
+          groups = groups.filter(
+            (group) => group !== leftGroup && group !== rightGroup,
+          );
+          groups.push({
+            label: mergedId,
+            leafIds: mergedLeafIds,
+            cells: mergedCells,
+            mean: getMeanFromCells(matrix, mergedCells),
+          });
+        }
+
+        stepCreated = true;
+        break;
+      }
+
+      if (stepCreated) break;
+    }
+  }
+
+  mergeSteps.push({ type: "complete", nodeId: "final" });
+  return mergeSteps;
 }
 
 function getStatusesForStep(steps, currentStep, tree) {
@@ -277,6 +426,13 @@ function buildCellRegionMap(activeRegions) {
   const cellRegionMap = {};
 
   activeRegions.forEach((region) => {
+    if (region.cells) {
+      region.cells.forEach((cell) => {
+        cellRegionMap[`${cell.row},${cell.col}`] = region.id;
+      });
+      return;
+    }
+
     for (let row = region.x; row < region.x + region.size; row += 1) {
       for (let col = region.y; col < region.y + region.size; col += 1) {
         cellRegionMap[`${row},${col}`] = region.id;
@@ -285,6 +441,88 @@ function buildCellRegionMap(activeRegions) {
   });
 
   return cellRegionMap;
+}
+
+function getRegionDisplayCells(region) {
+  return region.cells || getRegionCells(region);
+}
+
+function getDisplayRegions(activeRegions, steps, currentStep) {
+  const appliedMergeSteps = steps
+    .slice(0, currentStep + 1)
+    .filter((step) => step.type === "merge" && step.allowed);
+
+  if (appliedMergeSteps.length === 0) return activeRegions;
+
+  const parent = {};
+  const meta = {};
+  const baseRegions = {};
+
+  activeRegions.forEach((region) => {
+    parent[region.id] = region.id;
+    baseRegions[region.id] = {
+      id: region.id,
+      cells: getRegionDisplayCells(region),
+    };
+  });
+
+  const find = (regionId) => {
+    if (parent[regionId] !== regionId) parent[regionId] = find(parent[regionId]);
+    return parent[regionId];
+  };
+
+  const union = (leftId, rightId, step) => {
+    const leftRoot = find(leftId);
+    const rightRoot = find(rightId);
+    if (leftRoot === rightRoot) return leftRoot;
+
+    parent[rightRoot] = leftRoot;
+    meta[leftRoot] = {
+      id: step.mergedId,
+      color: step.mergedColor,
+    };
+    delete meta[rightRoot];
+    return leftRoot;
+  };
+
+  appliedMergeSteps.forEach((step) => {
+    const [leftId] = step.leftIds;
+    step.leftIds.forEach((regionId) => {
+      if (!parent[regionId]) parent[regionId] = regionId;
+      union(leftId, regionId, step);
+    });
+    step.rightIds.forEach((regionId) => {
+      if (!parent[regionId]) parent[regionId] = regionId;
+      union(leftId, regionId, step);
+    });
+  });
+
+  const groups = {};
+  activeRegions.forEach((region) => {
+    const root = find(region.id);
+    if (!groups[root]) groups[root] = [];
+    groups[root].push(region);
+  });
+
+  return Object.entries(groups).map(([root, regions]) => {
+    const cells = regions.flatMap(getRegionDisplayCells);
+    return {
+      id: meta[root]?.id || regions[0].id,
+      cells,
+    };
+  });
+}
+
+function buildEffectiveColorMap(colorMap, steps) {
+  const effectiveColorMap = new Map(colorMap);
+
+  steps.forEach((step) => {
+    if (step.type === "merge" && step.allowed && step.mergedId) {
+      effectiveColorMap.set(step.mergedId, step.mergedColor);
+    }
+  });
+
+  return effectiveColorMap;
 }
 
 function getCellRegionStyle(
@@ -298,12 +536,19 @@ function getCellRegionStyle(
   const regionId = cellRegionMap[`${row},${col}`] || "R0";
   const status = statuses[regionId] || "unprocessed";
   const isCurrentRegion = currentStepData?.nodeId === regionId;
+  const isMergeCandidate =
+    currentStepData?.type === "merge" &&
+    (currentStepData.allowed
+      ? currentStepData.mergedId === regionId
+      : [currentStepData.leftLabel, currentStepData.rightLabel].includes(
+          regionId,
+        ));
   const decoration = {
     current: { color: "#facc15", width: 3 },
     homogeneous: { color: "#22c55e", width: 3 },
     split: { color: "#ef4444", width: 3 },
     merged: { color: "#2563eb", width: 3 },
-  }[status];
+  }[isMergeCandidate ? "current" : status];
   const isBoundary = (nextRow, nextCol) =>
     cellRegionMap[`${nextRow},${nextCol}`] !== regionId;
   const style = {
@@ -321,7 +566,7 @@ function getCellRegionStyle(
   if (col === MATRIX_SIZE - 1 || isBoundary(row, col + 1)) {
     style.borderRight = borderValue;
   }
-  if (status === "current") {
+  if (status === "current" || isMergeCandidate) {
     style.boxShadow = "0 0 18px rgba(250,204,21,.7)";
     style.zIndex = 2;
   }
@@ -330,6 +575,9 @@ function getCellRegionStyle(
     (isCurrentRegion && currentStepData?.type === "split")
   ) {
     style.animation = "regionFlashRed 0.65s ease";
+  }
+  if (isMergeCandidate && currentStepData.allowed) {
+    style.animation = "regionMergeUnify 1s ease";
   }
 
   return style;
@@ -377,10 +625,25 @@ function MatrixView({
 }
 
 function getNomenclatureFontSize(region) {
-  if (region.size <= 1) return "8px";
+  const cellCount = region.cells?.length || region.size ** 2;
+  if (cellCount <= 1) return "8px";
+  if (cellCount <= 2) return "9px";
   if (region.id.length >= 5) return "10px";
   if (region.id.length >= 4) return "12px";
   return "14px";
+}
+
+function getRegionLabelPosition(region) {
+  const cells = getRegionDisplayCells(region);
+  const rowCenter =
+    cells.reduce((sum, cell) => sum + cell.row + 0.5, 0) / cells.length;
+  const colCenter =
+    cells.reduce((sum, cell) => sum + cell.col + 0.5, 0) / cells.length;
+
+  return {
+    left: `${(colCenter / MATRIX_SIZE) * 100}%`,
+    top: `${(rowCenter / MATRIX_SIZE) * 100}%`,
+  };
 }
 
 function NomenclatureMatrixView({
@@ -416,19 +679,21 @@ function NomenclatureMatrixView({
           />
         ))}
       </div>
-      {activeRegions.map((region) => (
-        <span
-          key={`label-${region.id}`}
-          className="nomenclature-label-region"
-          style={{
-            left: `${((region.y + region.size / 2) / MATRIX_SIZE) * 100}%`,
-            top: `${((region.x + region.size / 2) / MATRIX_SIZE) * 100}%`,
-            fontSize: getNomenclatureFontSize(region),
-          }}
-        >
-          {region.id}
-        </span>
-      ))}
+      {activeRegions.map((region) => {
+        const labelPosition = getRegionLabelPosition(region);
+        return (
+          <span
+            key={`label-${region.id}`}
+            className="nomenclature-label-region"
+            style={{
+              ...labelPosition,
+              fontSize: getNomenclatureFontSize(region),
+            }}
+          >
+            {region.id}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -442,6 +707,46 @@ function ExplanationBox({ step, stepNumber, threshold }) {
           Generate a structured matrix, then use Next or Auto Play to inspect
           each recursive region check.
         </p>
+      </div>
+    );
+  }
+
+  if (step.type === "merge") {
+    return (
+      <div id="explanation-box">
+        <h2>Step {stepNumber}</h2>
+        <p>Checking Merge</p>
+        <p>
+          Current Regions: {step.leftLabel} and {step.rightLabel}
+        </p>
+        <p>
+          Mean({step.leftLabel}) = {step.leftMean.toFixed(2)}
+        </p>
+        <p>
+          Mean({step.rightLabel}) = {step.rightMean.toFixed(2)}
+        </p>
+        <p>Mean Difference = {step.difference.toFixed(2)}</p>
+        <p>Threshold = {step.threshold.toFixed(2)}</p>
+        <p>
+          Decision:{" "}
+          {step.allowed
+            ? `Merged Successfully as ${step.mergedId}`
+            : "Cannot Merge. Regions remain separate."}
+        </p>
+      </div>
+    );
+  }
+
+  if (step.type === "complete") {
+    return (
+      <div id="explanation-box">
+        <h2>Region Splitting and Merging Completed</h2>
+        <p>All non-homogeneous regions were recursively divided.</p>
+        <p>
+          Adjacent homogeneous regions satisfying the similarity criterion were
+          merged.
+        </p>
+        <p>The final segmented image is displayed.</p>
       </div>
     );
   }
@@ -551,6 +856,21 @@ function buildTreeLayout(node) {
   return { nodes, lines, width, height };
 }
 
+function getMergeTreeState(steps, currentStep) {
+  const fadedNodeIds = new Set();
+  const parentNodeIds = new Set();
+
+  steps.slice(0, currentStep + 1).forEach((step) => {
+    if (step.type !== "merge" || !step.allowed) return;
+    [...step.leftIds, ...step.rightIds].forEach((regionId) => {
+      fadedNodeIds.add(regionId);
+    });
+    if (step.parentId) parentNodeIds.add(step.parentId);
+  });
+
+  return { fadedNodeIds, parentNodeIds };
+}
+
 function TreeSVG({ lines, width, height }) {
   return (
     <svg
@@ -585,6 +905,10 @@ function QuadtreeView({
     [tree, steps, currentStep],
   );
   const layout = useMemo(() => buildTreeLayout(visibleTree), [visibleTree]);
+  const mergeTreeState = useMemo(
+    () => getMergeTreeState(steps, currentStep),
+    [steps, currentStep],
+  );
 
   return (
     <div
@@ -603,7 +927,11 @@ function QuadtreeView({
           currentStepData?.type === "split";
         const className = `tree-node-region tree-${
           isCurrentSplit ? "split" : status
-        } ${status === "current" ? "tree-current" : ""}`;
+        } ${status === "current" ? "tree-current" : ""} ${
+          mergeTreeState.fadedNodeIds.has(node.id) ? "tree-merge-faded" : ""
+        } ${
+          mergeTreeState.parentNodeIds.has(node.id) ? "tree-merge-parent" : ""
+        }`;
         return (
           <div
             key={node.id}
@@ -641,9 +969,17 @@ export default function SplitAndMerge({ handleClose3Modal }) {
     () => getActiveRegions(steps, currentStep, tree),
     [steps, currentStep, tree],
   );
+  const displayRegions = useMemo(
+    () => getDisplayRegions(activeRegions, steps, currentStep),
+    [activeRegions, steps, currentStep],
+  );
   const cellRegionMap = useMemo(
-    () => buildCellRegionMap(activeRegions),
-    [activeRegions],
+    () => buildCellRegionMap(displayRegions),
+    [displayRegions],
+  );
+  const effectiveColorMap = useMemo(
+    () => buildEffectiveColorMap(colorMap, steps),
+    [colorMap, steps],
   );
 
   function handleGenerateMatrix() {
@@ -798,7 +1134,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
                 cellRegionMap={cellRegionMap}
                 statuses={statuses}
                 currentStepData={currentStepData}
-                colorMap={colorMap}
+                colorMap={effectiveColorMap}
               />
             </div>
             <ExplanationBox
@@ -845,10 +1181,10 @@ export default function SplitAndMerge({ handleClose3Modal }) {
             <div id="nomenclature-image-temp-region">
               <NomenclatureMatrixView
                 cellRegionMap={cellRegionMap}
-                activeRegions={activeRegions}
+                activeRegions={displayRegions}
                 statuses={statuses}
                 currentStepData={currentStepData}
-                colorMap={colorMap}
+                colorMap={effectiveColorMap}
               />
             </div>
           </div>
@@ -862,7 +1198,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
             currentStep={currentStep}
             statuses={statuses}
             currentStepData={currentStepData}
-            colorMap={colorMap}
+            colorMap={effectiveColorMap}
           />
         </div>
         <ToastContainer position="bottom-left" />

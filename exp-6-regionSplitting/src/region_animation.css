@@ -265,6 +265,23 @@
   }
 }
 
+@keyframes regionMergeUnify {
+  0% {
+    filter: saturate(1);
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.7);
+  }
+  45% {
+    filter: saturate(1.25);
+    box-shadow:
+      inset 0 0 0 999px rgba(255, 255, 255, 0.1),
+      0 0 20px rgba(250, 204, 21, 0.65);
+  }
+  100% {
+    filter: saturate(1);
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.7);
+  }
+}
+
 #region_arrow,
 #nomenclature-arrow-region {
   font-size: 40px;
@@ -407,6 +424,17 @@
   border-color: #2563eb;
   background-color: #dbeafe;
   color: #1e40af;
+}
+
+.tree-merge-faded {
+  border-color: #22c55e;
+  opacity: 0.48;
+  filter: saturate(0.85);
+}
+
+.tree-merge-parent {
+  border-color: #2563eb;
+  box-shadow: 0 0 18px rgba(37, 99, 235, 0.55);
 }
 
 .tree-svg-region {
