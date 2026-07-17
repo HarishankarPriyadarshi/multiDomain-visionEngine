@@ -7,51 +7,116 @@ import { ToastContainer } from "react-toastify";
 
 const MATRIX_SIZE = 8;
 const REGION_COLORS = [
-  "#DCFCE7",
-  "#DBEAFE",
-  "#FCE7F3",
-  "#FEF3C7",
-  "#E0E7FF",
-  "#FDE68A",
-  "#FECACA",
-  "#D1FAE5",
-  "#E9D5FF",
-  "#FED7AA",
+  "#A7F3D0",
   "#BFDBFE",
+  "#FBCFE8",
+  "#FDE68A",
+  "#C7D2FE",
+  "#FDBA74",
+  "#FCA5A5",
+  "#86EFAC",
   "#DDD6FE",
+  "#F9A8D4",
+  "#93C5FD",
+  "#FCD34D",
+  "#99F6E4",
+  "#FECACA",
+  "#D9F99D",
+  "#E9D5FF",
+  "#BAE6FD",
+  "#FED7AA",
+  "#C4B5FD",
+  "#6EE7B7",
 ];
 const TREE_NODE_SIZE = 55;
 const TREE_X_GAP = 34;
 const TREE_Y_GAP = 92;
 const TREE_PADDING = 28;
 
+function createRandom(seed) {
+  let value = (seed + 1) * 2654435761;
+  return () => {
+    value = (value * 1664525 + 1013904223) % 4294967296;
+    return value / 4294967296;
+  };
+}
+
+function randomInt(random, min, max) {
+  return Math.floor(random() * (max - min + 1)) + min;
+}
+
+function shuffle(values, random) {
+  const result = [...values];
+  for (let index = result.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(random() * (index + 1));
+    [result[index], result[swapIndex]] = [result[swapIndex], result[index]];
+  }
+  return result;
+}
+
 function buildMatrix(seed = 0) {
-  const topLeftValue = (seed % 3) + 1;
+  const random = createRandom(seed);
+  const topLeftValue = randomInt(random, 1, 10);
+  const bottomRightValue = randomInt(random, 1, 10);
+  const topRightValues = shuffle([1, 4, 7, 10], random);
   const topRightBlocks = [
-    [6, 6, 8, 8],
-    [6, 6, 8, 8],
-    [7, 7, 9, 9],
-    [7, 7, 9, 9],
+    [
+      topRightValues[0],
+      topRightValues[0],
+      topRightValues[1],
+      topRightValues[1],
+    ],
+    [
+      topRightValues[0],
+      topRightValues[0],
+      topRightValues[1],
+      topRightValues[1],
+    ],
+    [
+      topRightValues[2],
+      topRightValues[2],
+      topRightValues[3],
+      topRightValues[3],
+    ],
+    [
+      topRightValues[2],
+      topRightValues[2],
+      topRightValues[3],
+      topRightValues[3],
+    ],
   ];
-  const bottomLeft = [
-    [1, 10, 2, 9],
-    [8, 3, 10, 1],
-    [2, 9, 4, 10],
-    [10, 1, 8, 3],
-  ];
-  const bottomRight = [
-    [4, 4, 4, 4],
-    [4, 5, 4, 4],
-    [4, 4, 4, 4],
-    [4, 4, 4, 5],
-  ];
+  const bottomLeft = Array.from({ length: 4 }, () => Array(4).fill(0));
+
+  for (let blockRow = 0; blockRow < 2; blockRow += 1) {
+    for (let blockCol = 0; blockCol < 2; blockCol += 1) {
+      const low = randomInt(random, 1, 4);
+      const high = randomInt(random, 7, 10);
+      const pattern =
+        random() > 0.5
+          ? [
+              [low, high],
+              [high, low],
+            ]
+          : [
+              [high, low],
+              [low, high],
+            ];
+
+      for (let row = 0; row < 2; row += 1) {
+        for (let col = 0; col < 2; col += 1) {
+          bottomLeft[blockRow * 2 + row][blockCol * 2 + col] =
+            pattern[row][col];
+        }
+      }
+    }
+  }
 
   return Array.from({ length: MATRIX_SIZE }, (_, row) =>
     Array.from({ length: MATRIX_SIZE }, (_, col) => {
       if (row < 4 && col < 4) return topLeftValue;
       if (row < 4) return topRightBlocks[row][col - 4];
       if (col < 4) return bottomLeft[row - 4][col];
-      return bottomRight[row - 4][col - 4];
+      return bottomRightValue;
     }),
   );
 }
@@ -63,13 +128,32 @@ function getRegionValues(matrix, x, y, size) {
 function getStandardDeviation(values) {
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
   const variance =
-    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
-    values.length;
+    values.reduce((sum, value) => sum + (value - mean) ** 2, 0) / values.length;
   return Math.sqrt(variance);
+}
+
+function getDynamicThreshold(matrix) {
+  const topRightDeviation = getStandardDeviation(
+    getRegionValues(matrix, 0, 4, 4),
+  );
+  const bottomLeftBlockDeviations = [
+    getStandardDeviation(getRegionValues(matrix, 4, 0, 2)),
+    getStandardDeviation(getRegionValues(matrix, 4, 2, 2)),
+    getStandardDeviation(getRegionValues(matrix, 6, 0, 2)),
+    getStandardDeviation(getRegionValues(matrix, 6, 2, 2)),
+  ];
+  const smallestRecursiveDeviation = Math.min(...bottomLeftBlockDeviations);
+  const threshold = Math.min(
+    topRightDeviation * 0.55,
+    smallestRecursiveDeviation * 0.75,
+  );
+
+  return Number(Math.max(0.5, threshold).toFixed(2));
 }
 
 function buildSplitSteps(matrix, threshold) {
   const steps = [];
+  const colorMap = new Map([["R0", REGION_COLORS[0]]]);
   const tree = {
     id: "R0",
     x: 0,
@@ -97,19 +181,27 @@ function buildSplitSteps(matrix, threshold) {
     if (!shouldSplit) return;
 
     const half = Math.ceil(node.size / 2);
+    const nextColorIndex = colorMap.size;
     const children = [
       { x: node.x, y: node.y },
       { x: node.x, y: node.y + half },
       { x: node.x + half, y: node.y },
       { x: node.x + half, y: node.y + half },
-    ].map((region, index) => ({
-      id: `${node.id}${index + 1}`,
-      x: region.x,
-      y: region.y,
-      size: half,
-      status: "unprocessed",
-      children: [],
-    }));
+    ].map((region, index) => {
+      const childId = `${node.id}${index + 1}`;
+      colorMap.set(
+        childId,
+        REGION_COLORS[(nextColorIndex + index) % REGION_COLORS.length],
+      );
+      return {
+        id: childId,
+        x: region.x,
+        y: region.y,
+        size: half,
+        status: "unprocessed",
+        children: [],
+      };
+    });
 
     node.children = children;
     steps[steps.length - 1].childIds = children.map((child) => child.id);
@@ -135,7 +227,7 @@ function buildSplitSteps(matrix, threshold) {
   };
 
   recursiveSplit(tree);
-  return { steps, tree };
+  return { steps, tree, colorMap };
 }
 
 function getStatusesForStep(steps, currentStep, tree) {
@@ -164,12 +256,8 @@ function flattenTree(node, regionsById = {}) {
   return regionsById;
 }
 
-function getRegionColor(regionId) {
-  const digits = regionId.replace(/\D/g, "");
-  const colorIndex =
-    digits.split("").reduce((sum, digit) => sum + Number(digit), 0) %
-    REGION_COLORS.length;
-  return REGION_COLORS[colorIndex];
+function getRegionColor(regionId, colorMap = new Map()) {
+  return colorMap.get(regionId) || REGION_COLORS[0];
 }
 
 function getActiveRegions(steps, currentStep, tree) {
@@ -199,7 +287,14 @@ function buildCellRegionMap(activeRegions) {
   return cellRegionMap;
 }
 
-function getCellRegionStyle(row, col, cellRegionMap, statuses, currentStepData) {
+function getCellRegionStyle(
+  row,
+  col,
+  cellRegionMap,
+  statuses,
+  currentStepData,
+  colorMap,
+) {
   const regionId = cellRegionMap[`${row},${col}`] || "R0";
   const status = statuses[regionId] || "unprocessed";
   const isCurrentRegion = currentStepData?.nodeId === regionId;
@@ -212,7 +307,7 @@ function getCellRegionStyle(row, col, cellRegionMap, statuses, currentStepData) 
   const isBoundary = (nextRow, nextCol) =>
     cellRegionMap[`${nextRow},${nextCol}`] !== regionId;
   const style = {
-    backgroundColor: getRegionColor(regionId),
+    backgroundColor: getRegionColor(regionId, colorMap),
   };
 
   if (!decoration) return style;
@@ -230,7 +325,10 @@ function getCellRegionStyle(row, col, cellRegionMap, statuses, currentStepData) 
     style.boxShadow = "0 0 18px rgba(250,204,21,.7)";
     style.zIndex = 2;
   }
-  if (status === "split" || (isCurrentRegion && currentStepData?.type === "split")) {
+  if (
+    status === "split" ||
+    (isCurrentRegion && currentStepData?.type === "split")
+  ) {
     style.animation = "regionFlashRed 0.65s ease";
   }
 
@@ -242,6 +340,7 @@ function MatrixView({
   cellRegionMap = {},
   statuses = {},
   currentStepData = null,
+  colorMap = new Map(),
   animated = false,
 }) {
   return (
@@ -264,6 +363,7 @@ function MatrixView({
                     cellRegionMap,
                     statuses,
                     currentStepData,
+                    colorMap,
                   )
                 : {}),
             }}
@@ -272,6 +372,63 @@ function MatrixView({
           </div>
         )),
       )}
+    </div>
+  );
+}
+
+function getNomenclatureFontSize(region) {
+  if (region.size <= 1) return "8px";
+  if (region.id.length >= 5) return "10px";
+  if (region.id.length >= 4) return "12px";
+  return "14px";
+}
+
+function NomenclatureMatrixView({
+  cellRegionMap,
+  activeRegions,
+  statuses,
+  currentStepData,
+  colorMap,
+}) {
+  const cells = Array.from({ length: MATRIX_SIZE }, (_, row) =>
+    Array.from({ length: MATRIX_SIZE }, (_, col) => ({ row, col })),
+  ).flat();
+
+  return (
+    <div className="nomenclature-matrix-region">
+      <div
+        className="matrix-grid-region nomenclature-grid-region"
+        style={{ gridTemplateColumns: `repeat(${MATRIX_SIZE}, 1fr)` }}
+      >
+        {cells.map(({ row, col }) => (
+          <div
+            key={`nomenclature-${row}-${col}`}
+            id="original_matrix_region"
+            className="matrix-cell-region nomenclature-cell-region"
+            style={getCellRegionStyle(
+              row,
+              col,
+              cellRegionMap,
+              statuses,
+              currentStepData,
+              colorMap,
+            )}
+          />
+        ))}
+      </div>
+      {activeRegions.map((region) => (
+        <span
+          key={`label-${region.id}`}
+          className="nomenclature-label-region"
+          style={{
+            left: `${((region.y + region.size / 2) / MATRIX_SIZE) * 100}%`,
+            top: `${((region.x + region.size / 2) / MATRIX_SIZE) * 100}%`,
+            fontSize: getNomenclatureFontSize(region),
+          }}
+        >
+          {region.id}
+        </span>
+      ))}
     </div>
   );
 }
@@ -307,7 +464,9 @@ function ExplanationBox({ step, stepNumber, threshold }) {
         </>
       )}
       {step.type === "children" && (
-        <p>Region {step.nodeId} splits into: {step.childIds.join(", ")}</p>
+        <p>
+          Region {step.nodeId} splits into: {step.childIds.join(", ")}
+        </p>
       )}
       {step.type === "homogeneous" && (
         <p>
@@ -413,7 +572,14 @@ function TreeSVG({ lines, width, height }) {
   );
 }
 
-function QuadtreeView({ tree, steps, currentStep, statuses, currentStepData }) {
+function QuadtreeView({
+  tree,
+  steps,
+  currentStep,
+  statuses,
+  currentStepData,
+  colorMap,
+}) {
   const visibleTree = useMemo(
     () => getVisibleTree(tree, getRevealedParents(steps, currentStep)),
     [tree, steps, currentStep],
@@ -425,11 +591,16 @@ function QuadtreeView({ tree, steps, currentStep, statuses, currentStepData }) {
       className="tree-region"
       style={{ width: `${layout.width}px`, height: `${layout.height}px` }}
     >
-      <TreeSVG lines={layout.lines} width={layout.width} height={layout.height} />
+      <TreeSVG
+        lines={layout.lines}
+        width={layout.width}
+        height={layout.height}
+      />
       {layout.nodes.map((node) => {
         const status = statuses[node.id] || "unprocessed";
         const isCurrentSplit =
-          currentStepData?.nodeId === node.id && currentStepData?.type === "split";
+          currentStepData?.nodeId === node.id &&
+          currentStepData?.type === "split";
         const className = `tree-node-region tree-${
           isCurrentSplit ? "split" : status
         } ${status === "current" ? "tree-current" : ""}`;
@@ -440,6 +611,7 @@ function QuadtreeView({ tree, steps, currentStep, statuses, currentStepData }) {
             style={{
               left: `${node.x - TREE_NODE_SIZE / 2}px`,
               top: `${node.y - TREE_NODE_SIZE / 2}px`,
+              backgroundColor: getRegionColor(node.id, colorMap),
             }}
           >
             {node.id}
@@ -452,12 +624,14 @@ function QuadtreeView({ tree, steps, currentStep, statuses, currentStepData }) {
 
 export default function SplitAndMerge({ handleClose3Modal }) {
   const [original, setOriginal] = useState(() => buildMatrix(0));
-  const [threshold, setThreshold] = useState(0.8);
+  const [threshold, setThreshold] = useState(() =>
+    getDynamicThreshold(buildMatrix(0)),
+  );
   const [generation, setGeneration] = useState(0);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
 
-  const { steps, tree } = useMemo(
+  const { steps, tree, colorMap } = useMemo(
     () => buildSplitSteps(original, threshold),
     [original, threshold],
   );
@@ -474,9 +648,10 @@ export default function SplitAndMerge({ handleClose3Modal }) {
 
   function handleGenerateMatrix() {
     const nextGeneration = generation + 1;
+    const nextMatrix = buildMatrix(nextGeneration);
     setGeneration(nextGeneration);
-    setOriginal(buildMatrix(nextGeneration));
-    setThreshold(Number((0.75 + (nextGeneration % 2) * 0.1).toFixed(2)));
+    setOriginal(nextMatrix);
+    setThreshold(getDynamicThreshold(nextMatrix));
     setCurrentStep(-1);
     setIsAutoPlaying(false);
   }
@@ -604,7 +779,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
         <div id="image-box-region">
           <div id="left-image-box-region">
             <div id="head-image-temp">
-              <h1>Original Matrix</h1>
+              <h1>Input Image Matrix</h1>
             </div>
             <div id="original-image-temp">
               <MatrixView matrix={original} animated />
@@ -615,7 +790,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
 
           <div id="right-image-box-region">
             <div id="head-image-temp">
-              <h1>Splitting Animation</h1>
+              <h1>Region Splitting Process</h1>
             </div>
             <div id="animated-image-temp-region">
               <MatrixView
@@ -623,6 +798,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
                 cellRegionMap={cellRegionMap}
                 statuses={statuses}
                 currentStepData={currentStepData}
+                colorMap={colorMap}
               />
             </div>
             <ExplanationBox
@@ -659,16 +835,34 @@ export default function SplitAndMerge({ handleClose3Modal }) {
               </button>
             </div>
           </div>
+
+          <div id="nomenclature-arrow-region">&#129066;</div>
+
+          <div id="nomenclature-image-box-region">
+            <div id="head-image-temp">
+              <h1>Region Labels</h1>
+            </div>
+            <div id="nomenclature-image-temp-region">
+              <NomenclatureMatrixView
+                cellRegionMap={cellRegionMap}
+                activeRegions={activeRegions}
+                statuses={statuses}
+                currentStepData={currentStepData}
+                colorMap={colorMap}
+              />
+            </div>
+          </div>
         </div>
 
         <div id="tree-container-region">
-          <h1>Quadtree Representation</h1>
+          <h1>Recursive Quadtree Representation</h1>
           <QuadtreeView
             tree={tree}
             steps={steps}
             currentStep={currentStep}
             statuses={statuses}
             currentStepData={currentStepData}
+            colorMap={colorMap}
           />
         </div>
         <ToastContainer position="bottom-left" />

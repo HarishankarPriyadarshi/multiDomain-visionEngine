@@ -105,12 +105,13 @@
 }
 
 #left-image-box-region,
-#right-image-box-region {
+#right-image-box-region,
+#nomenclature-image-box-region {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  width: 50%;
+  width: 33.333%;
   padding: 10px;
   box-sizing: border-box;
 }
@@ -126,7 +127,8 @@
 }
 
 #original-image-temp,
-#animated-image-temp-region {
+#animated-image-temp-region,
+#nomenclature-image-temp-region {
   position: relative;
   border-radius: 10px;
   padding: 16px;
@@ -143,6 +145,7 @@
 
 #original-image-temp:hover,
 #animated-image-temp-region:hover,
+#nomenclature-image-temp-region:hover,
 #tree-container-region:hover {
   transform: translateY(-5px);
   transition: all 0.3s ease;
@@ -152,7 +155,8 @@
 }
 
 #original-image-temp:hover,
-#animated-image-temp-region:hover {
+#animated-image-temp-region:hover,
+#nomenclature-image-temp-region:hover {
   transform: perspective(1000px) rotateX(0deg) translateY(-5px);
 }
 
@@ -183,6 +187,31 @@
     background-color 0.35s ease,
     border-color 0.25s ease,
     box-shadow 0.25s ease;
+}
+
+.nomenclature-matrix-region {
+  position: relative;
+}
+
+.nomenclature-grid-region {
+  gap: 2px;
+}
+
+.nomenclature-cell-region {
+  color: transparent;
+  border-radius: 0 !important;
+}
+
+.nomenclature-label-region {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-weight: 700;
+  color: #1D2A6D;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 4;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+  white-space: nowrap;
 }
 
 .matrix-animate {
@@ -236,7 +265,8 @@
   }
 }
 
-#region_arrow {
+#region_arrow,
+#nomenclature-arrow-region {
   font-size: 40px;
   margin-top: 190px;
   color: #1d2a6d;
@@ -517,12 +547,14 @@
   }
 
   #left-image-box-region,
-  #right-image-box-region {
+  #right-image-box-region,
+  #nomenclature-image-box-region {
     padding: 10px;
     width: 100%;
   }
 
-  #region_arrow {
+  #region_arrow,
+  #nomenclature-arrow-region {
     font-size: 30px;
     transform: rotate(90deg);
     margin-top: 0;
@@ -563,7 +595,8 @@
   }
 
   #original-image-temp,
-  #animated-image-temp-region {
+  #animated-image-temp-region,
+  #nomenclature-image-temp-region {
     padding: 10px;
   }
 
@@ -571,7 +604,8 @@
     flex-direction: column;
   }
 
-  #region_arrow {
+  #region_arrow,
+  #nomenclature-arrow-region {
     font-size: 20px;
     transform: rotate(90deg);
   }
