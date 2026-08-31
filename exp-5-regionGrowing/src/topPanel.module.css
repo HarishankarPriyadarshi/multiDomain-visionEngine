@@ -1,71 +1,121 @@
-
 .panelContainer {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  text-align: center;
-  background-color:#1C2A6D;
+  background-color: #1D2A6D;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  
+  justify-content: space-between;
+  padding: 8px 24px;
+  z-index: 1000;
+  box-sizing: border-box;
 }
+
 .panelContainer h1 {
-  font-size: 30px;
-  color: rgb(244, 243, 243);
-  margin-bottom: 10px;
+  font-size: 22px;
+  color: #fff5ee;
+  margin: 0;
+  font-weight: bold;
+  flex: 1;
+  text-align: center;
+  padding: 4px 0;
 }
+
 .buttonContainer {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-left: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
-.panelButton {
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-  background-color: #FFFFFF;
-  
-  color: #16233c;
+
+.voiceButton {
+  background: transparent;
   border: none;
-  border-radius: 5px;
-  padding: 8px 15px;
-  font-size: 0.9rem;
   cursor: pointer;
+  padding: 2px;
   display: flex;
   align-items: center;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.panelButton:hover {
-  background-color: #268eb4;
-  transform: translateY(-2px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.buttonIcon {
-  margin-right: 8px;
-  font-size: 1.1rem;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
+}
+
+.voiceButton img {
+  width: 40px;
+  height: auto;
+}
+
+.panelButtonInstruction {
+  color: #1D2A6D;
+  background-color: #ffffff;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 38px;
+}
+
+.panelButtonInstruction:hover {
+  background-color: #f0f0f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.panelButtonTutor {
+  color: #1D2A6D;
+  background-color: #FFD700;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 18px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  height: 38px;
+}
+
+.panelButtonTutor:hover {
+  background-color: #e6c200;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255, 215, 0, 0.4);
 }
 
 @media (max-width: 768px) {
-.panelContainer h1 {
-  font-size: 1.2rem;
-  
-   color: rgb(244, 243, 243);
-  margin-left: 10px;
-  text-align: left;
+  .panelContainer {
+    padding: 6px 12px;
+  }
+  .panelContainer h1 {
+    font-size: 14px;
+    text-align: left;
+    padding-left: 6px;
+  }
+  .panelButtonInstruction,
+  .panelButtonTutor {
+    font-size: 11px;
+    padding: 4px 10px;
+    height: 32px;
+  }
+  .voiceButton img {
+    width: 30px;
+  }
+  .buttonContainer {
+      gap: 6px;
+    }
 }
-.panelButton{
-  font-size: 0.8rem;
-    padding: 4px 8px;
-}
+
+@media (max-width: 480px) {
+  .panelContainer h1 {
+    font-size: 12px;
+  }
+  .panelButtonInstruction,
+  .panelButtonTutor {
+    font-size: 10px;
+    padding: 3px 8px;
+    height: 28px;
+  }
 }
