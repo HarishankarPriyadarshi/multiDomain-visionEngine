@@ -14,7 +14,12 @@ import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import { SimContext } from "../components/context/SimContext";
 import { TutorSim } from "../components/features/tutor/TutorSim";
-import { generateMorphologyReport } from "./features/report/reportGenerator";
+import {
+  appendMorphologyOperation,
+  downloadMorphologyReport,
+  hasMorphologyReportHistory,
+  startMorphologyReportSession,
+} from "./features/report/reportGenerator";
 
 export default function Morphological({ handleClose4Modal }) {
   const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
@@ -37,11 +42,13 @@ export default function Morphological({ handleClose4Modal }) {
   const mySpeedDownButton = useRef(null);
   const isCancelledRef = useRef(false);
   const originalGridRef = useRef(null);
+  const operationStartedAtRef = useRef(null);
   const [activePixel, setActivePixel] = useState(null);
   const [operationStage, setOperationStage] = useState("");
   const [explanation, setExplanation] = useState("");
   const [step, setStep] = useState(0);
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
+  const [isReportReady, setIsReportReady] = useState(false);
   const totalSteps = 49;
   const [originalAnimateKey, setOriginalAnimateKey] = useState(0);
   const [processedAnimateKey, setProcessedAnimateKey] = useState(0);
@@ -63,6 +70,9 @@ export default function Morphological({ handleClose4Modal }) {
      } = useContext(SimContext);
 
   useEffect(() => {
+    // Report session setup: each Concept simulation mount starts a fresh operation history.
+    // startMorphologyReportSession();
+    // setIsReportReady(false);
     handleImage(0);
   }, []);
   useEffect(() => {
@@ -292,6 +302,7 @@ export default function Morphological({ handleClose4Modal }) {
     setImagesDisabled(true); // images: plus, minus..
 
     isCancelledRef.current = false;
+    operationStartedAtRef.current = new Date().toISOString();
     clearAnimationState();
     setProcessedAnimateKey((prev) => prev + 1);
     setProcessed(makeBlankImage());
@@ -353,9 +364,9 @@ export default function Morphological({ handleClose4Modal }) {
     if (!isCancelledRef.current) {
       finishAnimation();
 
-      // Report integration: persist the completed morphology simulation for the report/PDF template.
+      // Report data producer: append only after a full operation has completed successfully.
       if (result && original) {
-        generateMorphologyReport({
+        appendMorphologyOperation({
           operation: process,
           imageName: imageNames[image],
           inputImage: cloneMatrix(original),
@@ -363,7 +374,10 @@ export default function Morphological({ handleClose4Modal }) {
           outputImage: cloneMatrix(result),
           stages,
           totalSteps,
+          startedAt: operationStartedAtRef.current,
+          completedAt: new Date().toISOString(),
         });
+        setIsReportReady(hasMorphologyReportHistory());
       }
     }
   }
@@ -681,6 +695,19 @@ export default function Morphological({ handleClose4Modal }) {
               onClick={startTutorSim}
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
+            </Button>
+            <Button
+              id="download-report-btn-morph"
+              disabled={!isReportReady}
+              onClick={downloadMorphologyReport}
+              className="morph-report-btn"
+              title={
+                isReportReady
+                  ? "Download morphology report"
+                  : "Complete one morphology operation to enable report download"
+              }
+            >
+              {isMobile ? "Report" : "Download Report"}
             </Button>
             <Button
               id="sound-btn-sim"
