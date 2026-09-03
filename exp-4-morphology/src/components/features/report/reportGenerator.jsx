@@ -30,6 +30,215 @@ function escapeHTML(s) {
   );
 }
 
+function formatOperationName(operation) {
+  const names = {
+    dilation: "Dilation",
+    erosion: "Erosion",
+    opening: "Opening",
+    closing: "Closing",
+  };
+  return names[operation] || operation;
+}
+
+function countForeground(matrix) {
+  return (matrix || []).reduce(
+    (total, row) => total + row.reduce((sum, cell) => sum + (cell === 1 ? 1 : 0), 0),
+    0,
+  );
+}
+
+function renderBinaryMatrix(matrix) {
+  if (!matrix || !matrix.length) return "<p>No matrix data available.</p>";
+
+  const size = matrix.length;
+  const cells = matrix
+    .map((row, rowIndex) =>
+      row
+        .map((cell, colIndex) => {
+          const isPadding =
+            rowIndex === 0 ||
+            rowIndex === size - 1 ||
+            colIndex === 0 ||
+            colIndex === row.length - 1;
+          return `<div class="matrix-cell ${isPadding ? "padding-cell" : ""} ${cell === 1 ? "one-cell" : "zero-cell"}">${cell}</div>`;
+        })
+        .join(""),
+    )
+    .join("");
+
+  return `<div class="binary-matrix" style="grid-template-columns:repeat(${matrix[0].length}, 24px);">${cells}</div>`;
+}
+
+function saveReportPayload({ html, data, source }) {
+  const updatedAt = String(Date.now());
+
+  try {
+    localStorage.setItem("progressreport.html", html);
+    localStorage.setItem("vlab:simulation_report_html", html);
+    localStorage.setItem(
+      "vlab:simulation_report_data",
+      JSON.stringify({ source, updatedAt, ...data }),
+    );
+  } catch (e) {
+    console.error(`Could not save ${source} report to localStorage`, e);
+  }
+
+  try {
+    window.parent.postMessage(
+      {
+        type: "vlab:simulation_report_generated",
+        html,
+        data,
+        source,
+        updatedAt,
+      },
+      window.location.origin,
+    );
+  } catch (e) {
+    console.error(`Could not notify parent about ${source} report`, e);
+  }
+
+  try {
+    if (window.opener) {
+      window.opener.postMessage(
+        { type: "vlab:simulation_report_generated", source, updatedAt },
+        "*",
+      );
+    }
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(
+        { type: "vlab:simulation_report_generated", source, updatedAt },
+        "*",
+      );
+    }
+  } catch (e) {}
+}
+
+export function generateMorphologyReport({
+  operation,
+  imageName,
+  inputImage,
+  kernel,
+  outputImage,
+  stages = [],
+  totalSteps = 49,
+}) {
+  if (!inputImage || !kernel || !outputImage) {
+    console.warn("generateMorphologyReport: missing morphology data.");
+    return null;
+  }
+
+  const operationName = formatOperationName(operation);
+  const inputForeground = countForeground(inputImage);
+  const outputForeground = countForeground(outputImage);
+  const stageRows = stages
+    .map(
+      (stage, index) => `<tr>
+        <td>${index + 1}</td>
+        <td>${escapeHTML(stage.label)}</td>
+        <td>${countForeground(stage.image)}</td>
+      </tr>`,
+    )
+    .join("");
+
+  const stageBlocks = stages
+    .map(
+      (stage, index) => `<div class="report-page">
+        <h2>Stage ${index + 1}: ${escapeHTML(stage.label)}</h2>
+        <p class="desc">Intermediate 9${opGlyph("×")}9 output after this stage.</p>
+        ${renderBinaryMatrix(stage.image)}
+      </div>`,
+    )
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  body { font-family:Arial, sans-serif; margin:0; color:#111827; background:#fff; }
+  .report-page { padding:20px 4px 28px; page-break-after:always; }
+  h2 { font-size:18px; margin:0 0 10px; color:#111827; }
+  p.desc { color:#4b5563; font-size:13px; margin:0 0 14px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; margin-top:10px; }
+  th, td { border-bottom:1px solid #e5e7eb; padding:8px 10px; text-align:left; }
+  th { background:#f9fafb; font-weight:600; }
+  .meta-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 16px; font-size:14px; margin-bottom:14px; }
+  .matrix-row { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  .binary-matrix { display:grid; gap:2px; width:max-content; border:1px solid #d1d5db; padding:8px; background:#f9fafb; }
+  .matrix-cell { width:24px; height:24px; display:flex; align-items:center; justify-content:center; border:1px solid #d1d5db; font-size:12px; font-weight:700; }
+  .zero-cell { background:#111827; color:#ffffff; }
+  .one-cell { background:#ffffff; color:#111827; }
+  .padding-cell { background:#374151; color:#ffffff; }
+  .stat-highlight { font-size:20px; font-weight:700; margin-top:12px; }
+</style>
+</head>
+<body>
+<div id="report-root">
+  <div class="report-page">
+    <h2>Morphological Operation Report</h2>
+    <div class="meta-grid">
+      <div><strong>Operation:</strong> ${escapeHTML(operationName)}</div>
+      <div><strong>Input Pattern:</strong> ${escapeHTML(imageName || "Sample Pattern")}</div>
+      <div><strong>Image Size:</strong> 9 ${opGlyph("×")} 9 with explicit zero padding</div>
+      <div><strong>Kernel Size:</strong> ${kernel.length} ${opGlyph("×")} ${kernel[0].length}</div>
+      <div><strong>Traversal:</strong> Kernel center (1,1) to (7,7)</div>
+      <div><strong>Total Steps:</strong> ${totalSteps}</div>
+    </div>
+    <p class="desc">The predefined 7${opGlyph("×")}7 pattern is stored and processed as a real 9${opGlyph("×")}9 padded image. Border output cells remain 0 while the kernel center scans the original image area.</p>
+    <table>
+      <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Input foreground pixels</td><td>${inputForeground}</td></tr>
+        <tr><td>Output foreground pixels</td><td>${outputForeground}</td></tr>
+        <tr><td>Foreground pixel change</td><td>${outputForeground - inputForeground}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="report-page">
+    <h2>Input and Output Matrices</h2>
+    <div class="matrix-row">
+      <div><p class="desc">Input A</p>${renderBinaryMatrix(inputImage)}</div>
+      <div><p class="desc">Processed Output</p>${renderBinaryMatrix(outputImage)}</div>
+    </div>
+  </div>
+
+  <div class="report-page">
+    <h2>Structuring Element</h2>
+    <p class="desc">Kernel B used for ${escapeHTML(operationName)}.</p>
+    ${renderBinaryMatrix(kernel)}
+    <h2 style="margin-top:20px;">Stage Summary</h2>
+    <table>
+      <thead><tr><th>#</th><th>Stage</th><th>Foreground Pixels</th></tr></thead>
+      <tbody>${stageRows || `<tr><td>1</td><td>${escapeHTML(operationName)}</td><td>${outputForeground}</td></tr>`}</tbody>
+    </table>
+  </div>
+
+  ${stageBlocks}
+</div>
+</body></html>`;
+
+  const data = {
+    experiment: "morphology",
+    operation,
+    operationName,
+    imageName,
+    inputImage,
+    kernel,
+    outputImage,
+    stages,
+    totalSteps,
+    completedAt: new Date().toISOString(),
+    stats: {
+      inputForeground,
+      outputForeground,
+      foregroundChange: outputForeground - inputForeground,
+    },
+  };
+
+  saveReportPayload({ html, data, source: "morphology" });
+  return html;
+}
+
 // ---------- Huffman core (generic over any key: characters OR gray levels) ----------
 function buildFrequencyMap(values) {
   const freq = {};

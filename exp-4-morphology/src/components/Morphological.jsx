@@ -14,8 +14,10 @@ import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import { SimContext } from "../components/context/SimContext";
 import { TutorSim } from "../components/features/tutor/TutorSim";
+import { generateMorphologyReport } from "./features/report/reportGenerator";
 
 export default function Morphological({ handleClose4Modal }) {
+  const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [process, setProcess] = useState("dilation");
@@ -168,6 +170,10 @@ export default function Morphological({ handleClose4Modal }) {
 
   function makeBlankImage() {
     return Array.from({ length: 9 }, () => Array(9).fill(0));
+  }
+
+  function cloneMatrix(matrix) {
+    return matrix.map((row) => [...row]);
   }
 
   // Clears all transient scan highlights before each new run and reset.
@@ -325,22 +331,51 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   async function runSelectedOperation() {
-    if (process === "dilation") await dilate();
-    else if (process === "erosion") await erode();
-    else if (process === "opening") await opening();
-    else if (process === "closing") await closing();
+    let result = null;
+    let stages = [];
 
-    if (!isCancelledRef.current) finishAnimation();
+    if (process === "dilation") {
+      result = await dilate();
+      if (result) stages = [{ label: "Dilation", image: cloneMatrix(result) }];
+    } else if (process === "erosion") {
+      result = await erode();
+      if (result) stages = [{ label: "Erosion", image: cloneMatrix(result) }];
+    } else if (process === "opening") {
+      const openingResult = await opening();
+      result = openingResult?.result;
+      stages = openingResult?.stages || [];
+    } else if (process === "closing") {
+      const closingResult = await closing();
+      result = closingResult?.result;
+      stages = closingResult?.stages || [];
+    }
+
+    if (!isCancelledRef.current) {
+      finishAnimation();
+
+      // Report integration: persist the completed morphology simulation for the report/PDF template.
+      if (result && original) {
+        generateMorphologyReport({
+          operation: process,
+          imageName: imageNames[image],
+          inputImage: cloneMatrix(original),
+          kernel: cloneMatrix(kernel),
+          outputImage: cloneMatrix(result),
+          stages,
+          totalSteps,
+        });
+      }
+    }
   }
 
   async function erode() {
     if (!original || !kernel) return;
-    await animateSingleOperation(original, "erosion", "", "Erosion");
+    return await animateSingleOperation(original, "erosion", "", "Erosion");
   }
 
   async function dilate() {
     if (!original || !kernel) return;
-    await animateSingleOperation(original, "dilation", "", "Dilation");
+    return await animateSingleOperation(original, "dilation", "", "Dilation");
   }
 
   async function opening() {
@@ -354,12 +389,22 @@ export default function Morphological({ handleClose4Modal }) {
     );
     if (!eroded || isCancelledRef.current) return;
 
-    await animateSingleOperation(
+    const dilated = await animateSingleOperation(
       eroded,
       "dilation",
       "Stage 2/2: Dilation",
       "Opening = Erosion followed by Dilation.\nCurrent stage: Dilation",
     );
+
+    if (!dilated || isCancelledRef.current) return;
+
+    return {
+      result: dilated,
+      stages: [
+        { label: "Stage 1/2: Erosion", image: cloneMatrix(eroded) },
+        { label: "Stage 2/2: Dilation", image: cloneMatrix(dilated) },
+      ],
+    };
   }
 
   async function closing() {
@@ -373,12 +418,22 @@ export default function Morphological({ handleClose4Modal }) {
     );
     if (!dilated || isCancelledRef.current) return;
 
-    await animateSingleOperation(
+    const eroded = await animateSingleOperation(
       dilated,
       "erosion",
       "Stage 2/2: Erosion",
       "Closing = Dilation followed by Erosion.\nCurrent stage: Erosion",
     );
+
+    if (!eroded || isCancelledRef.current) return;
+
+    return {
+      result: eroded,
+      stages: [
+        { label: "Stage 1/2: Dilation", image: cloneMatrix(dilated) },
+        { label: "Stage 2/2: Erosion", image: cloneMatrix(eroded) },
+      ],
+    };
   }
 
   const instructions = [
