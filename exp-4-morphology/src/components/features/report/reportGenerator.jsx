@@ -119,6 +119,7 @@ function writeMorphologyHistory(history) {
 }
 
 function buildOperationSection(entry) {
+  console.log("entry", entry);
   const stageRows = entry.stages
     .map(
       (stage, index) => `<tr>
@@ -194,6 +195,7 @@ function buildOperationSection(entry) {
     </div>
   </div>`;
 }
+
 
 function buildMorphologyReportHtml(history) {
   const generatedOn = new Date().toLocaleDateString("en-US", {
@@ -320,8 +322,10 @@ function buildMorphologyReportHtml(history) {
             </div>
           </div>
           <div class="section">
+           <h2>Aim</h2>
+           <p>To study morphological image processing operations on images by applying Dilation, Erosion, Opening, and Closing, and to observe their effects on foreground regions.</p>
             <h2>Summary</h2>
-            <p>This report records every completed morphology operation from the current simulation session in execution order. Unfinished operations cancelled by reset are not included.</p>
+            <p>The selected binary image was processed using a structuring element (kernel) to demonstrate four morphological operations. Dilation expanded foreground regions, while Erosion shrank them. Opening, consisting of Erosion followed by Dilation, removed small foreground noise, whereas Closing, consisting of Dilation followed by Erosion, filled small gaps and holes. The kernel movement and intermediate stages were visualized step-by-step to observe how each operation transformed the input image.</p>
             <h3>Execution Order</h3>
             <ul>${operationList}</ul>
             <div class="info-grid">
