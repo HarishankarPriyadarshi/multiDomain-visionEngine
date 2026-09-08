@@ -736,3 +736,8 @@ ol {
   justify-content: space-between;
   gap: 10px;
 }
+
+/* btn hover */
+#instruction-btn:hover,#guided-tutor-btn:hover,#sound-btn:hover {
+  transform: translateY(-2px);
+}

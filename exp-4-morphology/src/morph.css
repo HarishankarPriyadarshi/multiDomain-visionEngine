@@ -490,7 +490,7 @@ h2 {
   transform: none;
 }
 /* guide button */
-#guided-tutor-btn-sim:hover, .close-btn:hover {
+#guided-tutor-btn-sim:hover, .close-btn:hover, #sound-btn-sim:hover {
   transform: translateY(-2px);
 }
 
