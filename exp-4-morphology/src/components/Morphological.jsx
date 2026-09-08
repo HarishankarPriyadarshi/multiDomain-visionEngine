@@ -18,13 +18,14 @@ import {
   appendMorphologyOperation,
   downloadMorphologyReport,
   hasMorphologyReportHistory,
-  startMorphologyReportSession,
+  //startMorphologyReportSession,
 } from "./features/report/reportGenerator";
 
 export default function Morphological({ handleClose4Modal }) {
   const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
+  
   const [process, setProcess] = useState("dilation");
   const [kernel, setKernel] = useState([
     [0, 1, 0],
@@ -48,7 +49,10 @@ export default function Morphological({ handleClose4Modal }) {
   const [explanation, setExplanation] = useState("");
   const [step, setStep] = useState(0);
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
-  const [isReportReady, setIsReportReady] = useState(false);
+ 
+  const [isReportReady, setIsReportReady] = useState(() =>
+  hasMorphologyReportHistory()
+);
   const totalSteps = 49;
   const [originalAnimateKey, setOriginalAnimateKey] = useState(0);
   const [processedAnimateKey, setProcessedAnimateKey] = useState(0);
@@ -73,6 +77,7 @@ export default function Morphological({ handleClose4Modal }) {
     // Report session setup: each Concept simulation mount starts a fresh operation history.
     // startMorphologyReportSession();
     // setIsReportReady(false);
+     setIsReportReady(hasMorphologyReportHistory());
     handleImage(0);
   }, []);
   useEffect(() => {
@@ -653,6 +658,13 @@ export default function Morphological({ handleClose4Modal }) {
       placement: "bottom",
 
     });
+    baseSteps.push({
+      title:"Download report",
+      content:"Click the Download Report button to save a detailed report of your simulation",
+      targetId: "download-report-btn-morph",
+      placement: "bottom",
+      offset: [0, 10],
+    })
 
     setTutorStepsSim(baseSteps);
   }, [original, process, processed, step, operationStage, activePixel]);
@@ -721,6 +733,7 @@ export default function Morphological({ handleClose4Modal }) {
               />
             </Button>
             <Button
+              className="close-btn"
               onClick={() => {
                 resetTutorSim();
                 handleClose4Modal();
@@ -1007,6 +1020,8 @@ export default function Morphological({ handleClose4Modal }) {
                   }),
                 )}
               </div>
+               <p className="matrix_label">3 x 3</p>
+
             </div>
             {/* operation stage symbol */}
             <div className="morph_op morph_op_container">

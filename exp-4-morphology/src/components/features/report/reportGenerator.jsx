@@ -580,7 +580,7 @@ export function startMorphologyReportSession() {
     localStorage.removeItem("progressreport.html");
     localStorage.removeItem("vlab:simulation_report_html");
     localStorage.removeItem("vlab:simulation_report_data");
-  } catch (e) {}
+  } catch (e) { console.error(e); }
 }
 
 export function getMorphologyOperationHistory() {
