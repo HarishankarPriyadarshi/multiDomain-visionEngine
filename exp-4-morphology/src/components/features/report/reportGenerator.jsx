@@ -117,87 +117,195 @@ function writeMorphologyHistory(history) {
     console.error("Could not save morphology operation history", e);
   }
 }
-
 function buildOperationSection(entry) {
-  console.log("entry", entry);
-  const stageRows = entry.stages
-    .map(
-      (stage, index) => `<tr>
-        <td>${index + 1}</td>
-        <td>${escapeHTML(stage.label)}</td>
-        <td>${countForeground(stage.image)}</td>
-      </tr>`,
-    )
-    .join("");
+  // Stage Summary is required only for compound operations
+  const showStageSummary =
+    entry.operation === "opening" ||
+    entry.operation === "closing";
 
-  const stageBlocks = entry.stages
-    .map(
-      (stage, index) => `<div class="results-card matrix-card">
-        <h3>Stage ${index + 1}: ${escapeHTML(stage.label)}</h3>
-        ${renderBinaryMatrix(stage.image)}
-      </div>`,
-    )
-    .join("");
+  const stageRows = showStageSummary
+    ? entry.stages
+        .map(
+          (stage, index) => `<tr>
+            <td>${index + 1}</td>
+            <td>${escapeHTML(stage.label)}</td>
+            <td>${countForeground(stage.image)}</td>
+          </tr>`,
+        )
+        .join("")
+    : "";
+
+  const stageBlocks = showStageSummary
+    ? entry.stages
+        .map(
+          (stage, index) => `<div class="results-card matrix-card">
+            <h3>Stage ${index + 1}: ${escapeHTML(stage.label)}</h3>
+            ${renderBinaryMatrix(stage.image)}
+          </div>`,
+        )
+        .join("")
+    : "";
 
   return `<div class="report-page">
     <div class="section">
       <div class="report-overview-top">
         <p class="badge">Operation ${entry.sequence}</p>
-        <p class="report-stamp">${escapeHTML(formatDateTime(entry.completedAt))}</p>
+        <p class="report-stamp">${escapeHTML(
+          formatDateTime(entry.completedAt),
+        )}</p>
       </div>
+
       <h2>${escapeHTML(entry.operationName)}</h2>
-      <p class="desc">${escapeHTML(entry.operationName)} was completed on the ${escapeHTML(
-        entry.imageName || "selected",
-      )} pattern using a ${entry.kernel.length}${opGlyph("×")}${
-        entry.kernel[0].length
-      } structuring element.</p>
+
+      <p class="desc">
+        ${escapeHTML(entry.operationName)} was completed on the
+        ${escapeHTML(entry.imageName || "selected")} pattern using a
+        ${entry.kernel.length}${opGlyph("×")}${
+          entry.kernel[0].length
+        } structuring element.
+      </p>
+
       <div class="info-grid">
-        <div class="info-card"><span class="label">Input Foreground:</span>${
-          entry.stats.inputForeground
-        }</div>
-        <div class="info-card"><span class="label">Output Foreground:</span>${
-          entry.stats.outputForeground
-        }</div>
-        <div class="info-card"><span class="label">Foreground Change:</span>${
-          entry.stats.foregroundChange
-        }</div>
-        <div class="info-card"><span class="label">Steps:</span>${entry.totalSteps}</div>
+        <div class="info-card">
+          <span class="label">Input Foreground:</span>
+          ${entry.stats.inputForeground}
+        </div>
+
+        <div class="info-card">
+          <span class="label">Output Foreground:</span>
+          ${entry.stats.outputForeground}
+        </div>
+
+        <div class="info-card">
+          <span class="label">Foreground Change:</span>
+          ${entry.stats.foregroundChange}
+        </div>
+
+        <div class="info-card">
+          <span class="label">Steps:</span>
+          ${entry.totalSteps}
+        </div>
       </div>
     </div>
 
     <div class="section results-section">
       <h2>Input, Kernel, and Output</h2>
+
       <div class="matrix-row">
-        <div class="results-card matrix-card"><h3>Input A</h3>${renderBinaryMatrix(
-          entry.inputImage,
-        )}</div>
-        <div class="results-card matrix-card"><h3>Kernel B</h3>${renderBinaryMatrix(
-          entry.kernel,
-        )}</div>
-        <div class="results-card matrix-card"><h3>Output</h3>${renderBinaryMatrix(
-          entry.outputImage,
-        )}</div>
+        <div class="results-card matrix-card">
+          <h3>Input A</h3>
+          ${renderBinaryMatrix(entry.inputImage)}
+        </div>
+
+        <div class="results-card matrix-card">
+          <h3>Kernel B</h3>
+          ${renderBinaryMatrix(entry.kernel)}
+        </div>
+
+        <div class="results-card matrix-card">
+          <h3>Output</h3>
+          ${renderBinaryMatrix(entry.outputImage)}
+        </div>
       </div>
     </div>
 
+    ${
+      showStageSummary
+        ? `
     <div class="section results-section">
       <h2>Stage Summary</h2>
+
       <div class="table-shell">
         <table class="compact-table">
-          <thead><tr><th>#</th><th>Stage</th><th>Foreground Pixels</th></tr></thead>
-          <tbody>${
-            stageRows ||
-            `<tr><td>1</td><td>${escapeHTML(entry.operationName)}</td><td>${entry.stats.outputForeground}</td></tr>`
-          }</tbody>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Stage</th>
+              <th>Foreground Pixels</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            ${stageRows}
+          </tbody>
         </table>
       </div>
-      <div class="stage-grid">${stageBlocks}</div>
+
+      <div class="stage-grid">
+        ${stageBlocks}
+      </div>
     </div>
+    `
+        : ""
+    }
   </div>`;
 }
 
+function getDynamicMorphologySummary(history) {
+  if (!history || history.length === 0) {
+    return {
+      aim: "To study morphological image processing operations on binary images by applying Dilation, Erosion, Opening, and Closing using a structuring element (kernel), and to observe their effects on foreground regions.",
+      summary: "No morphology operation has been completed yet.",
+    };
+  }
 
+  // Get unique operations while preserving execution order
+  const operations = [
+    ...new Set(history.map((entry) => entry.operation).filter(Boolean)),
+  ];
+
+  const names = operations.map(formatOperationName);
+
+  const descriptions = {
+    dilation:
+      "Dilation expanded the foreground regions by adding pixels around their boundaries according to the shape and size of the kernel.",
+
+    erosion:
+      "Erosion shrank the foreground regions by removing pixels from their boundaries according to the shape and size of the kernel.",
+
+    opening:
+      "Opening, consisting of Erosion followed by Dilation, removed small foreground noise while preserving the general shape of larger objects.",
+
+    closing:
+      "Closing, consisting of Dilation followed by Erosion, filled small gaps and holes in foreground regions while preserving their general shape.",
+  };
+
+  let operationDescription = operations
+    .map((operation) => descriptions[operation])
+    .filter(Boolean);
+
+  let summary;
+
+  if (operations.length === 1) {
+    // Only one operation performed
+    summary =
+      `The selected binary image was processed using a structuring element (kernel) to perform ` +
+      `<b>${names[0]}</b>. ${operationDescription[0]} ` +
+      `The kernel movement and resulting image were visualized step-by-step to observe how ` +
+      `${names[0]} transformed the input image.`;
+  } else {
+    // Multiple operations performed
+    const operationText =
+      names.length === 2
+        ? `${names[0]} and ${names[1]}`
+        : `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
+
+    summary =
+      `The selected binary image was processed using a structuring element (kernel) through ` +
+      `<b>${operationText}</b>. ` +
+      `${operationDescription.join(" ")}` +
+      ` The kernel movement, intermediate stages, and resulting images were visualized ` +
+      `step-by-step for each completed operation.`;
+  }
+
+  return {
+    aim: "To study morphological image processing operations on binary images by applying Dilation, Erosion, Opening, and Closing using a structuring element (kernel), and to observe their effects on foreground regions.",
+    summary,
+  };
+}
 function buildMorphologyReportHtml(history) {
+  const dynamicContent = getDynamicMorphologySummary(history);
+
   const generatedOn = new Date().toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -323,10 +431,10 @@ function buildMorphologyReportHtml(history) {
           </div>
           <div class="section">
            <h2>Aim</h2>
-           <p>To study morphological image processing operations on images by applying Dilation, Erosion, Opening, and Closing, and to observe their effects on foreground regions.</p>
+            <p>${dynamicContent.aim}</p>
             <h2>Summary</h2>
-            <p>The selected binary image was processed using a structuring element (kernel) to demonstrate four morphological operations. Dilation expanded foreground regions, while Erosion shrank them. Opening, consisting of Erosion followed by Dilation, removed small foreground noise, whereas Closing, consisting of Dilation followed by Erosion, filled small gaps and holes. The kernel movement and intermediate stages were visualized step-by-step to observe how each operation transformed the input image.</p>
-            <h3>Execution Order</h3>
+              <p>${dynamicContent.summary}</p>
+               <h3>Execution Order</h3>
             <ul>${operationList}</ul>
             <div class="info-grid">
               <div class="info-card"><span class="label">Total Input Foreground:</span>${totalInputForeground}</div>
@@ -482,7 +590,6 @@ export function getMorphologyOperationHistory() {
 export function hasMorphologyReportHistory() {
   return readMorphologyHistory().length > 0;
 }
-
 export function appendMorphologyOperation({
   operation,
   imageName,
@@ -502,14 +609,16 @@ export function appendMorphologyOperation({
   }
 
   const history = readMorphologyHistory();
+
   const stats = {
     inputForeground: countForeground(inputImage),
     outputForeground: countForeground(outputImage),
   };
+
   stats.foregroundChange = stats.outputForeground - stats.inputForeground;
 
   const entry = {
-    sequence: history.length + 1,
+    sequence: 0,
     experiment: "morphology",
     operation,
     operationName: formatOperationName(operation),
@@ -524,9 +633,48 @@ export function appendMorphologyOperation({
     stats,
   };
 
-  const nextHistory = [...history, entry];
+  /*
+   * If the same operation already exists,
+   * replace it with the latest result.
+   *
+   * Otherwise add it as a new operation.
+   */
+  const existingIndex = history.findIndex(
+    (item) => item.operation === operation,
+  );
+
+  let nextHistory;
+
+  if (existingIndex !== -1) {
+    // Replace the old operation with the latest one
+    nextHistory = [...history];
+    nextHistory[existingIndex] = {
+      ...entry,
+      sequence: existingIndex + 1,
+    };
+  } else {
+    // Add a new operation
+    nextHistory = [
+      ...history,
+      {
+        ...entry,
+        sequence: history.length + 1,
+      },
+    ];
+  }
+
+  /*
+   * Re-number the operations after replacement/addition
+   * so Execution Order always remains 1, 2, 3, 4...
+   */
+  nextHistory = nextHistory.map((item, index) => ({
+    ...item,
+    sequence: index + 1,
+  }));
+
   writeMorphologyHistory(nextHistory);
   persistMorphologyReport(nextHistory);
+
   return entry;
 }
 
@@ -675,4 +823,3 @@ export function downloadMorphologyReport() {
 export function generateMorphologyReport(params) {
   return appendMorphologyOperation(params);
 }
-
