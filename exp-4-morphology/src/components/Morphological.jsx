@@ -57,7 +57,8 @@ export default function Morphological({ handleClose4Modal }) {
   const [originalAnimateKey, setOriginalAnimateKey] = useState(0);
   const [processedAnimateKey, setProcessedAnimateKey] = useState(0);
   const [activeProcessedPixel, setActiveProcessedPixel] = useState(null);
- 
+  //stage 2 input image 
+  const [originalDisplay, setOriginalDisplay] = useState(null);
     // tutor implementation
   const {
     isMobile,
@@ -408,6 +409,7 @@ export default function Morphological({ handleClose4Modal }) {
     );
     if (!eroded || isCancelledRef.current) return;
 
+    setOriginalDisplay(eroded);
     const dilated = await animateSingleOperation(
       eroded,
       "dilation",
@@ -437,6 +439,7 @@ export default function Morphological({ handleClose4Modal }) {
     );
     if (!dilated || isCancelledRef.current) return;
 
+    setOriginalDisplay(dilated);
     const eroded = await animateSingleOperation(
       dilated,
       "erosion",
@@ -894,7 +897,15 @@ export default function Morphological({ handleClose4Modal }) {
           <div id="original-kernel-morph">
             {/* Major modification: original image is now the real 9x9 padded image with a transparent overlay kernel. */}
             <div id="orig-morph">
-              <h2>Original Image(A) with Explicit Padding</h2>
+<h2>
+  {operationStage === "Stage 2/2: Dilation" &&
+  process === "opening"
+    ? "Stage 2 Input:(Output of Erosion)"
+    : operationStage === "Stage 2/2: Erosion" &&
+        process === "closing"
+      ? "Stage 2 Input:(Output of Dilation)"
+      : "Original Image(A) with Explicit Padding"}
+</h2>
               <div id="original-image-zone" className="morph-grid-wrap">
                 {activePixel && (
                   <div
@@ -946,8 +957,8 @@ export default function Morphological({ handleClose4Modal }) {
                   </div>
                 )}
                 <div className="morph-grid morph-grid-9" ref={originalGridRef}>
-                  {original &&
-                    original.map((row, rowIndex) =>
+                  {(originalDisplay || original) &&
+                    (originalDisplay || original).map((row, rowIndex) =>
                       row.map((cell, cellIndex) => {
                         const isPadding =
                           rowIndex === 0 ||
