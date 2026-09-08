@@ -64,6 +64,24 @@ function formatDateTime(ts) {
   if (!ts) return "--";
   return new Date(ts).toLocaleString();
 }
+function formatDuration(startTime, endTime) {
+  if (!startTime || !endTime) return "--:--:--";
+
+  const start = new Date(startTime).getTime();
+  const end = new Date(endTime).getTime();
+
+  const difference = Math.max(0, end - start);
+
+  const totalSeconds = Math.floor(difference / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
 
 function renderBinaryMatrix(matrix) {
   if (!matrix || !matrix.length) return "<p>No matrix data available.</p>";
@@ -117,11 +135,28 @@ function writeMorphologyHistory(history) {
     console.error("Could not save morphology operation history", e);
   }
 }
+function getOperationDescription(operationName) {
+  switch (operationName?.toLowerCase()) {
+    case "dilation":
+      return "Dilation increases the size of objects in an image.";
+
+    case "erosion":
+      return "Erosion reduces the size of objects in a binary image.";
+
+    case "opening":
+      return "Opening removes small objects or noise from an image while preserving the shape and size of larger objects.";
+
+    case "closing":
+      return "Closing fills small holes and gaps in objects while preserving their overall shape.";
+
+    default:
+      return "";
+  }
+}
 function buildOperationSection(entry) {
   // Stage Summary is required only for compound operations
   const showStageSummary =
-    entry.operation === "opening" ||
-    entry.operation === "closing";
+    entry.operation === "opening" || entry.operation === "closing";
 
   const stageRows = showStageSummary
     ? entry.stages
@@ -158,8 +193,8 @@ function buildOperationSection(entry) {
       <h2>${escapeHTML(entry.operationName)}</h2>
 
       <p class="desc">
-        ${escapeHTML(entry.operationName)} was completed on the
-        ${escapeHTML(entry.imageName || "selected")} pattern using a
+        ${escapeHTML(entry.operationName)} was performed on the
+        ${escapeHTML(entry.imageName || "selected")} Binary image pattern using a
         ${entry.kernel.length}${opGlyph("×")}${
           entry.kernel[0].length
         } structuring element.
@@ -181,10 +216,7 @@ function buildOperationSection(entry) {
           ${entry.stats.foregroundChange}
         </div>
 
-        <div class="info-card">
-          <span class="label">Steps:</span>
-          ${entry.totalSteps}
-        </div>
+
       </div>
     </div>
 
@@ -205,8 +237,13 @@ function buildOperationSection(entry) {
         <div class="results-card matrix-card">
           <h3>Output</h3>
           ${renderBinaryMatrix(entry.outputImage)}
+          <p class="desc">
+  ${escapeHTML(getOperationDescription(entry.operationName))}
+</p>
         </div>
       </div>
+
+
     </div>
 
     ${
@@ -407,7 +444,7 @@ function buildMorphologyReportHtml(history) {
           <div class="header-row">
             <div class="report-title-block">
               <h2>Virtual Labs Simulation Report</h2>
-              <p class="report-subtitle">Morphological Operations</p>
+              
             </div>
           </div>
           <div class="section report-overview">
@@ -416,18 +453,27 @@ function buildMorphologyReportHtml(history) {
               <p class="report-stamp">Generated on ${generatedOn}</p>
             </div>
             <p class="report-experiment-label">Experiment Title</p>
-            <p class="report-experiment-title">Morphological Operations on Binary Images</p>
+            <p class="report-experiment-title">Morphology-Based Edge Detection</p>
             <div class="info-grid">
-              <div class="info-card"><span class="label">Start Time:</span>${formatClockTime(
-                firstTime,
-              )}</div>
-              <div class="info-card"><span class="label">End Time:</span>${formatClockTime(
-                lastTime,
-              )}</div>
-              <div class="info-card"><span class="label">Completed Operations:</span>${
-                history.length
-              }</div>
-            </div>
+  <div class="info-card">
+    <span class="label">Start Time:</span>${formatClockTime(firstTime)}
+  </div>
+
+  <div class="info-card">
+    <span class="label">End Time:</span>${formatClockTime(lastTime)}
+  </div>
+
+  <div class="info-card">
+    <span class="label">Total Time Spent:</span>${formatDuration(
+      firstTime,
+      lastTime,
+    )}
+  </div>
+
+  <div class="info-card">
+    <span class="label">Completed Operations:</span>${history.length}
+  </div>
+</div>
           </div>
           <div class="section">
            <h2>Aim</h2>
@@ -436,13 +482,7 @@ function buildMorphologyReportHtml(history) {
               <p>${dynamicContent.summary}</p>
                <h3>Execution Order</h3>
             <ul>${operationList}</ul>
-            <div class="info-grid">
-              <div class="info-card"><span class="label">Total Input Foreground:</span>${totalInputForeground}</div>
-              <div class="info-card"><span class="label">Total Output Foreground:</span>${totalOutputForeground}</div>
-              <div class="info-card"><span class="label">Net Foreground Change:</span>${
-                totalOutputForeground - totalInputForeground
-              }</div>
-            </div>
+            
           </div>
         </div>
         ${history.map(buildOperationSection).join("")}
@@ -580,7 +620,9 @@ export function startMorphologyReportSession() {
     localStorage.removeItem("progressreport.html");
     localStorage.removeItem("vlab:simulation_report_html");
     localStorage.removeItem("vlab:simulation_report_data");
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export function getMorphologyOperationHistory() {
