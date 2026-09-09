@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import React from "react";
 import { OpenCvProvider } from "opencv-react";
 import {
-  createBrowserRouter,
+  //createBrowserRouter,
   RouterProvider,
   Navigate,
 } from "react-router-dom";
@@ -15,27 +15,27 @@ import { HomeContextProvider } from "./components/context/HomeContext";
 import {SimContextProvider} from "./components/context/SimContext";
 
 function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <MorphologyPage />,
-        errorElement: <ErrorPage />,  
-    },
+  // const router = createBrowserRouter([
+  //   {
+  //     path: "/",
+  //     element: <MorphologyPage />,
+  //       errorElement: <ErrorPage />,  
+  //   },
     
-    {
-      path: "/edge/morphological",
-      element: <MorphologyPage />,
-    },
+  //   {
+  //     path: "/edge/morphological",
+  //     element: <MorphologyPage />,
+  //   },
     
     
     
-  ]);
+  // ]);
 
   return (
     <OpenCvProvider>
       <HomeContextProvider>
         <SimContextProvider>
-          <RouterProvider router={router} />
+          <MorphologyPage />
         </SimContextProvider>
       </HomeContextProvider>
     </OpenCvProvider>
