@@ -268,13 +268,13 @@ export default function MorphologyPage() {
     let imgElement = document.getElementById("inputImage");
     let src = window.cv.imread(imgElement);
     //Logic goes here
-    let gray = new window.cv.Mat();
+    //let gray = new window.cv.Mat();
     let edgeDetected = new cv.Mat();
     let gradX = new window.cv.Mat();
     let gradY = new window.cv.Mat();
     let absGradX = new cv.Mat();
     let absGradY = new cv.Mat();
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    //cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
 
     if (tabValue == 2) {
       let shape = {
@@ -289,7 +289,7 @@ export default function MorphologyPage() {
           new cv.Size(kernelSize, kernelSize),
         );
         cv.dilate(
-          gray,
+          src,
           edgeDetected,
           kernel,
           new cv.Point(-1, -1),
@@ -304,7 +304,7 @@ export default function MorphologyPage() {
           new cv.Size(kernelSize, kernelSize),
         );
         cv.erode(
-          gray,
+          src,
           edgeDetected,
           kernel,
           new cv.Point(-1, -1),
@@ -322,7 +322,7 @@ export default function MorphologyPage() {
           new cv.Size(kernelSize, kernelSize),
         );
         cv.morphologyEx(
-          gray,
+          src,
           edgeDetected,
           morphologicalOperation == "opening" ? cv.MORPH_OPEN : cv.MORPH_CLOSE,
           kernel,
