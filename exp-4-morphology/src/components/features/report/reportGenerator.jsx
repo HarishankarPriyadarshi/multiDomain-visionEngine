@@ -1,3 +1,6 @@
+const IIT_LOGO_URL = new URL("../../../assets/images/iitLogo.png", import.meta.url).href;
+const VLABS_LOGO_URL = new URL("../../../assets/images/vlabsLogo.png", import.meta.url).href;
+
 function opGlyph(op) {
   const common =
     'style="display:inline-block;vertical-align:middle;margin:0 3px;"';
@@ -392,7 +395,8 @@ function buildMorphologyReportHtml(history) {
   h2 { font-size: 23px; margin-bottom: 16px; color: #243b53; }
   h3 { font-size: 17px; margin-bottom: 10px; color: #2d4b68; }
   p { margin: 0 0 12px; font-size: 15px; }
-  li { margin-bottom: 6px; }
+
+  .vl-logo { height: 70px; width: 78px; object-fit: contain; flex-shrink: 0; }
   .header-row { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
   .report-title-block { flex: 1 1 220px; min-width: 0; text-align: center; margin: 0; padding-bottom: 14px; border-bottom: 3px solid #2f7bfa; }
   .report-subtitle { margin: 8px 0 0; font-size: 14px; color: #5c6f84; }
@@ -441,12 +445,15 @@ function buildMorphologyReportHtml(history) {
     <div id="report-scale-inner">
       <div id="pdf-export-root">
         <div class="report-page">
+          
           <div class="header-row">
-            <div class="report-title-block">
-              <h2>Virtual Labs Simulation Report</h2>
-              
-            </div>
-          </div>
+        <img src="${IIT_LOGO_URL}" class="vl-logo" onerror="this.style.display='none'">
+        <div class="report-title-block">
+          <p class="report-kicker"></p>
+          <h2>Virtual Labs Simulation Report</h2>
+        </div>
+        <img src="${VLABS_LOGO_URL}" class="vl-logo" onerror="this.style.display='none'">
+      </div>
           <div class="section report-overview">
             <div class="report-overview-top">
               <p class="badge">Image Processing Lab</p>
