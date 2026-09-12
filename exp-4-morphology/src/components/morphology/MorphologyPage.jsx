@@ -304,7 +304,7 @@ export default function MorphologyPage() {
   };
 
   const processImage = () => {
-    console.log("Processing Image");
+   // console.log("Processing Image");
     if (!cv || !cv.imread) {
       console.error("⛔ OpenCV.js is not fully loaded yet!");
       return;
