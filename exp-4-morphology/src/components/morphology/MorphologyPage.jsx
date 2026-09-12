@@ -88,6 +88,53 @@ export default function MorphologyPage() {
   }, [isImageProcessed, setTutorImageProcessed]);
 
   // Tutor steps
+
+  const getOutputTutorContent = () => {
+  const operation = morphologicalOperation
+    ? morphologicalOperation.charAt(0).toUpperCase() +
+      morphologicalOperation.slice(1)
+    : "Morphological";
+
+  const kernelSize = gaussKernelSize
+    ? `${gaussKernelSize}×${gaussKernelSize}`
+    : "";
+
+  const kernelShapeName = kernelShape
+    ? kernelShape.charAt(0).toUpperCase() +
+      kernelShape.slice(1)
+    : "";
+
+  let effect = "";
+
+  switch (morphologicalOperation) {
+    case "dilation":
+      effect =
+        "Observe how bright regions appear expanded and small gaps may be reduced.";
+      break;
+
+    case "erosion":
+      effect =
+        "Observe how bright regions appear reduced and small details may be removed.";
+      break;
+
+    case "opening":
+      effect =
+        "Observe how small bright noise is reduced while the main structures are preserved. Opening applies Erosion followed by Dilation.";
+      break;
+
+    case "closing":
+      effect =
+        "Observe how small gaps and holes are filled while the main structures are preserved. Closing applies Dilation followed by Erosion.";
+      break;
+
+    default:
+      effect =
+        "Compare the processed image with the input image to observe the morphological effect.";
+  }
+
+  return `The output shows the result of ${operation} using a ${kernelSize} ${kernelShapeName} structuring element. ${effect}`;
+};
+
   useEffect(() => {
     const steps = [
       {
@@ -133,7 +180,7 @@ export default function MorphologyPage() {
       {
         title: "Morphological Operation",
         content:
-          "Select the operation to perform. Dilation expands objects, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
+            "Select the morphological operation you want to apply to the image. You can choose Dilation, Erosion, Opening, or Closing.",
         targetId: "morph-operation-zone",
         placement: "right",
         offset: [0, 10],
@@ -141,9 +188,9 @@ export default function MorphologyPage() {
 
       {
         title: "Kernel Size",
-        content:
-          "Choose the kernel size. Larger kernels produce stronger morphological effects because more neighboring pixels participate in the operation.",
-        targetId: "kernel-size-zone",
+         content: 
+         "Choose the size of the structuring element. A larger size considers a wider neighborhood of pixels and generally produces a stronger morphological effect.",
+          targetId: "kernel-size-zone",
         placement: "right",
         offset: [0, 10],
       },
@@ -151,7 +198,7 @@ export default function MorphologyPage() {
       {
         title: "Kernel Shape",
         content:
-          "Choose the kernel shape. Rectangle, Ellipse, and Cross kernels influence how neighboring pixels are considered during processing.",
+ "Choose the shape of the structuring element: Rectangle, Ellipse, or Cross. The selected shape determines the neighborhood of pixels considered during processing.",
         targetId: "kernel-shape-zone",
         placement: "right",
         offset: [0, 10],
@@ -181,15 +228,13 @@ export default function MorphologyPage() {
     }
     steps.push(
 
-
-      {
-        title: "Output Image",
-        content:
-          "The output panel displays the processed image. Compare it with the input image to understand the effect of the selected operation.",
-        targetId: "output-image-zone",
-        placement: "top",
-        offset: [0, 12],
-      },
+{
+  title: "Output Image",
+  content: getOutputTutorContent(),
+  targetId: "output-image-zone",
+  placement: "top",
+  offset: [0, 12],
+},
 
       {
         title: "Print Results",
@@ -430,7 +475,49 @@ export default function MorphologyPage() {
     // Stop speech completely
     stop();
   };
+const handleOperationChange = (event) => {
+  const value = event.target.value;
 
+  // Change operation
+  setMorphologicalOperation(value);
+
+  // Remove processed/output image
+  setIsImageProcessed(false);
+
+  // Reset tutor to Action Required step
+  if (isTutorOpen && tutorStep >= 9) {
+    setTutorStep(9);
+  }
+};
+const handleKernelSizeChange = (event) => {
+  const value = event.target.value;
+
+  // Change operation
+  setGaussKernelSize(value);
+
+  // Remove processed/output image
+  setIsImageProcessed(false);
+
+  // Reset tutor to Action Required step
+  if (isTutorOpen && tutorStep >= 9) {
+    setTutorStep(9);
+  }
+};
+const handleKernelShapeChange = (event) => {
+  const value = event.target.value;
+
+  // Change operation
+  setKernelShape(value);
+
+  // Remove processed/output image
+  setIsImageProcessed(false);
+
+  // Reset tutor to Action Required step
+  if (isTutorOpen && tutorStep >= 9) {
+    setTutorStep(9);
+  }
+};
+  
   return (
     <OpenCvProvider>
       <div id="main-box">
@@ -756,9 +843,7 @@ export default function MorphologyPage() {
                       
                         value={morphologicalOperation}
                         className="derivative-btn"
-                        onChange={(e) =>
-                          setMorphologicalOperation(e.target.value)
-                        }
+                        onChange={handleOperationChange}
                         sx={{
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
@@ -792,7 +877,7 @@ export default function MorphologyPage() {
                         id="kernel-size-zone"
                         value={gaussKernelSize}
                         className="derivative-btn"
-                        onChange={(e) => setGaussKernelSize(e.target.value)}
+                        onChange={handleKernelSizeChange}
                         sx={{
                           
                           color: "#1D2A6D",
@@ -825,7 +910,7 @@ export default function MorphologyPage() {
                         id="kernel-shape-zone"
                         value={kernelShape}
                         className="derivative-btn"
-                        onChange={(e) => setKernelShape(e.target.value)}
+                        onChange={handleKernelShapeChange}
                         sx={{
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
