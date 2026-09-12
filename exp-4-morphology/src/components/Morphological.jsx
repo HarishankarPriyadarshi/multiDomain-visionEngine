@@ -524,7 +524,7 @@ export default function Morphological({ handleClose4Modal }) {
       {
         title: "Choose Morphological Operation",
         content:
-          "Select the desired operation. Dilation expands foreground regions, Erosion shrinks them, Opening removes small foreground noise, and Closing fills small gaps and holes.",
+          "Select the morphological operation you want to apply to the image. You can choose Dilation, Erosion, Opening, or Closing.",
         targetId: "operation-selection-zone",
         placement: "right",
         offset: [0, 12],
@@ -532,7 +532,7 @@ export default function Morphological({ handleClose4Modal }) {
       {
         title: "Kernel",
         content:
-          "This is the structuring element B. The kernel slides over the image and determines how output pixels are calculated.",
+          "This is the structuring element B. The kernel slides over the image and determines how each output pixel is calculated from its neighboring pixels.",
         targetId: "kernel-zone",
         placement: "bottom",
       },
@@ -581,12 +581,14 @@ export default function Morphological({ handleClose4Modal }) {
       setTutorStepsSim(baseSteps);
       return;
     }
-
+    /*
+     * DURING PROCESSING
+     */
     baseSteps.push(
       {
         title: "Moving Kernel Overlay",
         content:
-          "The transparent red overlay represents the active kernel window. It moves across the image and evaluates neighboring pixels around the kernel center.",
+          "The transparent red/green overlay represents the active kernel window. It moves across the image and evaluates neighboring pixels around the kernel center.",
         targetId: "original-image-zone",
         placement: "top",
         offset: [0, 10],
@@ -604,68 +606,115 @@ export default function Morphological({ handleClose4Modal }) {
       {
         title: "Current Processing Explanation",
         content:
-          "This panel explains exactly why the current output pixel becomes 0 or 1. It also indicates when the kernel touches padded regions.",
+          "This panel explains the current kernel operation and how it determines the output pixel value. Follow the explanation to understand why the pixel becomes 0 or 1. ",
         targetId: "explanation-zone",
         placement: "bottom",
       },
     );
-    if (operationStage) {
+
+    /*
+     * DYNAMIC OPERATION STAGES
+     */
+
+    if (process === "opening") {
       baseSteps.push({
-        title: "Operation Stage",
+        title: "Operation Stage 1 — Erosion",
         content:
-          process === "opening"
-            ? "Opening consists of two stages: Erosion followed by Dilation."
-            : process === "closing"
-              ? "Closing consists of two stages: Dilation followed by Erosion."
-              : "Single-stage morphological operations show only one processing stage.",
+          "Opening begins with Erosion. The kernel checks the required neighboring pixels and removes small foreground structures from the image.",
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
       });
+
+      baseSteps.push({
+        title: "Operation Stage 2 — Dilation",
+        content:
+          "After Erosion, Dilation is applied. It restores the main foreground structures while preserving the noise-removal effect of the first stage.",
+        targetId: "operation-stage-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+    } else if (process === "closing") {
+      baseSteps.push({
+        title: "Operation Stage 1 — Dilation",
+        content:
+          "Closing begins with Dilation. The foreground regions expand, helping to fill small gaps and connect nearby foreground regions.",
+        targetId: "operation-stage-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+
+      baseSteps.push({
+        title: "Operation Stage 2 — Erosion",
+        content:
+          "After Dilation, Erosion is applied to restore the object's approximate original size while retaining the filled gaps and connected regions.",
+        targetId: "operation-stage-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+    } else if (process === "dilation") {
+      baseSteps.push({
+        title: "Operation Stage — Dilation",
+        content:
+          "Dilation expands the foreground region according to the selected kernel. Observe how the output changes as the kernel scans the image.",
+        targetId: "processed-img-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
+    } else if (process === "erosion") {
+      baseSteps.push({
+        title: "Operation Stage — Erosion",
+        content:
+          "Erosion shrinks the foreground region according to the selected kernel. The output remains foreground only when the required kernel positions satisfy the erosion condition.",
+        targetId: "processed-img-zone",
+        placement: "top",
+        offset: [0, 10],
+      });
     }
+    /*
+     * OUTPUT
+     */
     baseSteps.push({
-      title: "Output Image",
-      content:
-        "The processed image is generated progressively as the kernel scans the image. Compare it with the original image to understand the effect of the selected operation.",
-      targetId: "processed-img-zone",
-      placement: "bottom",
-      offset: [0, 10],
-    });
+  title: `${process.charAt(0).toUpperCase() + process.slice(1)} Output`,
+  content:
+    `The ${process} result is generated as the kernel moves across the image. Compare the output with the original image to observe how ${process} changes the foreground regions.`,
+  targetId: "processed-img-zone",
+  placement: "bottom",
+  offset: [0, 10],
+});
 
     if (step < totalSteps) {
       baseSteps.push({
         title: "Processing In Progress",
         content:
-          "The kernel is still scanning the image. Wait until all pixels have been processed.",
+          "The kernel is moving across the image step-by-step. Observe the kernel movement and wait for processing to complete.",
         targetId: "processed-img-zone",
         placement: "bottom",
         offset: [0, 10],
       });
-
-      setTutorStepsSim(baseSteps);
+    } else {
+      baseSteps.push({
+        title: "Simulation Completed",
+        content:
+          process === "dilation"
+            ? "Dilation completed successfully. Observe how the foreground regions expanded."
+            : process === "erosion"
+              ? "Erosion completed successfully. Observe how the foreground regions shrank."
+              : process === "opening"
+                ? "Opening completed successfully. Erosion followed by Dilation has been applied to the image."
+                : "Closing completed successfully. Dilation followed by Erosion has been applied to the image.",
+        targetId: "processed-img-zone",
+        placement: "bottom",
+      });
+      baseSteps.push({
+        title: "Download report",
+        content:
+          "Click the Download Report button to save a detailed report of your simulation",
+        targetId: "download-report-btn-morph",
+        placement: "bottom",
+        offset: [0, 10],
+      });
     }
-    baseSteps.push({
-      title: "Simulation Completed",
-      content:
-        process === "dilation"
-          ? "Dilation completed successfully. Observe how foreground regions expanded."
-          : process === "erosion"
-            ? "Erosion completed successfully. Observe how foreground regions shrank."
-            : process === "opening"
-              ? "Opening completed successfully. Small foreground noise has been removed."
-              : "Closing completed successfully. Small gaps and holes have been filled.",
-      targetId: "processed-img-zone",
-      placement: "bottom",
-    });
-    baseSteps.push({
-      title: "Download report",
-      content:
-        "Click the Download Report button to save a detailed report of your simulation",
-      targetId: "download-report-btn-morph",
-      placement: "bottom",
-      offset: [0, 10],
-    });
-
     setTutorStepsSim(baseSteps);
   }, [original, process, processed, step, operationStage, activePixel]);
 
@@ -960,11 +1009,11 @@ export default function Morphological({ handleClose4Modal }) {
                             key={`overlay-${rowIndex}-${colIndex}`}
                             className={isCenter ? "morph-kernel-center" : ""}
                             style={{
-                                                     border: `1px solid ${
-                          explanation?.isHit
-                            ? "rgba(55, 223, 145, 0.23)"
-                            : "rgba(220, 53, 70, 0.27)"
-                        }`,
+                              border: `1px solid ${
+                                explanation?.isHit
+                                  ? "rgba(55, 223, 145, 0.23)"
+                                  : "rgba(220, 53, 70, 0.27)"
+                              }`,
                             }}
                           />
                         );
