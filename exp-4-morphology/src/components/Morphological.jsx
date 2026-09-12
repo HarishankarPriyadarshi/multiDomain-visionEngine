@@ -25,7 +25,7 @@ export default function Morphological({ handleClose4Modal }) {
   const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
-  
+
   const [process, setProcess] = useState("dilation");
   const [kernel, setKernel] = useState([
     [0, 1, 0],
@@ -49,17 +49,17 @@ export default function Morphological({ handleClose4Modal }) {
   const [explanation, setExplanation] = useState("");
   const [step, setStep] = useState(0);
   const [gridMetrics, setGridMetrics] = useState({ cellSize: 20, gap: 2 });
- 
+
   const [isReportReady, setIsReportReady] = useState(() =>
-  hasMorphologyReportHistory()
-);
+    hasMorphologyReportHistory(),
+  );
   const totalSteps = 49;
   const [originalAnimateKey, setOriginalAnimateKey] = useState(0);
   const [processedAnimateKey, setProcessedAnimateKey] = useState(0);
   const [activeProcessedPixel, setActiveProcessedPixel] = useState(null);
-  //stage 2 input image 
+  //stage 2 input image
   const [originalDisplay, setOriginalDisplay] = useState(null);
-    // tutor implementation
+  // tutor implementation
   const {
     isMobile,
     startTutorSim,
@@ -72,13 +72,13 @@ export default function Morphological({ handleClose4Modal }) {
     isTutorOpenSim,
     tutorStepSim,
     setTutorStepSim,
-     } = useContext(SimContext);
+  } = useContext(SimContext);
 
   useEffect(() => {
     // Report session setup: each Concept simulation mount starts a fresh operation history.
     // startMorphologyReportSession();
     // setIsReportReady(false);
-     setIsReportReady(hasMorphologyReportHistory());
+    setIsReportReady(hasMorphologyReportHistory());
     handleImage(0);
   }, []);
   useEffect(() => {
@@ -87,10 +87,10 @@ export default function Morphological({ handleClose4Modal }) {
     // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
-     // console.log("[tutorStepSim,process]", tutorStepSim, process);
+      // console.log("[tutorStepSim,process]", tutorStepSim, process);
     }
   }, [process]);
-  
+
   useEffect(() => {
     isPausedRef.current = isPaused;
   }, [isPaused]);
@@ -125,10 +125,10 @@ export default function Morphological({ handleClose4Modal }) {
   function handleImage(x) {
     setImage(x);
     setProcessed(null);
-        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
-     // console.log("handleImage");
+      // console.log("handleImage");
     }
     setOperationStage("");
     setOriginalAnimateKey((prev) => prev + 1);
@@ -173,7 +173,7 @@ export default function Morphological({ handleClose4Modal }) {
     // Major modification: store each predefined image as the explicit 9x9 padded image.
     setOriginal(padImage(signs[x]));
   }
-  
+
   const [processed, setProcessed] = useState(null);
 
   function padImage(image7x7) {
@@ -274,16 +274,26 @@ export default function Morphological({ handleClose4Modal }) {
         setProcessed(nextImage.map((row) => [...row]));
         setStep((i - 1) * 7 + j);
 
-        const resultText =
-          mode === "dilation"
-            ? overlaps
-              ? ` Current pixel (${i},${j}):\nKernel overlaps at least one foreground pixel.(Hit)\nOutput = 1.`
-              : ` Current pixel (${i},${j}):\nNo overlap found. (Miss)\nOutput = 0.`
-            : fits
-              ? ` Current pixel (${i},${j}):\nAll required foreground positions match.(Hit)\nOutput = 1.`
-              : ` Current pixel (${i},${j}):\nA required foreground position contains 0.(Miss)\nOutput = 0.`;
+        const isHit = mode === "dilation" ? overlaps : fits;
 
-        setExplanation(`${introText || modeName}.\n${resultText}`);
+        const resultText = {
+          pixel: `(${i},${j})`,
+          message:
+            mode === "dilation"
+              ? isHit
+                ? "Kernel overlaps at least one foreground pixel."
+                : "No overlap found."
+              : isHit
+                ? "All required foreground positions match."
+                : "A required foreground position contains 0.",
+          output: isHit ? "1" : "0",
+        };
+
+        setExplanation({
+          intro: introText ? `${introText}.` : "",
+          ...resultText,
+          isHit,
+        });
 
         await new Promise((resolve) => setTimeout(resolve, delayRef.current));
       }
@@ -297,7 +307,6 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   function play() {
-    
     if (myPauseButton.current) {
       myPlayButton.current.style.display = "none";
       myPauseButton.current.style.display = "block";
@@ -323,7 +332,7 @@ export default function Morphological({ handleClose4Modal }) {
     isCancelledRef.current = true; // cancel current loop
 
     setIsPaused(false);
-        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
       //console.log("handleReset");
@@ -344,7 +353,6 @@ export default function Morphological({ handleClose4Modal }) {
     handleImage(0);
     setCurrentIndex(0);
     clearAnimationState();
-    
   }
 
   async function runSelectedOperation() {
@@ -390,12 +398,12 @@ export default function Morphological({ handleClose4Modal }) {
 
   async function erode() {
     if (!original || !kernel) return;
-    return await animateSingleOperation(original, "erosion", "", "Erosion");
+    return await animateSingleOperation(original, "erosion", "", "");
   }
 
   async function dilate() {
     if (!original || !kernel) return;
-    return await animateSingleOperation(original, "dilation", "", "Dilation");
+    return await animateSingleOperation(original, "dilation", "", "");
   }
 
   async function opening() {
@@ -405,7 +413,7 @@ export default function Morphological({ handleClose4Modal }) {
       original,
       "erosion",
       "Stage 1/2: Erosion",
-      "Opening = Erosion followed by Dilation.\nCurrent stage: Erosion",
+      "Opening = Erosion followed by Dilation.\n Current stage: Erosion",
     );
     if (!eroded || isCancelledRef.current) return;
 
@@ -459,9 +467,9 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   const instructions = [
-    "1. Click to choose an image.",
-    "2. Select a Process.",
-    "3. Click on the 'Play' button at the bottom.",
+    "1. Choose an image from image box.",
+    "2. Select a Process from the dropdown menu.",
+    "3. click on the 'Play' button to start the simulation.",
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -476,8 +484,6 @@ export default function Morphological({ handleClose4Modal }) {
         (prevIndex - 1 + instructions.length) % instructions.length,
     );
   };
-
-
 
   //   // Dynamic Tutor Steps for Run Length Encoding Simulation
 
@@ -523,7 +529,7 @@ export default function Morphological({ handleClose4Modal }) {
         placement: "right",
         offset: [0, 12],
       },
-            {
+      {
         title: "Kernel",
         content:
           "This is the structuring element B. The kernel slides over the image and determines how output pixels are calculated.",
@@ -564,7 +570,7 @@ export default function Morphological({ handleClose4Modal }) {
     ];
 
     if (!processed || step === 0) {
-    //  console.log("step", step);
+      //  console.log("step", step);
       baseSteps.push({
         title: "Action Required",
         content: "Please click Play to begin the morphological operation.",
@@ -602,12 +608,9 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "explanation-zone",
         placement: "bottom",
       },
-
-
     );
-    if(operationStage){
-      baseSteps.push(
-        {
+    if (operationStage) {
+      baseSteps.push({
         title: "Operation Stage",
         content:
           process === "opening"
@@ -618,21 +621,16 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
-      },
-      )
+      });
     }
-    baseSteps.push(
-
-
-      {
-        title: "Output Image",
-        content:
-          "The processed image is generated progressively as the kernel scans the image. Compare it with the original image to understand the effect of the selected operation.",
-        targetId: "processed-img-zone",
-        placement: "bottom",
-        offset: [0, 10],
-      },
-    )
+    baseSteps.push({
+      title: "Output Image",
+      content:
+        "The processed image is generated progressively as the kernel scans the image. Compare it with the original image to understand the effect of the selected operation.",
+      targetId: "processed-img-zone",
+      placement: "bottom",
+      offset: [0, 10],
+    });
 
     if (step < totalSteps) {
       baseSteps.push({
@@ -645,7 +643,6 @@ export default function Morphological({ handleClose4Modal }) {
       });
 
       setTutorStepsSim(baseSteps);
-      
     }
     baseSteps.push({
       title: "Simulation Completed",
@@ -659,15 +656,15 @@ export default function Morphological({ handleClose4Modal }) {
               : "Closing completed successfully. Small gaps and holes have been filled.",
       targetId: "processed-img-zone",
       placement: "bottom",
-
     });
     baseSteps.push({
-      title:"Download report",
-      content:"Click the Download Report button to save a detailed report of your simulation",
+      title: "Download report",
+      content:
+        "Click the Download Report button to save a detailed report of your simulation",
       targetId: "download-report-btn-morph",
       placement: "bottom",
       offset: [0, 10],
-    })
+    });
 
     setTutorStepsSim(baseSteps);
   }, [original, process, processed, step, operationStage, activePixel]);
@@ -683,7 +680,7 @@ export default function Morphological({ handleClose4Modal }) {
               display: "flex",
             }}
           >
-            {isMobile ? "Simulation" : "Morphological Operations Visualizer"}
+            {isMobile ? "" : "Morphological Operations Visualizer"}
           </div>
           <div
             style={{
@@ -897,15 +894,15 @@ export default function Morphological({ handleClose4Modal }) {
           <div id="original-kernel-morph">
             {/* Major modification: original image is now the real 9x9 padded image with a transparent overlay kernel. */}
             <div id="orig-morph">
-<h2>
-  {operationStage === "Stage 2/2: Dilation" &&
-  process === "opening"
-    ? "Stage 2 Input:(Output of Erosion)"
-    : operationStage === "Stage 2/2: Erosion" &&
-        process === "closing"
-      ? "Stage 2 Input:(Output of Dilation)"
-      : "Original Image(A) with Explicit Padding"}
-</h2>
+              <h2>
+                {operationStage === "Stage 2/2: Dilation" &&
+                process === "opening"
+                  ? "Stage 2 Input:(Output of stage 1 Erosion)"
+                  : operationStage === "Stage 2/2: Erosion" &&
+                      process === "closing"
+                    ? "Stage 2 Input:(Output of stage 1 Dilation)"
+                    : "Image with Explicit Padding(A)"}
+              </h2>
               <div id="original-image-zone" className="morph-grid-wrap">
                 {activePixel && (
                   <div
@@ -935,6 +932,18 @@ export default function Morphological({ handleClose4Modal }) {
                       style={{
                         gridTemplateColumns: `repeat(${kernel[0].length}, 1fr)`,
                         gridTemplateRows: `repeat(${kernel.length}, 1fr)`,
+
+                        border: `3px solid ${
+                          explanation?.isHit
+                            ? "rgba(55, 223, 144, 0.85)"
+                            : "rgba(220, 53, 69, 0.85)"
+                        }`,
+                        background: explanation?.isHit
+                          ? "rgba(53, 157, 108, 0.33)"
+                          : "rgba(220, 53, 69, 0.08)",
+                        boxShadow: explanation?.isHit
+                          ? "inset 0 0 10px rgba(25, 135, 84, 0.35)"
+                          : "inset 0 0 10px rgba(220, 53, 69, 0.35)",
                       }}
                     >
                       {kernel.flat().map((_, cellIndex) => {
@@ -950,6 +959,13 @@ export default function Morphological({ handleClose4Modal }) {
                           <div
                             key={`overlay-${rowIndex}-${colIndex}`}
                             className={isCenter ? "morph-kernel-center" : ""}
+                            style={{
+                                                     border: `1px solid ${
+                          explanation?.isHit
+                            ? "rgba(55, 223, 145, 0.23)"
+                            : "rgba(220, 53, 70, 0.27)"
+                        }`,
+                            }}
                           />
                         );
                       })}
@@ -1031,8 +1047,7 @@ export default function Morphological({ handleClose4Modal }) {
                   }),
                 )}
               </div>
-               <p className="matrix_label">3 x 3</p>
-
+              <p className="matrix_label">3 x 3</p>
             </div>
             {/* operation stage symbol */}
             <div className="morph_op morph_op_container">
@@ -1052,7 +1067,7 @@ export default function Morphological({ handleClose4Modal }) {
             <div id="animation-morph">
               {operationStage && (
                 <div
-                id="operation-stage-zone"
+                  id="operation-stage-zone"
                   style={{
                     color: "#1D2A6D",
                     fontWeight: "700",
@@ -1067,29 +1082,54 @@ export default function Morphological({ handleClose4Modal }) {
                   Processed Image
                   {step !== 0 && (
                     <div style={{ fontSize: "14px", color: "#38383aff" }}>
-                      {process && `Step ${step} / ${totalSteps}`}
+                      {process && (
+                        <>
+                          Step:{" "}
+                          <span
+                            style={{
+                              color: explanation.isHit ? "#198754" : "#DC3545",
+                            }}
+                          >
+                            {step}
+                          </span>{" "}
+                          / {totalSteps}
+                        </>
+                      )}
                     </div>
                   )}
                 </h2>
               )}
 
-              <div id="processed-img-zone" className={`morph-grid-wrapper ${step >= totalSteps ? 'processed-complete' : ''}`}>
+              <div
+                id="processed-img-zone"
+                className={`morph-grid-wrapper ${step >= totalSteps ? "processed-complete" : ""}`}
+              >
                 <div className="morph-grid morph-grid-7">
                   {processed &&
                     processed.slice(1, 8).map((row, displayRowIndex) => {
                       const actualRowIndex = displayRowIndex + 1;
                       return row.slice(1, 8).map((cell, displayCellIndex) => {
                         const actualCellIndex = displayCellIndex + 1;
-                        const isActiveCell = activeProcessedPixel && activeProcessedPixel.i === actualRowIndex && activeProcessedPixel.j === actualCellIndex;
-                        const isProcessedCell = step > 0 && ((actualRowIndex - 1) * 7 + (actualCellIndex - 1) < step);
+                        const isActiveCell =
+                          activeProcessedPixel &&
+                          activeProcessedPixel.i === actualRowIndex &&
+                          activeProcessedPixel.j === actualCellIndex;
+                        const isProcessedCell =
+                          step > 0 &&
+                          (actualRowIndex - 1) * 7 + (actualCellIndex - 1) <
+                            step;
                         return (
                           <div
                             key={`${actualRowIndex}-${actualCellIndex}-${processedAnimateKey}`}
-                            className={`morph_matrix matrix-animate ${isActiveCell ? 'processed-cell-active' : ''}`}
+                            className={`morph_matrix matrix-animate ${isActiveCell ? "processed-cell-active" : ""}`}
                             id="processed-img-morph"
                             style={{
                               animationDelay: `${displayRowIndex * 0.15}s`,
-                              backgroundColor: isProcessedCell ? (cell === 0 ? "black" : "white") : "transparent"
+                              backgroundColor: isProcessedCell
+                                ? cell === 0
+                                  ? "black"
+                                  : "white"
+                                : "transparent",
                             }}
                           ></div>
                         );
@@ -1104,11 +1144,98 @@ export default function Morphological({ handleClose4Modal }) {
           {/* explanation */}
           {processed && (
             <div className="explanation-container">
-              <div id="explanation-zone" className="explanation-content">
-                <h4>
-                  <strong>Stepwise Explanation:</strong>
+              <div
+                id="explanation-zone"
+                className="explanation-content"
+                style={{
+                  border: `1px solid ${explanation.isHit ? "#198754" : "#DC3545"}`,
+                  borderLeft: `4px solid ${explanation.isHit ? "#198754" : "#DC3545"}`,
+                  backgroundColor: explanation.isHit
+                    ? "#f3fbf6b4"
+                    : "#fff6f6c6",
+                  transition: "all 0.25s ease",
+                }}
+              >
+                <h4
+                  style={{
+                    margin: "0 0 12px",
+
+                    fontSize: "15px",
+                    fontWeight: "500",
+                  }}
+                >
+                  <strong>Stepwise Explanation: ({process})</strong>
                 </h4>
-                <div style={{ whiteSpace: "pre-line" }}>{explanation}</div>
+
+                <div>
+                  {explanation?.intro && (
+                    <div style={{ whiteSpace: "pre-line" }}>
+                      {explanation.intro}
+                    </div>
+                  )}
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#4c515bff",
+                        fontWeight: "600",
+
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Current Pixel:{" "}
+                    </span>
+                    <span
+                      style={{
+                        color: "#38383A",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        marginTop: "2px",
+                      }}
+                    >
+                      {explanation.pixel}
+                    </span>
+                  </div>
+
+                  <div>
+                    {explanation.message}{" "}
+                    <span
+                      style={{
+                        display: "inline-block",
+                        marginLeft: "6px",
+                        padding: "2px 9px",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: "700",
+                        letterSpacing: "0.3px",
+                        color: explanation.isHit ? "#198754" : "#DC3545",
+                        backgroundColor: explanation.isHit
+                          ? "#E8F5EE"
+                          : "#FDECEC",
+                        border: `1px solid ${
+                          explanation.isHit ? "#A8D5BA" : "#F1B5B5"
+                        }`,
+                      }}
+                    >
+                      {explanation.isHit ? "✓ Hit" : "✕ Miss"}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#4c515bff",
+                        fontWeight: "600",
+
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Output:
+                    </span>{" "}
+                    <span>{explanation.output}</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}

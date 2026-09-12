@@ -198,9 +198,8 @@ function buildOperationSection(entry) {
       <p class="desc">
         ${escapeHTML(entry.operationName)} was performed on the
         ${escapeHTML(entry.imageName || "selected")} Binary image pattern using a
-        ${entry.kernel.length}${opGlyph("×")}${
-          entry.kernel[0].length
-        } structuring element.
+         3x3 
+          structuring element.
       </p>
 
       <div class="info-grid">

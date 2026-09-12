@@ -108,7 +108,7 @@
 
 .coolinput_morph label.text {
   font-size: 16px;
-  color: #1d2a6d;
+  color: #172153;
   font-weight: 700;
   position: relative;
   top: 0.5rem;
@@ -143,7 +143,7 @@ h2 {
 .custom-divider {
   margin: 5px 0;
   margin-left: -20px;
-  border: 1px solid #1d2a6d;
+  border: 1px solid #172153;
   height: 55px;
 }
 
@@ -183,6 +183,7 @@ h2 {
   align-items: center;
   justify-content: center;
   text-align: center;
+  color: #172153;
 }
 
 #orig-morph {
@@ -193,6 +194,7 @@ h2 {
   text-align: center;
   display: flex;
   flex-direction: column;
+  color: #172153;
 }
 
 #kernel-morph {
@@ -203,9 +205,11 @@ h2 {
   text-align: center;
   display: flex;
   flex-direction: column;
+  color: #1D2A6D;
 }
 .morph_op {
   font-size: 40px;
+  color: #172153;
 }
 
 .morph_matrix {
@@ -251,9 +255,9 @@ h2 {
 /* Major modification: transparent moving kernel overlay replaces yellow cell coverage coloring. */
 .morph-kernel-overlay {
   position: absolute;
-  border: 3px solid rgba(255, 0, 0, 0.8);
+  /* border: 3px solid rgba(255, 0, 0, 0.8);
   background: rgba(255, 0, 0, 0.08);
-  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.5);
+  box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.5); */
   pointer-events: none;
   transition:
     top 0.25s ease,
