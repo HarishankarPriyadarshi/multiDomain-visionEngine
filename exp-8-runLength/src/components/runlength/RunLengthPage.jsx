@@ -95,17 +95,17 @@ export default function RunLengthPage() {
       draggable: true, // Enable dragging
     });
   };
-    const notifyE = (msg) => {
-      toast.error(msg, {
-        theme: "dark",
-        position: "bottom-left", // Set toast position
-        autoClose: 5000, // Toast auto-closes after 5 seconds
-        hideProgressBar: false, // Show progress bar
-        closeOnClick: true, // Close toast when clicked
-        pauseOnHover: true, // Pause when hovered
-        draggable: true, // Enable dragging
-      });
-    };
+  const notifyE = (msg) => {
+    toast.error(msg, {
+      theme: "dark",
+      position: "bottom-left", // Set toast position
+      autoClose: 5000, // Toast auto-closes after 5 seconds
+      hideProgressBar: false, // Show progress bar
+      closeOnClick: true, // Close toast when clicked
+      pauseOnHover: true, // Pause when hovered
+      draggable: true, // Enable dragging
+    });
+  };
 
   const handlePrint = () => {
     window.print(); // Triggers the print dialog
@@ -117,15 +117,16 @@ export default function RunLengthPage() {
 
   const [rleresult, setRleresult] = useState(null);
 
-  async function runLengthEncode(image, minRunLength = 1) {
-
+  async function rdunLengthEncode(image, minRunLength = 1) {
     let startTime = performance.now();
 
     let data = image.data;
+
+   // console.log("data", data);
     let encoded = [];
     let prev = data[0];
     let count = 1;
-    console.log(image.cols);
+  //  console.log(image.cols);
     for (let i = 1; i < data.length; i++) {
       if (data[i] === prev) {
         count++;
@@ -268,18 +269,305 @@ export default function RunLengthPage() {
 
     return { compressionRatio: (encoded.length / data.length).toFixed(4) };
   }
+  async function runLengthEncode(image, minRunLength = 1) {
+    const startTime = performance.now();
 
+    const width = image.cols;
+    const height = image.rows;
+    const pixelCount = width * height;
+
+    // cv.imread() gives RGBA data
+    const data = image.data;
+
+    // -----------------------------------------
+    // 1. Convert image data into RGB pixels
+    // -----------------------------------------
+    const pixels = new Array(pixelCount);
+
+    for (let i = 0; i < pixelCount; i++) {
+      const index = i * 4;
+
+      pixels[i] = [
+        data[index], // R
+        data[index + 1], // G
+        data[index + 2], // B
+      ];
+    }
+
+    // -----------------------------------------
+    // 2. RLE ENCODING
+    // -----------------------------------------
+    const encoded = [];
+
+    let previousPixel = pixels[0];
+    let count = 1;
+
+    for (let i = 1; i < pixelCount; i++) {
+      const currentPixel = pixels[i];
+
+      const samePixel =
+        previousPixel[0] === currentPixel[0] &&
+        previousPixel[1] === currentPixel[1] &&
+        previousPixel[2] === currentPixel[2];
+
+      if (samePixel) {
+        count++;
+      } else {
+        if (count >= minRunLength) {
+          encoded.push({
+            pixel: previousPixel,
+            count: count,
+          });
+        } else {
+          // Store short runs individually
+          for (let j = 0; j < count; j++) {
+            encoded.push({
+              pixel: previousPixel,
+              count: 1,
+            });
+          }
+        }
+
+        previousPixel = currentPixel;
+        count = 1;
+      }
+    }
+
+    // -----------------------------------------
+    // 3. Store final run
+    // -----------------------------------------
+    if (count >= minRunLength) {
+      encoded.push({
+        pixel: previousPixel,
+        count: count,
+      });
+    } else {
+      for (let j = 0; j < count; j++) {
+        encoded.push({
+          pixel: previousPixel,
+          count: 1,
+        });
+      }
+    }
+
+    // -----------------------------------------
+    // 4. DECODE / RECONSTRUCT COLOR IMAGE
+    // -----------------------------------------
+    const reconstructedData = new Uint8ClampedArray(pixelCount * 4);
+
+    let outputIndex = 0;
+
+    encoded.forEach(({ pixel, count }) => {
+      for (let i = 0; i < count; i++) {
+        reconstructedData[outputIndex++] = pixel[0]; // R
+        reconstructedData[outputIndex++] = pixel[1]; // G
+        reconstructedData[outputIndex++] = pixel[2]; // B
+        reconstructedData[outputIndex++] = 255; // A
+      }
+    });
+
+    // Safety check
+  //  console.log("Original pixels:", pixelCount);
+
+    //console.log("RLE runs:", encoded.length);
+
+   // console.log("Reconstructed pixels:", outputIndex / 4);
+
+    // -----------------------------------------
+    // 5. COMPRESSION RATIO
+    // -----------------------------------------
+
+    // Original RGB = 3 bytes/pixel
+    const originalSize = pixelCount * 3;
+
+    // Each RLE run:
+    // R + G + B + count
+    const compressedSize = encoded.length * 4;
+
+    const compressionRatio = originalSize / compressedSize;
+
+    // -----------------------------------------
+    // 6. DISPLAY RECONSTRUCTED IMAGE
+    // -----------------------------------------
+
+    const canvas = document.getElementById("outputCanvas");
+
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = width * 3;
+    canvas.height = height;
+
+    const reconstructedImage = new ImageData(reconstructedData, width, height);
+
+    // Third section = reconstructed image
+    ctx.putImageData(reconstructedImage, width * 2, 0);
+
+    // -----------------------------------------
+    // 7. ENTROPY
+    // -----------------------------------------
+
+    // Convert RGB → grayscale ONLY for entropy
+    const originalGray = new Uint8ClampedArray(pixelCount);
+
+    const reconstructedGray = new Uint8ClampedArray(pixelCount);
+
+    for (let i = 0; i < pixelCount; i++) {
+      const index = i * 4;
+
+      // Original
+      const r1 = data[index];
+      const g1 = data[index + 1];
+      const b1 = data[index + 2];
+
+      originalGray[i] = Math.round(0.299 * r1 + 0.587 * g1 + 0.114 * b1);
+
+      // Reconstructed
+      const r2 = reconstructedData[index];
+      const g2 = reconstructedData[index + 1];
+      const b2 = reconstructedData[index + 2];
+
+      reconstructedGray[i] = Math.round(0.299 * r2 + 0.587 * g2 + 0.114 * b2);
+    }
+
+    // -----------------------------------------
+    // 8. ENTROPY MAP FUNCTION
+    // -----------------------------------------
+    function createEntropyMap(grayData) {
+      const entropyValues = new Float32Array(pixelCount);
+
+      // Local window size
+      const radius = 4;
+      const windowSize = 2 * radius + 1;
+
+      let minEntropy = Infinity;
+      let maxEntropy = -Infinity;
+
+      // -----------------------------------------
+      // Calculate local entropy for every pixel
+      // -----------------------------------------
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const histogram = new Int32Array(256);
+
+          let total = 0;
+
+          const startY = Math.max(0, y - radius);
+          const endY = Math.min(height - 1, y + radius);
+
+          const startX = Math.max(0, x - radius);
+          const endX = Math.min(width - 1, x + radius);
+
+          for (let yy = startY; yy <= endY; yy++) {
+            for (let xx = startX; xx <= endX; xx++) {
+              const index = yy * width + xx;
+
+              histogram[grayData[index]]++;
+              total++;
+            }
+          }
+
+          // -----------------------------------------
+          // Shannon entropy
+          // -----------------------------------------
+          let entropy = 0;
+
+          for (let i = 0; i < 256; i++) {
+            if (histogram[i] > 0) {
+              const probability = histogram[i] / total;
+
+              entropy -= probability * Math.log2(probability);
+            }
+          }
+
+          const pixelIndex = y * width + x;
+
+          entropyValues[pixelIndex] = entropy;
+
+          minEntropy = Math.min(minEntropy, entropy);
+
+          maxEntropy = Math.max(maxEntropy, entropy);
+        }
+      }
+
+      // -----------------------------------------
+      // Convert entropy to visible image
+      // -----------------------------------------
+      const entropyMap = new Uint8ClampedArray(pixelCount * 4);
+
+      for (let i = 0; i < pixelCount; i++) {
+        let normalized = 0;
+
+        if (maxEntropy > minEntropy) {
+          normalized =
+            (entropyValues[i] - minEntropy) / (maxEntropy - minEntropy);
+        }
+
+        const value = Math.round(normalized * 255);
+
+        const index = i * 4;
+
+        entropyMap[index] = value;
+        entropyMap[index + 1] = value;
+        entropyMap[index + 2] = value;
+        entropyMap[index + 3] = 255;
+      }
+
+    //  console.log("Minimum local entropy:", minEntropy.toFixed(4));
+
+     // console.log("Maximum local entropy:", maxEntropy.toFixed(4));
+
+      return entropyMap;
+    }
+
+    const originalEntropy = createEntropyMap(originalGray);
+
+    const reconstructedEntropy = createEntropyMap(reconstructedGray);
+
+    // -----------------------------------------
+    // 9. DISPLAY ENTROPY MAPS
+    // -----------------------------------------
+
+    ctx.putImageData(new ImageData(originalEntropy, width, height), 0, 0);
+
+    ctx.putImageData(
+      new ImageData(reconstructedEntropy, width, height),
+      width,
+      0,
+    );
+
+    // -----------------------------------------
+    // 10. RETURN RESULT
+    // -----------------------------------------
+
+    const endTime = performance.now();
+
+   //console.log(`RLE processing time: ${endTime - startTime} ms`);
+
+    return {
+      compressionRatio: compressionRatio.toFixed(4),
+
+      encoded,
+
+      originalSize,
+
+      compressedSize,
+
+      originalEntropy: originalEntropy,
+
+      reconstructedEntropy: reconstructedEntropy,
+    };
+  }
   const [text, setText] = useState("Output Image");
 
   const [loading, setLoading] = useState(false);
   // const [progress, setProgress] = useState(0);
 
   async function processImage(minRunLength) {
-            const imgElement = document.getElementById("inputImage");
- minRunLength = parseInt(mrl);
-    if (!imgElement || isNaN(minRunLength) ) {
+    const imgElement = document.getElementById("inputImage");
+    minRunLength = parseInt(mrl);
+    if (!imgElement || isNaN(minRunLength)) {
       notifyE("Please enter the value for Minimum Run Length.");
-      console.log("Image or minRunLength problem");
+     // console.log("Image or minRunLength problem");
       return;
     }
     setLoading(true);
@@ -287,14 +575,13 @@ export default function RunLengthPage() {
     // setProgress(10); // Initial
 
     await new Promise((resolve) => setTimeout(resolve, 300)); // allow re-render
-    
 
     try {
       minRunLength = parseInt(mrl);
       const imgElement = document.getElementById("inputImage");
 
       if (!imgElement) {
-        console.error("Image element not found!");
+       // console.error("Image element not found!");
         setLoading(false);
         return;
       }
@@ -307,7 +594,7 @@ export default function RunLengthPage() {
       // setProgress(50);
       // await new Promise(resolve => setTimeout(resolve, 300));
 
-      cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
+      // cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY);
 
       // setProgress(70);
       // await new Promise(resolve => setTimeout(resolve, 200));
@@ -321,13 +608,15 @@ export default function RunLengthPage() {
       src.delete();
 
       // setProgress(100);
-      setText("Old Entropy | New Entropy | Compressed Image");
+      setText(
+        "Original Entropy | Compressed Entropy | Reconstructed Image",
+      );
       setLoading(false);
 
       myCanvas.current.style.display = "block";
       await new Promise((resolve) => setTimeout(resolve, 300));
     } catch (error) {
-      console.error("Error during processing:", error);
+      //console.error("Error during processing:", error);
     } finally {
       setTimeout(() => {
         // setLoading(false);
@@ -401,7 +690,7 @@ export default function RunLengthPage() {
   const handleImageClick = (index) => {
     setText("Output Image");
     setIsImageProcessed(false);
-        if (isTutorOpen && tutorStep >= 6) {
+    if (isTutorOpen && tutorStep >= 6) {
       setTutorStep(6);
     }
     setIsShowClickToShowOutput(true);
@@ -462,7 +751,7 @@ export default function RunLengthPage() {
       {
         title: "Select Image",
         content:
-          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis.by default first image is selected.",
+          "Start by selecting a sample image from the available options.  The selected image will be used for Run Length Encoding analysis, By default first image is selected.",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -470,7 +759,7 @@ export default function RunLengthPage() {
       {
         title: "Upload Image",
         content:
-          "Alternatively, you may also upload your own image to observe how different image patterns affect compression performance and run statistics.",
+          "Alternatively, you may also upload your own image to observe, how different image patterns affect compression performance .",
         targetId: "upload-btn-zone",
         placement: "right-start",
         offset: [-35, 22],
@@ -478,12 +767,11 @@ export default function RunLengthPage() {
       {
         title: "Minimum Run Length",
         content:
-          "Enter the minimum run length value. This parameter controls which continuous pixel sequences are considered significant during compression.",
+          "Enter the minimum run length value. This determines the minimum number of consecutive identical pixels required to be represented as a single run during Run Length Encoding.",
         targetId: "minimum-run-length-zone",
         placement: "right",
         offset: [0, 10],
       },
-
     ];
     const minRunLength = parseInt(mrl);
     if (!minRunLength) {
@@ -497,16 +785,14 @@ export default function RunLengthPage() {
       setTutorSteps(steps);
       return;
     }
-    steps.push(
-            {
-        title: " Process Image",
-        content:
-          "Click the Process button to start the Run Length Encoding analysis.",
-        targetId: "process-button-zone",
-        placement: "top",
-        offset: [-60, 12],
-      },
-    )
+    steps.push({
+      title: " Process Image",
+      content:
+        "Click the Process button to start the Run Length Encoding analysis.",
+      targetId: "process-button-zone",
+      placement: "top",
+      offset: [-60, 12],
+    });
     if (!isImageProcessed) {
       steps.push({
         title: "Action Required",
@@ -520,9 +806,26 @@ export default function RunLengthPage() {
     }
     steps.push(
       {
-        title: "Observe Output Analysis",
+        title: "Original Image Entropy",
         content:
-          "The output panel displays three different visual results generated after Run Length Encoding compression. The first section shows the entropy map of the original grayscale image, representing the randomness and information distribution before compression. The second section shows the entropy map after applying Run Length Encoding, allowing you to compare how compression affects local image entropy and data redundancy. The third section displays the reconstructed compressed image generated from the encoded run-length pairs. Observe how different minimum run length values influence compression ratio, entropy distribution, and preservation of image structures.",
+          "The first section shows the entropy map of the original image. Observe the distribution of local image information and identify regions with higher or lower entropy.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+      {
+        title: "Compressed Image Entropy",
+        content:
+          "The second section shows the entropy map of the reconstructed image after Run Length Encoding. Compare it with the original entropy map to observe whether the image information and structure are preserved.",
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
+
+      {
+        title: "Reconstructed Image",
+        content:
+          "The third section displays the reconstructed color image obtained by decoding the RLE data. Observe the image quality and compare it with the original image to verify lossless reconstruction.The compression ratio indicates how effectively the image data has been compressed.",
         targetId: "output-image-zone",
         placement: "top",
         offset: [0, 12],
@@ -547,7 +850,7 @@ export default function RunLengthPage() {
     );
 
     setTutorSteps(steps);
-  }, [setTutorSteps, isImageProcessed ,mrl]);
+  }, [setTutorSteps, isImageProcessed, mrl]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
