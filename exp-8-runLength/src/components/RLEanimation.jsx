@@ -280,6 +280,7 @@ export default function RLEanimation({ handleClose2Modal }) {
 
   const isAnimatingRef = useRef(false);
   const resetRequestedRef = useRef(false);
+  const animationSpeedRef = useRef(animationSpeed);
 
   const [isMatrixVisible, setIsMatrixVisible] = useState(false);
   const [isEncodedVisible, setIsEncodedVisible] = useState(false);
@@ -499,7 +500,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           break;
         }
         applyStep(index);
-        await wait(animationSpeed);
+        await wait(2100 - animationSpeedRef.current);
       }
 
       if (!resetRequestedRef.current) {
@@ -625,7 +626,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           break;
         }
         applyTextStep(index);
-        await wait(animationSpeed);
+        await wait(2100 - animationSpeedRef.current);
       }
 
       if (!resetRequestedRef.current) {
@@ -777,6 +778,9 @@ export default function RLEanimation({ handleClose2Modal }) {
         (prevIndex - 1 + instructions.length) % instructions.length,
     );
   };
+  useEffect(() => {
+  animationSpeedRef.current = animationSpeed;
+}, [animationSpeed]);
 
   // tutor implimentation
 
@@ -830,7 +834,7 @@ export default function RLEanimation({ handleClose2Modal }) {
         {
           title: "Choose Binary Image",
           content:
-            "This binary image acts as the input signal for Run Length Encoding. ",
+            "This binary image acts as the input image for Run Length Encoding. ",
           targetId: "rle-image-grid",
           placement: "right",
           offset: [0, 10],
@@ -1484,8 +1488,8 @@ export default function RLEanimation({ handleClose2Modal }) {
                 max={2000}
                 step={30}
                 onChange={(_, value) => setAnimationSpeed(Number(value))}
-                valueLabelDisplay="auto"
-                valueLabelFormat={(value) => `${value} ms delay`}
+                //valueLabelDisplay="auto"
+               // valueLabelFormat={(value) => `${value} ms delay`}
                 aria-label="Animation speed"
               />
             </div>
