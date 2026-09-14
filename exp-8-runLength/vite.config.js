@@ -4,13 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // base: '/Image/',
+     base: "./",
   server: {
     host: true,
   },
-  plugins: [react(),
-    tailwindcss()
-  ],
-
+  plugins: [react(), tailwindcss()],
+  
   
 })

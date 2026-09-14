@@ -15,27 +15,27 @@ import ErrorPage from "./components/ErrorPage";
 import RunLengthPage from "./components/runlength/RunLengthPage";
 
 function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <RunLengthPage />,
-        errorElement: <ErrorPage />,  
-    },
+  // const router = createBrowserRouter([
+  //   {
+  //     path: "/",
+  //     element: <RunLengthPage />,
+  //       errorElement: <ErrorPage />,  
+  //   },
 
-    {
-      path: "/compression/runlength",
-      element: <RunLengthPage />,
-    },
+  //   {
+  //     path: "/compression/runlength",
+  //     element: <RunLengthPage />,
+  //   },
 
     
     
-  ]);
+  // ]);
 
   return (
     <OpenCvProvider>
       <HomeContextProvider>
         <SimContextProvider>
-          <RouterProvider router={router} />
+          <RunLengthPage />
         </SimContextProvider>
       </HomeContextProvider>
     </OpenCvProvider>
