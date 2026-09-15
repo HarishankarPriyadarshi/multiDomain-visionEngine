@@ -84,7 +84,7 @@ export default function DerivativePage() {
     useState(false);
   // const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
-  
+  const [processedConfig, setProcessedConfig] = useState(null);
 
   const notifyS = (msg) => {
     toast.success(msg, {
@@ -185,7 +185,11 @@ export default function DerivativePage() {
       setIsAnimationPlaying(false);
     }, 1000);
     notifyS("Process Completed !!");
-
+    setProcessedConfig({
+      derivativeMethod,
+      filter1Type,
+      o2Kernel,
+    });
     src.delete();
   };
 
@@ -207,6 +211,50 @@ export default function DerivativePage() {
   const [selectedImage, setSelectedImage] = useState(0);
 
   // Tutor steps
+  const getOutputTutorContent = () => {
+  let operator = "";
+  let effect = "";
+     if (!processedConfig) {
+    return "Observe the resulting edge-detected image.";
+  }
+const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
+  if (derivativeMethod === "First Order") {
+    operator = filter1Type || "First Order";
+
+    switch (true) {
+      case filter1Type?.startsWith("Sobel"):
+        effect =
+          "Observe how the output highlights intensity changes along edges. The selected Sobel kernel size affects the smoothness and scale of the detected edges.";
+        break;
+
+      case filter1Type === "Prewitt":
+        effect =
+          "Observe how the output highlights edges by detecting intensity changes in horizontal and vertical directions.";
+        break;
+
+      case filter1Type === "Scharr":
+        effect =
+          "Observe how the output highlights edges with improved sensitivity to intensity changes, particularly for diagonal structures.";
+        break;
+
+      case filter1Type === "Roberts":
+        effect =
+          "Observe how the output highlights fine edges using a small 2×2 derivative kernel.";
+        break;
+
+      default:
+        effect =
+          "Compare the processed image with the input image to observe the detected edges.";
+    }
+  } else {
+    operator = `Laplacian (${o2Kernel}×${o2Kernel})`;
+
+    effect =
+      "Observe how the output highlights regions with rapid intensity changes. A larger kernel generally produces a smoother response but may reduce fine edge details.";
+  }
+
+  return `The output shows the result of ${operator}. ${effect}`;
+};
   useEffect(() => {
     const baseSteps = [
       {
@@ -235,7 +283,7 @@ export default function DerivativePage() {
       {
         title: "Select Image",
         content:
-          "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing.by default first image is selected. ",
+          "Start by selecting a sample image from the available options. The chosen image will be used for edge detection processing, by default first image is selected. ",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
@@ -263,8 +311,8 @@ export default function DerivativePage() {
             : "Second Order – Laplacian Based Detection",
         content:
           derivativeMethod === "First Order"
-            ? "Choose a gradient filter such as Sobel, Prewitt, or Scharr. These operators compute intensity changes in horizontal and vertical directions."
-            : "Select the kernel size for the Laplacian operator. Larger kernels provide smoother results but may reduce edge sharpness.",
+            ? "Choose a first-order derivative operator such as Sobel, Prewitt, Scharr, or Roberts. These operators compute intensity changes in horizontal and vertical directions."
+            : "Select the Laplacian kernel size. Larger kernels provide smoother results but may reduce edge sharpness.",
         targetId:
           derivativeMethod === "First Order"
             ? "filter-type-zone"
@@ -294,14 +342,14 @@ export default function DerivativePage() {
       return;
     }
     baseSteps.push(
-      {
-        title: "Observe Output",
-        content:
-          "Observe the resulting edge-detected image. Brighter pixels represent stronger intensity changes, indicating sharper edges.",
-        targetId: "output-image-zone",
-        placement: "top",
-        offset: [0, 12],
-      },
+ {
+    title: "Observe Output",
+    content:
+      getOutputTutorContent(),
+    targetId: "output-image-zone",
+    placement: "top",
+    offset: [0, 12],
+  },
       {
         title: "Print Results",
         content:
@@ -320,7 +368,7 @@ export default function DerivativePage() {
       },
   );
     setTutorSteps(baseSteps);
-  }, [derivativeMethod, setTutorSteps, isImageProcessed]);
+  }, [derivativeMethod, setTutorSteps, isImageProcessed, processedConfig]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -777,7 +825,7 @@ export default function DerivativePage() {
                               color: "#444444",
                             }}
                           >
-                            Filter Type:
+                            Operator Type:
                           </h4>
                           <Select
                             id="filter-type-zone"
@@ -839,9 +887,9 @@ export default function DerivativePage() {
                             }}
                             onChange={(e) => setO2Kernel(e.target.value)}
                           >
-                            <MenuItem value="3">3</MenuItem>
-                            <MenuItem value="5">5</MenuItem>
-                            <MenuItem value="7">7</MenuItem>
+<MenuItem value="3">Laplacian (3×3)</MenuItem>
+      <MenuItem value="5">Laplacian (5×5)</MenuItem>
+      <MenuItem value="7">Laplacian (7×7)</MenuItem>
                           </Select>
                         </>
                       ) : (
