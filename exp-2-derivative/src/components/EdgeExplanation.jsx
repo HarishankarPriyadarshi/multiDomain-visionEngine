@@ -73,7 +73,22 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     tutorStepSim,
     setTutorStepSim,
   } = useContext(SimContext);
-
+const getKernelDescription = () => {
+  switch (kernel) {
+    case "Sobel":
+      return "Sobel uses first-order derivative kernels in the X and Y directions to detect intensity changes while providing some smoothing.";
+    case "Prewitt":
+      return "Prewitt uses first-order derivative kernels in the X and Y directions to detect horizontal and vertical intensity changes.";
+    case "Roberts":
+      return "Roberts uses small 2×2 kernels to detect rapid intensity changes along diagonal directions.";
+    case "Scharr":
+      return "Scharr uses optimized derivative kernels to provide improved gradient estimation, particularly for diagonal structures.";
+    case "Laplacian":
+      return "Laplacian is a second-order derivative operator that detects regions of rapid intensity change.";
+    default:
+      return "The selected operator is applied to detect intensity changes in the image.";
+  }
+};
   useEffect(() => {
     const baseSteps = [
       {
@@ -93,7 +108,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       {
         title: "Select Input Image",
         content:
-          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing. by default, the Plus image is selected.",
+          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing, by default the Plus image is selected.",
         targetId: "image-box",
         placement: "right",
       },
@@ -103,16 +118,15 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         targetId: "ogimage",
         placement: "right",
       },
-      {
-        title: "Select Edge Detection Kernel",
-        content:
-          "Choose the gradient operator such as Sobel, Prewitt, Roberts, Scharr, or Laplacian. Each operator calculates intensity change differently.",
-        targetId: "tool-box",
-        placement: "right",
-      },
+{
+  title: "Select Edge Detection Kernel",
+  content: `You have selected ${kernel}. ${getKernelDescription()}`,
+  targetId: "tool-box",
+  placement: "right",
+},
       {
         title: "Kernel X and Kernel Y",
-        content: `Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X detects horizontal intensity changes, while Kernel Y detects vertical intensity changes.`,
+        content:  `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
         targetId: "kernels",
         placement: "top",
       },
@@ -204,24 +218,25 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
       {
         title: "Resultant  ΔG Calculation",
-        content:
-          "The final edge strength is computed using above formula. This gives the overall magnitude of intensity change.",
-        targetId: "tutorResCalculationGrid",
-        placement: "top",
+content:
+  "The gradient magnitude ΔG is calculated from ΔX and ΔY. It represents the overall strength of intensity change at each pixel.", 
+        
+  targetId: "tutorResCalculationGrid",
+  placement: "top",
         offset: [-10, 32],
       },
       {
         title: "Resultant Gradient",
         content:
-          "after each window operation, ΔG values are computed and stored in their respective result Gradient matrices.",
-        targetId: "tutorResGrid",
+  "After each window operation, the gradient magnitude ΔG is calculated and stored in the resultant gradient matrix. Larger values indicate stronger intensity changes.",
+          targetId: "tutorResGrid",
         placement: "top",
         offset: [-10, 12],
       },
       {
         title: "Resultant Image",
-        content:
-          "The gradient magnitude matrix is normalized and displayed as the final edge-detected image. Brighter pixels indicate stronger edges.",
+content:
+  "The resultant gradient matrix is normalized and displayed as the final edge-detected image. Brighter pixels represent stronger intensity changes and therefore stronger edges.",
         targetId: "tutorResImageGrid",
         placement: "bottom",
         offset: [-10, 12],
