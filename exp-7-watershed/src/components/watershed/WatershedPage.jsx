@@ -308,7 +308,7 @@ export default function WatershedPage() {
       {
         title: "Select Input Image",
         content:
-          "Choose one of the sample images that will be used as the input for Watershed segmentation.by default first image is selected. ",
+          "Choose one of the sample images that will be used as the input image for Watershed segmentation, by default first image is selected. ",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-80, 12],
@@ -322,22 +322,21 @@ export default function WatershedPage() {
         offset: [-35, 22],
       },
       {
-        title: "Threshold Selection",
-        content:
-          "Adjust the threshold value used for extracting the sure foreground from the distance transform. This parameter influences marker generation and segmentation quality.",
-        targetId: "threshold-zone",
-        placement: "right",
-        offset: [0, 10],
-      },
-
+  title: "Threshold Selection",
+  content:
+    "Set the threshold value to identify reliable foreground regions. These regions are used to generate markers, which influence how the watershed algorithm separates neighboring objects.",
+  targetId: "threshold-zone",
+  placement: "right",
+  offset: [0, 10],
+}
+,
       {
-        title: "Kernel Size",
-        content:
-          "Choose the kernel size used in morphological operations for noise removal and background estimation.",
-        targetId: "kernel-size-zone",
-        placement: "bottom",
-        
-      },
+  title: "Kernel Size",
+  content:
+    "Select the kernel size used during preprocessing for noise removal and background estimation. This affects marker generation and can influence the final watershed segmentation.",
+  targetId: "kernel-size-zone",
+  placement: "bottom",
+},
 
       {
         title: "Process",
@@ -360,14 +359,13 @@ export default function WatershedPage() {
       return;
     }
     baseSteps.push(
-      {
-        title: "Observe Output",
-        content:
-          "The output image shows the final result of Watershed segmentation. Internally, the image undergoes thresholding, noise removal, distance transform, and marker generation before the watershed algorithm identifies region boundaries. The highlighted boundaries separate adjacent objects and represent the final segmented regions.",
-        targetId: "output-image-zone",
-        placement: "top",
-       
-      },
+{
+  title: "Observe Output",
+  content:
+    "The output image shows the final result of Watershed segmentation. Internally, the image undergoes thresholding, noise removal, distance transform, and marker generation before the watershed algorithm identifies region boundaries. The highlighted boundaries separate adjacent objects and indicate the boundaries between the final segmented regions.",
+  targetId: "output-image-zone",
+  placement: "top",
+},
       {
         title: "Print Results",
         content:

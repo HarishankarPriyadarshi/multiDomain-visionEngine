@@ -180,21 +180,21 @@ export default function WaterShed({ handleClose4Modal }) {
       },
 
       {
-        title: "Choose Binary Image",
+        title: "Choose Input Image",
         content:
           "Select one of the predefined binary images. The selected image will be used as the input terrain for the Watershed Segmentation process.",
         targetId: "Choose_box_region",
         placement: "right",
         offset: [0, 10],
       },
-      {
-        title: "Selected Binary Image",
-        content:
-          "This selected binary image acts as the input for Watershed Segmentation. Foreground pixels represent elevated regions, while background pixels represent lower regions.",
-        targetId: "original-image-temp",
-        placement: "right",
-        offset: [0, 10],
-      },
+        {  title: "Input Image and Terrain",
+    content:
+      "The selected image is displayed here. For the 3D visualization, its binary representation is converted into a simplified terrain, where foreground regions form elevated areas and background regions remain lower.",
+    targetId: "original-image-temp",
+    placement: "right",
+    offset: [0, 10],
+  },
+
       {
         title: "Reset Button",
         content:
@@ -278,7 +278,7 @@ export default function WaterShed({ handleClose4Modal }) {
       baseSteps.push({
         title: "Step 3: Watershed Boundary Detection",
         content:
-          "After flooding, red watershed lines are identified to separate neighboring catchment basins, producing the final segmented regions.",
+          "After flooding When neighboring catchment basins meet, watershed boundaries are established between them. The red lines indicate these boundaries and define the separation between the segmented regions.",
         targetId: "water_shed",
         placement: "top",
         offset: [0, 10],
@@ -479,7 +479,7 @@ export default function WaterShed({ handleClose4Modal }) {
                 <span>Reset</span>
               </button>
 
-              <button onClick={handlePreviousStep} disabled={currentStep === 0}>
+              <button onClick={handlePreviousStep} disabled={currentStep <= 0}>
                 <FaChevronLeft />
                 <span>Previous</span>
               </button>
