@@ -15,30 +15,30 @@ import DerivativePage from "./components/derivative/DerivativePage";
 import ErrorPage from "./components/ErrorPage";
 
 function App() {
-  const router = createBrowserRouter([
+  // const router = createBrowserRouter([
 
-    {
-      path: "/",
-      element: <DerivativePage />,
-        errorElement: <ErrorPage />,
+  //   {
+  //     path: "/",
+  //     element: <DerivativePage />,
+  //       errorElement: <ErrorPage />,
       
-    },
+  //   },
     
-    {
-      path: "/edge/derivative",
-      element: <DerivativePage />,
-      errorElement: <ErrorPage />,
+  //   {
+  //     path: "/edge/derivative",
+  //     element: <DerivativePage />,
+  //     errorElement: <ErrorPage />,
       
-    },
+  //   },
     
     
-  ]);
+  // ]);
 
   return (
     <OpenCvProvider>
       <HomeContextProvider>
         <SimContextProvider>
-          <RouterProvider router={router} />
+        <DerivativePage />
         </SimContextProvider>
       </HomeContextProvider>
     </OpenCvProvider>
