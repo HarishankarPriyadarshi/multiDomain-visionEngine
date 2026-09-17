@@ -25,7 +25,11 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   const [kernelx, setKernelX] = useState(null);
   const [kernely, setKernelY] = useState(null);
 
-  const equation1 = "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
+  const equation1 =
+    kernel === "laplacian"
+      ? "\\Delta I = |\\nabla^2 I|"
+      : "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
+
   const equation2 = " \\frac{\\Delta G}{Max Value * 255}";
 
   const [label, setLabel] = useState("3 x 3");
@@ -56,7 +60,8 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   const [currentSum, setCurrentSum] = useState({ x: 0, y: 0, result: 0 }); // for X,Y, and Result
   const [step, setStep] = useState(0);
   const [firstKernelCalculated, setFirstKernelCalculated] = useState(false);
- const [isConceptAnimationPlaying, setIsConceptAnimationPlaying] = useState(false);
+  const [isConceptAnimationPlaying, setIsConceptAnimationPlaying] =
+    useState(false);
   // from SimContext
   const {
     isMobile,
@@ -73,22 +78,28 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     tutorStepSim,
     setTutorStepSim,
   } = useContext(SimContext);
-const getKernelDescription = () => {
-  switch (kernel) {
-    case "Sobel":
-      return "Sobel uses first-order derivative kernels in the X and Y directions to detect intensity changes while providing some smoothing.";
-    case "Prewitt":
-      return "Prewitt uses first-order derivative kernels in the X and Y directions to detect horizontal and vertical intensity changes.";
-    case "Roberts":
-      return "Roberts uses small 2×2 kernels to detect rapid intensity changes along diagonal directions.";
-    case "Scharr":
-      return "Scharr uses optimized derivative kernels to provide improved gradient estimation, particularly for diagonal structures.";
-    case "Laplacian":
-      return "Laplacian is a second-order derivative operator that detects regions of rapid intensity change.";
-    default:
-      return "The selected operator is applied to detect intensity changes in the image.";
-  }
-};
+
+  const getKernelDescription = () => {
+    switch (kernel) {
+      case "sobel":
+        return "Sobel uses first-order derivative kernels in the X and Y directions to detect intensity changes while providing some smoothing.";
+
+      case "prewitt":
+        return "Prewitt uses first-order derivative kernels in the X and Y directions to detect horizontal and vertical intensity changes.";
+
+      case "roberts":
+        return "Roberts uses small 2×2 kernels to detect rapid intensity changes along diagonal directions.";
+
+      case "scharr":
+        return "Scharr uses optimized first-order derivative kernels in the X and Y directions for improved gradient estimation.";
+
+      case "laplacian":
+        return "Laplacian is a second-order derivative operator that uses a single kernel to detect regions of rapid intensity change.";
+
+      default:
+        return "The selected operator is applied to detect intensity changes in the image.";
+    }
+  };
   useEffect(() => {
     const baseSteps = [
       {
@@ -118,18 +129,26 @@ const getKernelDescription = () => {
         targetId: "ogimage",
         placement: "right",
       },
-{
-  title: "Select Edge Detection Kernel",
-  content: `You have selected ${kernel}. ${getKernelDescription()}`,
-  targetId: "tool-box",
-  placement: "right",
-},
       {
-        title: "Kernel X and Kernel Y",
-        content:  `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
-        targetId: "kernels",
-        placement: "top",
+        title: "Select Edge Detection Kernel",
+        content: `You have selected ${kernel}. ${getKernelDescription()}`,
+        targetId: "tool-box",
+        placement: "right",
       },
+{
+  title:
+    kernel === "laplacian"
+      ? "Laplacian Kernel"
+      : "Kernel X and Kernel Y",
+
+  content:
+    kernel === "laplacian"
+      ? `You have selected the Laplacian operator. ${getKernelDescription()} Observe the single Laplacian kernel used to calculate the second-order derivative response of the image.`
+      : `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
+
+  targetId: "kernels",
+  placement: "top",
+},
       {
         title: "Speed Down",
         content:
@@ -160,8 +179,8 @@ const getKernelDescription = () => {
       },
     ];
 
-    // 👇 If simulation NOT started
-  
+    //  If simulation NOT started
+
     if (!isConceptAnimationPlaying) {
       baseSteps.push({
         title: "Action Required",
@@ -218,25 +237,25 @@ const getKernelDescription = () => {
 
       {
         title: "Resultant  ΔG Calculation",
-content:
-  "The gradient magnitude ΔG is calculated from ΔX and ΔY. It represents the overall strength of intensity change at each pixel.", 
-        
-  targetId: "tutorResCalculationGrid",
-  placement: "top",
+        content:
+          "The gradient magnitude ΔG is calculated from ΔX and ΔY. It represents the overall strength of intensity change at each pixel.",
+
+        targetId: "tutorResCalculationGrid",
+        placement: "top",
         offset: [-10, 32],
       },
       {
         title: "Resultant Gradient",
         content:
-  "After each window operation, the gradient magnitude ΔG is calculated and stored in the resultant gradient matrix. Larger values indicate stronger intensity changes.",
-          targetId: "tutorResGrid",
+          "After each window operation, the gradient magnitude ΔG is calculated and stored in the resultant gradient matrix. Larger values indicate stronger intensity changes.",
+        targetId: "tutorResGrid",
         placement: "top",
         offset: [-10, 12],
       },
       {
         title: "Resultant Image",
-content:
-  "The resultant gradient matrix is normalized and displayed as the final edge-detected image. Brighter pixels represent stronger intensity changes and therefore stronger edges.",
+        content:
+          "The resultant gradient matrix is normalized and displayed as the final edge-detected image. Brighter pixels represent stronger intensity changes and therefore stronger edges.",
         targetId: "tutorResImageGrid",
         placement: "bottom",
         offset: [-10, 12],
@@ -380,16 +399,14 @@ content:
         break;
       case "laplacian":
         setLabel("3 x 3");
+
         kernelX = [
           [0, 1, 0],
           [1, -4, 1],
           [0, 1, 0],
         ];
-        kernelY = [
-          [0, 1, 0],
-          [1, -4, 1],
-          [0, 1, 0],
-        ];
+
+        kernelY = null;
         break;
       default:
         kernelX = [];
@@ -442,12 +459,12 @@ content:
     setActiveDX({ row: -1, col: -1 });
     setActiveDY({ row: -1, col: -1 });
     setFirstKernelCalculated(false);
-    
+
     // Tutor logic: if tutor is open and was past the Action Required step, redirect back
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
     }
-    
+
     setIsSimPlaying(false);
     setIsConceptAnimationPlaying(false);
   }
@@ -456,7 +473,7 @@ content:
   // }, [activeDX, activeDY, activeRes]);
 
   async function calculateDerivatives() {
-    if (!original || !kernelx || !kernely) return;
+    if (!original || !kernelx) return;
 
     const currentRunId = ++runIdRef.current;
 
@@ -475,7 +492,10 @@ content:
       .map(() => Array(cols).fill(0));
 
     const kernelSizeX = kernelx.length;
-    const kernelSizeY = kernely.length;
+
+    // For Laplacian, there is no kernelY,
+    // but the single kernel is still 3 × 3.
+    const kernelSizeY = kernelx.length;
 
     setIsDisabled(true); //disabled select box
     setIsRunning(true);
@@ -483,7 +503,7 @@ content:
     setIsDone(false);
 
     const kernelOffsetX = Math.floor(kernelSizeX / 2);
-    const kernelOffsetY = Math.floor(kernelSizeY / 2);
+    const kernelOffsetY = kernely ? Math.floor(kernelSizeY / 2) : 0;
 
     setCompletedDX([]);
     setCompletedDY([]);
@@ -534,13 +554,22 @@ content:
               y < original[0].length
             ) {
               const mulX = original[x][y] * kernelx[ki][kj];
-              const mulY = original[x][y] * kernely[ki][kj];
               sumX += mulX;
-              sumY += mulY;
-              // update convSteps and currentSum
+
+              let mulY = 0;
+
+              if (kernely) {
+                mulY = original[x][y] * kernely[ki][kj];
+                sumY += mulY;
+              }
+
               setConvSteps((prev) => ({
                 x: [...prev.x, `${original[x][y]}×${kernelx[ki][kj]}`],
-                y: [...prev.y, `${original[x][y]}×${kernely[ki][kj]}`],
+
+                y: kernely
+                  ? [...prev.y, `${original[x][y]}×${kernely[ki][kj]}`]
+                  : [],
+
                 result: prev.result,
               }));
 
@@ -557,20 +586,42 @@ content:
         }
 
         di_dx[i][j] = sumX;
-        di_dy[i][j] = sumY;
-        resultant[i][j] = Math.floor(Math.sqrt(sumX * sumX + sumY * sumY));
-        // set result for display
-        const gradient = Math.sqrt(sumX * sumX + sumY * sumY);
 
-        setConvSteps((prev) => ({
-          ...prev,
-          result: [`√( ${sumX}² + ${sumY}² )`],
-        }));
+        if (kernely) {
+          // First-order derivative operators
+          di_dy[i][j] = sumY;
 
-        setCurrentSum((prev) => ({
-          ...prev,
-          result: gradient.toFixed(2),
-        }));
+          const gradient = Math.sqrt(sumX * sumX + sumY * sumY);
+
+          resultant[i][j] = Math.floor(gradient);
+
+          setConvSteps((prev) => ({
+            ...prev,
+            result: [`√( ${sumX}² + ${sumY}² )`],
+          }));
+
+          setCurrentSum((prev) => ({
+            ...prev,
+            result: gradient.toFixed(2),
+          }));
+        } else {
+          // Laplacian: single second-order derivative response
+          di_dy[i][j] = 0;
+
+          const laplacianResponse = Math.abs(sumX);
+
+          resultant[i][j] = Math.floor(laplacianResponse);
+
+          setConvSteps((prev) => ({
+            ...prev,
+            result: [`| ${sumX} |`],
+          }));
+
+          setCurrentSum((prev) => ({
+            ...prev,
+            result: laplacianResponse.toFixed(2),
+          }));
+        }
         setFirstKernelCalculated(true);
 
         setCompletedDX((prev) => [...prev, { row: i, col: j }]);
@@ -1039,7 +1090,9 @@ content:
                 >
                   {kernel}
                 </h3>
-                <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel X</h4>
+                <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                  {kernel === "laplacian" ? "Laplacian Kernel" : "Kernel X"}
+                </h4>
                 <div
                   className="matrix-over"
                   style={{
@@ -1083,50 +1136,54 @@ content:
                 )}
               </div>
 
-              <div id="kernely">
-                <h4 style={{ margin: "0px", fontWeight: "bold" }}>Kernel Y</h4>
-                <div
-                  className="matrix-over"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
-                  }}
-                >
-                  {kernely &&
-                    kernely.map((row, rowIndex) =>
-                      row.map((cell, colIndex) => (
-                        <div
-                          key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
-                          id="kernelGrid"
-                          className="matrix-animate kernalY"
-                          style={{
-                            animationDelay: `${rowIndex * 0.15}s`,
-                          }}
-                        >
-                          {kernely[rowIndex][colIndex]}
-                        </div>
-                      )),
-                    )}
-                </div>
-                <p id="yLabel" class="matrix_label">
-                  {!isVisible && label}
-                </p>
-                {isVisible && (
-                  <div id="convStepsY" className="conv-steps-box">
-                    <h4>Kernel Y Convolution Step</h4>
-
-                    <div className="conv-steps">
-                      <div className="conv-step">Step {step} :</div>
-                      {convSteps.y.map((item, index) => (
-                        <span key={index}>
-                          ({item}){index !== convSteps.y.length - 1 && " + "}
-                        </span>
-                      ))}
-                      <div className="conv-result">= {currentSum.y}</div>
-                    </div>
+              {kernel !== "laplacian" && (
+                <div id="kernely">
+                  <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                    Kernel Y
+                  </h4>
+                  <div
+                    className="matrix-over"
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: `repeat(${kernel === "roberts" ? 2 : 3}, 1fr)`,
+                    }}
+                  >
+                    {kernely &&
+                      kernely.map((row, rowIndex) =>
+                        row.map((cell, colIndex) => (
+                          <div
+                            key={`${rowIndex}-${colIndex}-${kernelAnimateKey}`}
+                            id="kernelGrid"
+                            className="matrix-animate kernalY"
+                            style={{
+                              animationDelay: `${rowIndex * 0.15}s`,
+                            }}
+                          >
+                            {kernely[rowIndex][colIndex]}
+                          </div>
+                        )),
+                      )}
                   </div>
-                )}
-              </div>
+                  <p id="yLabel" class="matrix_label">
+                    {!isVisible && label}
+                  </p>
+                  {isVisible && (
+                    <div id="convStepsY" className="conv-steps-box">
+                      <h4>Kernel Y Convolution Step</h4>
+
+                      <div className="conv-steps">
+                        <div className="conv-step">Step {step} :</div>
+                        {convSteps.y.map((item, index) => (
+                          <span key={index}>
+                            ({item}){index !== convSteps.y.length - 1 && " + "}
+                          </span>
+                        ))}
+                        <div className="conv-result">= {currentSum.y}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {isVisible && (
@@ -1145,7 +1202,11 @@ content:
                 <div id="kernelx" style={{ position: "relative" }}>
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
                     {firstKernelCalculated && (
-                      <span>Gradient X (&Delta;X)</span>
+                      <span>
+                        {kernel === "laplacian"
+                          ? "Laplacian Response (∇²I)"
+                          : "Gradient X (ΔX)"}
+                      </span>
                     )}
                   </h4>
                   <div
@@ -1185,47 +1246,49 @@ content:
                   </p>
                 </div>
 
-                <div id="kernely">
-                  <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                    {firstKernelCalculated && (
-                      <span>Gradient Y (&Delta;Y)</span>
-                    )}
-                  </h4>
-                  <div
-                    id="tutorDYGrid"
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: `repeat(${dy && dy[0] ? dy[0].length : 0}, 1fr)`,
-                    }}
-                  >
-                    {dy &&
-                      dy.map((row, rowIndex) =>
-                        row.map((cell, colIndex) => (
-                          <div
-                            key={`${rowIndex}-${colIndex}`}
-                            id="kernelGrid"
-                            className={
-                              activeDY.row === rowIndex &&
-                              activeDY.col === colIndex
-                                ? "dy-active"
-                                : completedDY.some(
-                                      (item) =>
-                                        item.row === rowIndex &&
-                                        item.col === colIndex,
-                                    )
-                                  ? "dy-completed"
-                                  : ""
-                            }
-                          >
-                            {dy[rowIndex][colIndex]}
-                          </div>
-                        )),
+                {kernel !== "laplacian" && (
+                  <div id="kernely">
+                    <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                      {firstKernelCalculated && (
+                        <span>Gradient Y (&Delta;Y)</span>
                       )}
+                    </h4>
+                    <div
+                      id="tutorDYGrid"
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${dy && dy[0] ? dy[0].length : 0}, 1fr)`,
+                      }}
+                    >
+                      {dy &&
+                        dy.map((row, rowIndex) =>
+                          row.map((cell, colIndex) => (
+                            <div
+                              key={`${rowIndex}-${colIndex}`}
+                              id="kernelGrid"
+                              className={
+                                activeDY.row === rowIndex &&
+                                activeDY.col === colIndex
+                                  ? "dy-active"
+                                  : completedDY.some(
+                                        (item) =>
+                                          item.row === rowIndex &&
+                                          item.col === colIndex,
+                                      )
+                                    ? "dy-completed"
+                                    : ""
+                              }
+                            >
+                              {dy[rowIndex][colIndex]}
+                            </div>
+                          )),
+                        )}
+                    </div>
+                    <p className="matrix_label">
+                      {firstKernelCalculated && resultLabel}
+                    </p>
                   </div>
-                  <p className="matrix_label">
-                    {firstKernelCalculated && resultLabel}
-                  </p>
-                </div>
+                )}
               </div>
             )}
 
@@ -1240,11 +1303,13 @@ content:
               <div id="final_result">
                 <div id="kernelx">
                   <h4 style={{ margin: "0px", fontWeight: "bold" }}>
-                    Resultant Gradient
+                    {kernel === "laplacian"
+                      ? "Laplacian Result"
+                      : "Resultant Gradient"}
                   </h4>
                   <BlockMath math={equation1} />
                   <div id="tutorResCalculationGrid" className="conv-final">
-                    ΔG=
+                    {kernel === "laplacian" ? "∇²I =" : "ΔG ="}
                     {convSteps.result.map((item, index) => (
                       <span key={index}>{item}</span>
                     ))}{" "}
