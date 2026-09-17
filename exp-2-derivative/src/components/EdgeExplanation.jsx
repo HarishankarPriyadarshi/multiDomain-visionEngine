@@ -373,7 +373,69 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
   const [isRunning, setIsRunning] = useState(false); // Optional - for controlling visibility
 
-  
+  const resetCalculationOutput = () => {
+  runIdRef.current++;
+
+  setDx([]);
+  setDy([]);
+  setRes([]);
+
+  setPosX(0);
+  setPosY(0);
+
+  setIsRunning(false);
+  setIsDone(false);
+  setIsVisible(false);
+
+  setFirstKernelCalculated(false);
+
+  setCompletedDX([]);
+  setCompletedDY([]);
+  setCompletedRes([]);
+
+  setActiveDX({ row: -1, col: -1 });
+  setActiveDY({ row: -1, col: -1 });
+  setActiveRes({ row: -1, col: -1 });
+
+  setConvSteps({
+    x: [],
+    y: [],
+    result: [],
+  });
+
+  setCurrentSum({
+    x: 0,
+    y: 0,
+    result: 0,
+  });
+
+  setStep(0);
+
+  setIsPausedSimulation(false);
+
+  // Restore Play/Pause buttons
+  if (myPauseButton.current) {
+    myPauseButton.current.style.display = "none";
+  }
+
+  if (myPlayButton.current) {
+    myPlayButton.current.style.display = "block";
+  }
+
+  // Disable speed buttons until Play is clicked again
+  if (mySpeedUpButton.current) {
+    mySpeedUpButton.current.disabled = true;
+  }
+
+  if (mySpeedDownButton.current) {
+    mySpeedDownButton.current.disabled = true;
+  }
+      if (isTutorOpenSim && tutorStepSim >= 10) {
+      setTutorStepSim(10);
+    }
+  setIsSimPlaying(false);
+  setIsConceptAnimationPlaying(false);
+};
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -423,8 +485,9 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   }
 
   function changeKernel(x) {
-    runIdRef.current++;
-    setIsDone(false);
+    // runIdRef.current++;
+    // setIsDone(false);
+    resetCalculationOutput();
     setKernel(x);
     setKernelAnimateKey((prev) => prev + 1);
     let kernelX, kernelY;
@@ -517,7 +580,8 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   }
 
   function handleReset() {
-    runIdRef.current++; // cancel current loop
+     runIdRef.current++; // cancel current loop
+    
     setDx([]);
     setDy([]);
     setRes([]);
