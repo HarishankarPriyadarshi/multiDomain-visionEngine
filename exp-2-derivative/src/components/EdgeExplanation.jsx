@@ -100,6 +100,29 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         return "The selected operator is applied to detect intensity changes in the image.";
     }
   };
+
+  const imageName =
+    image === 0
+      ? "Plus"
+      : image === 1
+        ? "Minus"
+        : image === 2
+          ? "Multiply"
+          : "Divide";
+
+  const operatorImageContent = {
+    sobel: `The resultant Sobel image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Sobel operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+
+    prewitt: `The resultant Prewitt image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Prewitt operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+
+    roberts: `The resultant Roberts image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Roberts operator detects rapid intensity changes along diagonal directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+
+    scharr: `The resultant Scharr image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Scharr operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+
+    laplacian: `The resultant Laplacian image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Laplacian operator calculates the second-order intensity change using a single kernel. Regions with larger Laplacian responses indicate rapid changes in image intensity and are displayed brighter, representing detected edges.`,
+
+    default: `The resultant image for the ${imageName} input image is normalized and displayed as the final edge-detected image. Regions with significant intensity changes produce stronger derivative responses and are displayed brighter, indicating detected edges.`,
+  };
   useEffect(() => {
     const baseSteps = [
       {
@@ -135,20 +158,18 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         targetId: "tool-box",
         placement: "right",
       },
-{
-  title:
-    kernel === "laplacian"
-      ? "Laplacian Kernel"
-      : "Kernel X and Kernel Y",
+      {
+        title:
+          kernel === "laplacian" ? "Laplacian Kernel" : "Kernel X and Kernel Y",
 
-  content:
-    kernel === "laplacian"
-      ? `You have selected the Laplacian operator. ${getKernelDescription()} Observe the single Laplacian kernel used to calculate the second-order derivative response of the image.`
-      : `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
+        content:
+          kernel === "laplacian"
+            ? `You have selected the Laplacian operator. ${getKernelDescription()} Observe the single Laplacian kernel used to calculate the second-order derivative response of the image.`
+            : `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
 
-  targetId: "kernels",
-  placement: "top",
-},
+        targetId: "kernels",
+        placement: "top",
+      },
       {
         title: "Speed Down",
         content:
@@ -193,82 +214,143 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       return;
     }
 
-    baseSteps.push(
-      {
-        title: "Sliding Window Operation",
-        content:
-          "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
-        targetId: "kernel-sliding-box",
-        placement: "top",
-        offset: [-10, 12],
-      },
-      {
-        title: "Observe Kernel X Convolution Steps",
-        content:
-          "Here you can see the detailed multiplication steps and running sum for Kernel X  during convolution.",
-        targetId: "convStepsX",
-        placement: "right",
-        offset: [1, 12],
-      },
-      {
-        title: "Gradient X",
-        content:
-          "After each window operation, ΔX values are generated and stored in their respective result matrices.",
-        targetId: "tutorDXGrid",
-        placement: "top",
-        offset: [-10, 32],
-      },
-      {
-        title: "Observe Kernel Y Convolution Steps",
-        content:
-          "Here you can see the detailed multiplication steps and running sum for Kernel Y during convolution.",
-        targetId: "convStepsY",
-        placement: "left",
-        offset: [1, 12],
-      },
-      {
-        title: "Gradient Y",
-        content:
-          "After each window operation, ΔY values are generated and stored in their respective result matrices.",
-        targetId: "tutorDYGrid",
-        placement: "bottom",
-        offset: [-10, 32],
-      },
-
-      {
-        title: "Resultant  ΔG Calculation",
-        content:
-          "The gradient magnitude ΔG is calculated from ΔX and ΔY. It represents the overall strength of intensity change at each pixel.",
-
-        targetId: "tutorResCalculationGrid",
-        placement: "top",
-        offset: [-10, 32],
-      },
-      {
-        title: "Resultant Gradient",
-        content:
-          "After each window operation, the gradient magnitude ΔG is calculated and stored in the resultant gradient matrix. Larger values indicate stronger intensity changes.",
-        targetId: "tutorResGrid",
-        placement: "top",
-        offset: [-10, 12],
-      },
-      {
-        title: "Resultant Image",
-        content:
-          "The resultant gradient matrix is normalized and displayed as the final edge-detected image. Brighter pixels represent stronger intensity changes and therefore stronger edges.",
-        targetId: "tutorResImageGrid",
-        placement: "bottom",
-        offset: [-10, 12],
-      },
-
-      {
-        title: "Experiment Completed",
-        content:
-          "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
-        targetId: "tutorResImageGrid",
-        placement: "top",
-      },
-    );
+    if (kernel === "laplacian") {
+      // ==============================
+      // Laplacian Tutor Flow
+      // ==============================
+      baseSteps.push(
+        {
+          title: "Sliding Window Operation",
+          content:
+            "The highlighted red window shows the current region being multiplied with the Laplacian kernel. Each overlapping element is multiplied and summed step-by-step.",
+          targetId: "kernel-sliding-box",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Observe Laplacian Convolution Steps",
+          content:
+            "Here you can see the detailed multiplication steps and running sum for the Laplacian kernel during convolution.",
+          targetId: "convStepsX",
+          placement: "right",
+          offset: [1, 12],
+        },
+        {
+          title: "Laplacian Response",
+          content:
+            "After each window operation, the Laplacian response  is generated and stored in the result matrix. It represents the second-order intensity change at each pixel.",
+          targetId: "tutorDXGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Laplacian Result Calculation",
+          content:
+            "The absolute value of the Laplacian response  is calculated to represent the strength of the intensity change detected by the Laplacian operator.",
+          targetId: "tutorResCalculationGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Laplacian Result",
+          content:
+            "After each window operation, the absolute Laplacian response  is calculated and stored in the resultant matrix. Larger values indicate stronger intensity changes.",
+          targetId: "tutorResGrid",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Resultant Image",
+          content: operatorImageContent[kernel] || operatorImageContent.default,
+          targetId: "tutorResImageGrid",
+          placement: "bottom",
+          offset: [-10, 12],
+        },
+        {
+          title: "Experiment Completed",
+          content:
+            "Congratulations! You have successfully visualized how Laplacian-based edge detection works using second-order derivative convolution.",
+          targetId: "tutorResImageGrid",
+          placement: "top",
+        },
+      );
+    } else {
+      // ==============================
+      // First-Order Tutor Flow
+      // ==============================
+      baseSteps.push(
+        {
+          title: "Sliding Window Operation",
+          content:
+            "The highlighted red window shows the current region being multiplied with the kernel. Each overlapping element is multiplied and summed step-by-step.",
+          targetId: "kernel-sliding-box",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Observe Kernel X Convolution Steps",
+          content:
+            "Here you can see the detailed multiplication steps and running sum for Kernel X during convolution.",
+          targetId: "convStepsX",
+          placement: "right",
+          offset: [1, 12],
+        },
+        {
+          title: "Gradient X",
+          content:
+            "After each window operation, ΔX values are generated and stored in their respective result matrices.",
+          targetId: "tutorDXGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Observe Kernel Y Convolution Steps",
+          content:
+            "Here you can see the detailed multiplication steps and running sum for Kernel Y during convolution.",
+          targetId: "convStepsY",
+          placement: "left",
+          offset: [1, 12],
+        },
+        {
+          title: "Gradient Y",
+          content:
+            "After each window operation, ΔY values are generated and stored in their respective result matrices.",
+          targetId: "tutorDYGrid",
+          placement: "bottom",
+          offset: [-10, 32],
+        },
+        {
+          title: "Resultant ΔG Calculation",
+          content:
+            "The gradient magnitude ΔG is calculated from ΔX and ΔY. It represents the overall strength of intensity change at each pixel.",
+          targetId: "tutorResCalculationGrid",
+          placement: "top",
+          offset: [-10, 32],
+        },
+        {
+          title: "Resultant Gradient",
+          content:
+            "After each window operation, the gradient magnitude ΔG is calculated and stored in the resultant gradient matrix. Larger values indicate stronger intensity changes.",
+          targetId: "tutorResGrid",
+          placement: "top",
+          offset: [-10, 12],
+        },
+        {
+          title: "Resultant Image",
+          content: operatorImageContent[kernel] || operatorImageContent.default,
+          targetId: "tutorResImageGrid",
+          placement: "bottom",
+          offset: [-10, 12],
+        },
+        {
+          title: "Experiment Completed",
+          content:
+            "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
+          targetId: "tutorResImageGrid",
+          placement: "top",
+        },
+      );
+    }
 
     setTutorStepsSim(baseSteps);
   }, [isConceptAnimationPlaying, kernel, image, tutorStepSim]);
@@ -291,6 +373,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
   const [isRunning, setIsRunning] = useState(false); // Optional - for controlling visibility
 
+  
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -348,6 +431,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     switch (x) {
       case "sobel":
         setLabel("3 x 3");
+        setResultLabel("5x5");
         kernelX = [
           [-1, 0, 1],
           [-2, 0, 2],
@@ -373,6 +457,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         break;
       case "prewitt":
         setLabel("3 x 3");
+        setResultLabel("5x5");
         kernelX = [
           [-1, 0, 1],
           [-1, 0, 1],
@@ -386,6 +471,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         break;
       case "scharr":
         setLabel("3 x 3");
+        setResultLabel("5x5");
         kernelX = [
           [-3, 0, 3],
           [-10, 0, 10],
@@ -399,7 +485,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
         break;
       case "laplacian":
         setLabel("3 x 3");
-
+        setResultLabel("5x5");
         kernelX = [
           [0, 1, 0],
           [1, -4, 1],
@@ -1090,7 +1176,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 >
                   {kernel}
                 </h3>
-                <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                <h4 style={{ marginBottom: "1px", fontWeight: "bold" }}>
                   {kernel === "laplacian" ? "Laplacian Kernel" : "Kernel X"}
                 </h4>
                 <div
@@ -1121,7 +1207,11 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 </p>
                 {isVisible && (
                   <div id="convStepsX" className="conv-steps-box">
-                    <h4>Kernel X Convolution Step</h4>
+                    {kernel === "laplacian" ? (
+                      <h4>Laplacian Kernel Convolution Step</h4>
+                    ) : (
+                      <h4>Kernel X Convolution Step</h4>
+                    )}
 
                     <div className="conv-steps">
                       <div className="conv-step">Step {step} :</div>
@@ -1138,7 +1228,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
               {kernel !== "laplacian" && (
                 <div id="kernely">
-                  <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                  <h4 style={{ marginBottom: "1px", fontWeight: "bold" }}>
                     Kernel Y
                   </h4>
                   <div
@@ -1188,9 +1278,11 @@ export default function EdgeExplanation({ handleClose2Modal }) {
 
             {isVisible && (
               <div id="operation">
-                <div id="equals-to" style={{ fontWeight: "bold" }}>
-                  =
-                </div>
+                {kernel === "laplacian" ? null : (
+                  <div id="equals-to" style={{ fontWeight: "bold" }}>
+                    =
+                  </div>
+                )}
                 <div id="equals-to" style={{ fontWeight: "bold" }}>
                   =
                 </div>
@@ -1200,7 +1292,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
             {isVisible && (
               <div id="results">
                 <div id="kernelx" style={{ position: "relative" }}>
-                  <h4 style={{ margin: "0px", fontWeight: "bold" }}>
+                  <h4 style={{ marginBottom: "1px", fontWeight: "bold" }}>
                     {firstKernelCalculated && (
                       <span>
                         {kernel === "laplacian"
