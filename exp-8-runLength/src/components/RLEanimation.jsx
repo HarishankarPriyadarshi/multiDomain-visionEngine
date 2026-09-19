@@ -38,6 +38,11 @@ import { SimContext } from "./context/SimContext";
 import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import TutorSim from "./features/tutor/TutorSim";
+import {
+  appendRunLengthEncoding,
+  downloadRunLengthReport,
+  hasRunLengthReportData,
+} from "./features/report/reportGenerator";
 
 const PATTERNS = [
   {
@@ -281,12 +286,17 @@ export default function RLEanimation({ handleClose2Modal }) {
   const isAnimatingRef = useRef(false);
   const resetRequestedRef = useRef(false);
   const animationSpeedRef = useRef(animationSpeed);
+  const imageStartedAtRef = useRef(null);
+  const textStartedAtRef = useRef(null);
 
   const [isMatrixVisible, setIsMatrixVisible] = useState(false);
   const [isEncodedVisible, setIsEncodedVisible] = useState(false);
   const [isEncodingLiveVisible, setIsEncodingLiveVisible] = useState(false);
   const [isStatsVisible, setIsStatsVisible] = useState(false);
   const [isEncodingTextVisible, setIsEncodingTextVisible] = useState(false);
+  const [hasReportData, setHasReportData] = useState(() =>
+    hasRunLengthReportData(),
+  );
   const scanGroups = useMemo(
     () => (matrix ? buildScanGroups(matrix, scanDirection) : []),
     [matrix, scanDirection],
@@ -391,6 +401,51 @@ export default function RLEanimation({ handleClose2Modal }) {
   const activeStepTotal =
     simulationMode === "image" ? scannedCells.length : textCells.length;
 
+  const saveCompletedImageReport = useCallback(() => {
+    const completedAt = new Date().toISOString();
+    appendRunLengthEncoding({
+      inputType: "Binary Image",
+      inputPattern: selectedPattern || "Custom",
+      input: copyMatrix(matrix),
+      scanDirection: scanDirection === "horizontal" ? "Horizontal" : "Vertical",
+      minRunLength: Math.max(1, Number(minRunLength) || 1),
+      startedAt: imageStartedAtRef.current || completedAt,
+      completedAt,
+      encodedGroups: encodedRunGroups.map((group) => ({
+        groupLabel: group.groupLabel,
+        runs: group.runs.map(({ value, count }) => ({ value, count })),
+      })),
+      encodedRuns: encodedRuns.map(({ value, count }) => ({ value, count })),
+      stats: { ...imageStats, encodedRuns: encodedRuns.length },
+    });
+    setHasReportData(true);
+  }, [
+    encodedRunGroups,
+    encodedRuns,
+    imageStats,
+    matrix,
+    minRunLength,
+    scanDirection,
+    selectedPattern,
+  ]);
+
+  const saveCompletedTextReport = useCallback(() => {
+    const completedAt = new Date().toISOString();
+    appendRunLengthEncoding({
+      inputType: "Text",
+      input: textData,
+      minRunLength: Math.max(1, Number(minRunLength) || 1),
+      startedAt: textStartedAtRef.current || completedAt,
+      completedAt,
+      encodedRuns: textEncodedRuns.map(({ value, count }) => ({
+        value,
+        count,
+      })),
+      stats: { ...textStats, encodedRuns: textEncodedRuns.length },
+    });
+    setHasReportData(true);
+  }, [minRunLength, textData, textEncodedRuns, textStats]);
+
   const resetAnimation = useCallback(() => {
     resetRequestedRef.current = true;
     isAnimatingRef.current = false;
@@ -406,6 +461,7 @@ export default function RLEanimation({ handleClose2Modal }) {
     setIsEncodedVisible(false);
     setIsEncodingLiveVisible(false);
     setIsStatsVisible(false);
+    imageStartedAtRef.current = null;
     setExplanation(
       "Scanning pixels row-wise and grouping consecutive binary values.",
     );
@@ -486,6 +542,9 @@ export default function RLEanimation({ handleClose2Modal }) {
       if (isAnimatingRef.current) return;
 
       resetRequestedRef.current = false;
+      if (startAt === 0 || !imageStartedAtRef.current) {
+        imageStartedAtRef.current = new Date().toISOString();
+      }
       isAnimatingRef.current = true;
       setIsAnimating(true);
       setHasAnimationProgress(true);
@@ -512,6 +571,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           setExplanation(
             "Encoding complete. Hover any run to see its source pixels.",
           );
+          saveCompletedImageReport();
         }
       }
     },
@@ -520,6 +580,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       applyStep,
       imageStepIndex,
       scannedCells.length,
+      saveCompletedImageReport,
       visibleRunCount,
     ],
   );
@@ -544,6 +605,7 @@ export default function RLEanimation({ handleClose2Modal }) {
     setHoveredTextRunId(null);
     setIsEncodingLiveVisible(false);
     setIsStatsVisible(false);
+    textStartedAtRef.current = null;
     setExplanation(
       "Scanning characters sequentially and grouping repeated symbols.",
     );
@@ -613,6 +675,9 @@ export default function RLEanimation({ handleClose2Modal }) {
       }
 
       resetRequestedRef.current = false;
+      if (startAt === 0 || !textStartedAtRef.current) {
+        textStartedAtRef.current = new Date().toISOString();
+      }
       isAnimatingRef.current = true;
       setIsAnimating(true);
       setTextHasAnimationProgress(true);
@@ -638,6 +703,7 @@ export default function RLEanimation({ handleClose2Modal }) {
           setExplanation(
             "Text encoding complete. Hover any run to see its source characters.",
           );
+          saveCompletedTextReport();
         }
       }
     },
@@ -646,6 +712,7 @@ export default function RLEanimation({ handleClose2Modal }) {
       applyTextStep,
       textCells.length,
       textStepIndex,
+      saveCompletedTextReport,
       visibleTextRunCount,
     ],
   );
@@ -779,8 +846,8 @@ export default function RLEanimation({ handleClose2Modal }) {
     );
   };
   useEffect(() => {
-  animationSpeedRef.current = animationSpeed;
-}, [animationSpeed]);
+    animationSpeedRef.current = animationSpeed;
+  }, [animationSpeed]);
 
   // tutor implimentation
 
@@ -1210,6 +1277,15 @@ export default function RLEanimation({ handleClose2Modal }) {
             {isMobile ? "Tutor" : "Guided Tutor"}
           </Button>
           <Button
+            id="download-report-btn-rle"
+            disabled={!hasReportData}
+            onClick={downloadRunLengthReport}
+            className="morph-report-btn"
+          >
+            {isMobile ? "Report" : "Download Report"}
+          </Button>
+
+          <Button
             id="sound-btn-sim"
             title={isSpeaking && !isPaused ? "Pause" : "Play"}
             onClick={handleSpeechToggleSim}
@@ -1221,6 +1297,7 @@ export default function RLEanimation({ handleClose2Modal }) {
             />
           </Button>
           <Button
+            className="close-btn"
             onClick={() => {
               resetTutorSim();
               handleClose2Modal();
@@ -1303,7 +1380,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                   simulationMode === "text" ? "active" : ""
                 }`}
                 onClick={() => {
-                                    if (isTutorOpenSim && tutorStepSim >= 2) {
+                  if (isTutorOpenSim && tutorStepSim >= 2) {
                     setTutorStepSim(3);
                   }
                   pauseAnimation();
@@ -1489,7 +1566,7 @@ export default function RLEanimation({ handleClose2Modal }) {
                 step={30}
                 onChange={(_, value) => setAnimationSpeed(Number(value))}
                 //valueLabelDisplay="auto"
-               // valueLabelFormat={(value) => `${value} ms delay`}
+                // valueLabelFormat={(value) => `${value} ms delay`}
                 aria-label="Animation speed"
               />
             </div>
