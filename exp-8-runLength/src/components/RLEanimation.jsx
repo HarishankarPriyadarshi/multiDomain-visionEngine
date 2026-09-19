@@ -1204,6 +1204,14 @@ export default function RLEanimation({ handleClose2Modal }) {
         },
       );
     }
+      baseSteps.push({
+        title: "Download report",
+        content:
+          "Click the Download Report button to save a detailed report of your simulation",
+        targetId: "download-report-btn-rle",
+        placement: "bottom",
+        offset: [0, 10],
+      });
 
     setTutorStepsSim(baseSteps);
   }, [
