@@ -27,6 +27,10 @@ import { FiRefreshCw } from "react-icons/fi";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 import TutorSim from "./features/tutor/TutorSim";
+import {
+  appendWatershedConceptSimulation,
+  downloadWatershedReport,
+} from "./features/report/reportGenerator";
 
 export default function WaterShed({ handleClose4Modal }) {
   const [image, setImage] = useState(0);
@@ -34,6 +38,8 @@ export default function WaterShed({ handleClose4Modal }) {
   const [imageAnimateKey, setImageAnimateKey] = useState(0);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isVisible, setIsVisible] = useState(false);
+  const simulationStartedAt = useRef(null);
+  const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -90,18 +96,21 @@ export default function WaterShed({ handleClose4Modal }) {
     setOriginal(signs[x]);
     setCurrentStep(-1);
     setIsVisible(false);
+    simulationStartedAt.current = null;
   }
   useEffect(() => {
     handleImage(0);
   }, []);
 
   function handleNextStep() {
+    if (currentStep === -1) simulationStartedAt.current = new Date().toISOString();
     setCurrentStep((prev) => Math.min(2, prev + 1));
     setIsVisible(true);
   }
   function handleRefresh() {
     setCurrentStep(-1);
     setIsVisible(false);
+    simulationStartedAt.current = null;
   }
   function handlePreviousStep() {
     setCurrentStep((prev) => Math.max(0, prev - 1));
@@ -110,6 +119,17 @@ export default function WaterShed({ handleClose4Modal }) {
   useEffect(() => {
     setCurrentStep(-1);
   }, []);
+
+  useEffect(() => {
+    if (currentStep !== 2 || !original) return;
+    appendWatershedConceptSimulation({
+      imageName: imageNames[image],
+      input: original,
+      finalStep: currentStep,
+      startedAt: simulationStartedAt.current || new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+    });
+  }, [currentStep, image, original]);
 
   //   instructions
   const instructions = [
@@ -335,6 +355,14 @@ export default function WaterShed({ handleClose4Modal }) {
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
+                      <Button
+                        id="download-report-btn-watershed"
+                        disabled={currentStep !== 2 || !original}
+                        onClick={downloadWatershedReport}
+                        className="morph-report-btn"
+                      >
+                        {isMobile ? "Report" : "Download Report"}
+                      </Button>
             <Button
               id="sound-btn-sim"
               title={isSpeaking && !isPaused ? "Pause" : "Play"}
@@ -347,6 +375,7 @@ export default function WaterShed({ handleClose4Modal }) {
               />
             </Button>
             <Button
+            className="close-btn"
               onClick={() => {
                 resetTutorSim();
                 handleClose4Modal();
