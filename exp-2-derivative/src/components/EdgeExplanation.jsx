@@ -16,6 +16,27 @@ import { SimContext } from "./context/SimContext";
 import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import TutorSim from "./features/tutor/TutorSim";
+import {
+  appendDerivativeSimulation,
+  downloadDerivativeReport,
+  hasDerivativeReportData,
+} from "./features/report/reportGenerator";
+const OPERATOR_OBSERVATIONS = {
+  sobel:
+    "The output edge map clearly highlights the horizontal and vertical boundaries of the selected pattern, with stronger responses at regions of sharp intensity change.",
+
+  roberts:
+    "The output edge map shows localized diagonal edge responses, highlighting the boundaries where adjacent pixels have strong intensity differences.",
+
+  prewitt:
+    "The output edge map emphasizes the horizontal and vertical boundaries of the selected pattern, with edge responses concentrated around intensity transitions.",
+
+  scharr:
+    "The output edge map produces pronounced directional responses at the boundaries of the selected pattern, particularly where horizontal or vertical intensity changes are strong.",
+
+  laplacian:
+    "The output edge map highlights the boundaries of the selected pattern by responding to rapid changes in intensity using the second-order derivative."
+};
 
 export default function EdgeExplanation({ handleClose2Modal }) {
   const [image, setImage] = useState(0);
@@ -24,6 +45,9 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   const [original, setOriginal] = useState(null);
   const [kernelx, setKernelX] = useState(null);
   const [kernely, setKernelY] = useState(null);
+  const [hasCompletedReport, setHasCompletedReport] = useState(() =>
+    hasDerivativeReportData(),
+  );
 
   const equation1 =
     kernel === "laplacian"
@@ -374,68 +398,68 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   const [isRunning, setIsRunning] = useState(false); // Optional - for controlling visibility
 
   const resetCalculationOutput = () => {
-  runIdRef.current++;
+    runIdRef.current++;
 
-  setDx([]);
-  setDy([]);
-  setRes([]);
+    setDx([]);
+    setDy([]);
+    setRes([]);
 
-  setPosX(0);
-  setPosY(0);
+    setPosX(0);
+    setPosY(0);
 
-  setIsRunning(false);
-  setIsDone(false);
-  setIsVisible(false);
+    setIsRunning(false);
+    setIsDone(false);
+    setIsVisible(false);
 
-  setFirstKernelCalculated(false);
+    setFirstKernelCalculated(false);
 
-  setCompletedDX([]);
-  setCompletedDY([]);
-  setCompletedRes([]);
+    setCompletedDX([]);
+    setCompletedDY([]);
+    setCompletedRes([]);
 
-  setActiveDX({ row: -1, col: -1 });
-  setActiveDY({ row: -1, col: -1 });
-  setActiveRes({ row: -1, col: -1 });
+    setActiveDX({ row: -1, col: -1 });
+    setActiveDY({ row: -1, col: -1 });
+    setActiveRes({ row: -1, col: -1 });
 
-  setConvSteps({
-    x: [],
-    y: [],
-    result: [],
-  });
+    setConvSteps({
+      x: [],
+      y: [],
+      result: [],
+    });
 
-  setCurrentSum({
-    x: 0,
-    y: 0,
-    result: 0,
-  });
+    setCurrentSum({
+      x: 0,
+      y: 0,
+      result: 0,
+    });
 
-  setStep(0);
+    setStep(0);
 
-  setIsPausedSimulation(false);
+    setIsPausedSimulation(false);
 
-  // Restore Play/Pause buttons
-  if (myPauseButton.current) {
-    myPauseButton.current.style.display = "none";
-  }
+    // Restore Play/Pause buttons
+    if (myPauseButton.current) {
+      myPauseButton.current.style.display = "none";
+    }
 
-  if (myPlayButton.current) {
-    myPlayButton.current.style.display = "block";
-  }
+    if (myPlayButton.current) {
+      myPlayButton.current.style.display = "block";
+    }
 
-  // Disable speed buttons until Play is clicked again
-  if (mySpeedUpButton.current) {
-    mySpeedUpButton.current.disabled = true;
-  }
+    // Disable speed buttons until Play is clicked again
+    if (mySpeedUpButton.current) {
+      mySpeedUpButton.current.disabled = true;
+    }
 
-  if (mySpeedDownButton.current) {
-    mySpeedDownButton.current.disabled = true;
-  }
-      if (isTutorOpenSim && tutorStepSim >= 10) {
+    if (mySpeedDownButton.current) {
+      mySpeedDownButton.current.disabled = true;
+    }
+    if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
     }
-  setIsSimPlaying(false);
-  setIsConceptAnimationPlaying(false);
-};
+    setIsSimPlaying(false);
+    setIsConceptAnimationPlaying(false);
+  };
   function handleImage(x) {
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
@@ -580,8 +604,8 @@ export default function EdgeExplanation({ handleClose2Modal }) {
   }
 
   function handleReset() {
-     runIdRef.current++; // cancel current loop
-    
+    runIdRef.current++; // cancel current loop
+
     setDx([]);
     setDy([]);
     setRes([]);
@@ -626,6 +650,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
     if (!original || !kernelx) return;
 
     const currentRunId = ++runIdRef.current;
+    const startedAt = new Date().toISOString();
 
     const rows = original.length + 1 - kernelx.length;
     const cols = original[0].length + 1 - kernelx.length;
@@ -798,6 +823,20 @@ export default function EdgeExplanation({ handleClose2Modal }) {
       setIsDisabled(false);
       setIsDone(true);
       setIsRunning(false);
+      appendDerivativeSimulation({
+        operator: kernel,
+        derivativeOrder: kernel === "laplacian" ? "Second-order" : "First-order",
+        imageName,
+        input: original,
+        kernelSize: `${kernelx.length} × ${kernelx[0]?.length || 0}`,
+        kernelX: kernelx,
+        kernelY: kernely,
+        output: resultant,
+        observation: OPERATOR_OBSERVATIONS[kernel],
+        startedAt,
+        completedAt: new Date().toISOString(),
+      });
+      setHasCompletedReport(true);
     }
   }
 
@@ -863,17 +902,27 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                 {isMobile ? "Tutor" : "Guided Tutor"}
               </Button>
               <Button
+                id="download-report-btn-derivative"
+                disabled={!hasCompletedReport}
+                onClick={downloadDerivativeReport}
+                className="morph-report-btn"
+              >
+                {isMobile ? "Report" : "Download Report"}
+              </Button>
+              <Button
                 id="sound-btn"
                 title={isSpeaking && !isPaused ? "Pause" : "Play"}
                 onClick={handleSpeechToggleSim}
               >
                 <img
+                  id="sound-btn-sim"
                   src={isSpeaking && !isPaused ? voice_pause : voice}
                   alt="voice"
                   style={{ width: "40px", height: "auto", marginRight: "10px" }}
                 />
               </Button>
               <Button
+                className="close-btn"
                 onClick={() => {
                   resetTutorSim();
                   handleClose2Modal();
@@ -1381,13 +1430,13 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                             id="kernelGrid"
                             className={
                               activeDX.row === rowIndex &&
-                              activeDX.col === colIndex
+                                activeDX.col === colIndex
                                 ? "dx-active"
                                 : completedDX.some(
-                                      (item) =>
-                                        item.row === rowIndex &&
-                                        item.col === colIndex,
-                                    )
+                                  (item) =>
+                                    item.row === rowIndex &&
+                                    item.col === colIndex,
+                                )
                                   ? "dx-completed"
                                   : ""
                             }
@@ -1424,13 +1473,13 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                               id="kernelGrid"
                               className={
                                 activeDY.row === rowIndex &&
-                                activeDY.col === colIndex
+                                  activeDY.col === colIndex
                                   ? "dy-active"
                                   : completedDY.some(
-                                        (item) =>
-                                          item.row === rowIndex &&
-                                          item.col === colIndex,
-                                      )
+                                    (item) =>
+                                      item.row === rowIndex &&
+                                      item.col === colIndex,
+                                  )
                                     ? "dy-completed"
                                     : ""
                               }
@@ -1486,13 +1535,13 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                             id="kernelGrid"
                             className={
                               activeRes.row === rowIndex &&
-                              activeRes.col === colIndex
+                                activeRes.col === colIndex
                                 ? "res-active"
                                 : completedRes.some(
-                                      (item) =>
-                                        item.row === rowIndex &&
-                                        item.col === colIndex,
-                                    )
+                                  (item) =>
+                                    item.row === rowIndex &&
+                                    item.col === colIndex,
+                                )
                                   ? "res-completed"
                                   : ""
                             }
@@ -1525,7 +1574,7 @@ export default function EdgeExplanation({ handleClose2Modal }) {
                             id="result_grid"
                             className={
                               activeRes.row === rowIndex &&
-                              activeRes.col === colIndex
+                                activeRes.col === colIndex
                                 ? "resImage-active"
                                 : ""
                             }
