@@ -582,11 +582,11 @@ function persistMorphologyReport(history) {
     const activeHash = getActiveUserHash();
     if (activeHash) {
       localStorage.setItem(
-        `vlab_exp2_user_${activeHash}_simulation_report_html`,
+        `vlab_exp4_user_${activeHash}_simulation_report_html`,
         html,
       );
       localStorage.setItem(
-        `vlab_exp2_user_${activeHash}_simulation_report_updated_at`,
+        `vlab_exp4_user_${activeHash}_simulation_report_updated_at`,
         updatedAt,
       );
     }
