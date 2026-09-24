@@ -7,7 +7,7 @@ const VLABS_LOGO_URL = new URL(
   import.meta.url,
 ).href;
 const RLE_REPORT_KEY = "vlab_exp8_run_length_encoding_report";
-const RLE_HTML_KEY = "vlab_exp8_run_length_encoding_report_html";
+
 
 function escapeHTML(value) {
   return String(value ?? "").replace(
@@ -158,11 +158,52 @@ export function appendRunLengthEncoding(entry) {
     updatedAt: entry.completedAt || new Date().toISOString(),
   };
   const html = buildRleReportHtml(data);
-  try {
-    localStorage.setItem(RLE_REPORT_KEY, JSON.stringify(data));
-    localStorage.setItem(RLE_HTML_KEY, html);
-    localStorage.setItem("progressreport.html", html);
-    localStorage.setItem("vlab:simulation_report_html", html);
+    try {
+    const reportJson = JSON.stringify(data);
+    const updatedAt = data.updatedAt || new Date().toISOString();
+
+    // ---------------------------------------------------------
+    // Common/current Exp-8 simulation report
+    // ---------------------------------------------------------
+    localStorage.setItem(
+      "vlab_exp8_simulation_report_html",
+      html
+    );
+
+    localStorage.setItem(
+      "vlab_exp8_simulation_report_updated_at",
+      updatedAt
+    );
+
+    // ---------------------------------------------------------
+    // User-scoped Exp-8 simulation report
+    // Common active-user hash is intentionally Exp-2
+    // ---------------------------------------------------------
+    const activeHash = localStorage.getItem(
+      "vlab_exp2_active_user_hash"
+    );
+
+    if (activeHash) {
+      localStorage.setItem(
+        `vlab_exp8_user_${activeHash}_simulation_report_html`,
+        html
+      );
+
+      localStorage.setItem(
+        `vlab_exp8_user_${activeHash}_simulation_report_updated_at`,
+        updatedAt
+      );
+    }
+
+    // Keep the RLE internal report data if these constants
+    // are already used elsewhere in reportGenerator.jsx.
+    localStorage.setItem(
+      RLE_REPORT_KEY,
+      reportJson
+    );
+
+    
+
   } catch (error) {
     console.error("Could not save RLE simulation report", error);
   }
