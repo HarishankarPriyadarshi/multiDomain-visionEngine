@@ -207,13 +207,14 @@ export default function WaterShed({ handleClose4Modal }) {
         placement: "right",
         offset: [0, 10],
       },
-        {  title: "Input Image and Terrain",
-    content:
-      "The selected image is displayed here. For the 3D visualization, its binary representation is converted into a simplified terrain, where foreground regions form elevated areas and background regions remain lower.",
-    targetId: "original-image-temp",
-    placement: "right",
-    offset: [0, 10],
-  },
+      {
+        title: "Input Image and Terrain",
+        content:
+          "The selected image is displayed here. For the 3D visualization, its binary representation is converted into a simplified terrain, where foreground regions form elevated areas and background regions remain lower.",
+        targetId: "original-image-temp",
+        placement: "right",
+        offset: [0, 10],
+      },
 
       {
         title: "Reset Button",
@@ -312,6 +313,14 @@ export default function WaterShed({ handleClose4Modal }) {
       placement: "bottom",
       offset: [0, 10],
     });
+    baseSteps.push({
+      title: "Download report",
+      content:
+        "Now, You can Click the Download Report button to save a detailed report of your simulation",
+      targetId: "download-report-btn-watershed",
+      placement: "bottom",
+      offset: [0, 10],
+    });
 
     setTutorStepsSim(baseSteps);
   }, [currentStep, currentStep]);
@@ -355,14 +364,14 @@ export default function WaterShed({ handleClose4Modal }) {
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
-                      <Button
-                        id="download-report-btn-watershed"
-                        disabled={currentStep !== 2 || !original}
-                        onClick={downloadWatershedReport}
-                        className="morph-report-btn"
-                      >
-                        {isMobile ? "Report" : "Download Report"}
-                      </Button>
+            <Button
+              id="download-report-btn-watershed"
+              disabled={currentStep !== 2 || !original}
+              onClick={downloadWatershedReport}
+              className="morph-report-btn"
+            >
+              {isMobile ? "Report" : "Download Report"}
+            </Button>
             <Button
               id="sound-btn-sim"
               title={isSpeaking && !isPaused ? "Pause" : "Play"}
@@ -375,7 +384,7 @@ export default function WaterShed({ handleClose4Modal }) {
               />
             </Button>
             <Button
-            className="close-btn"
+              className="close-btn"
               onClick={() => {
                 resetTutorSim();
                 handleClose4Modal();
