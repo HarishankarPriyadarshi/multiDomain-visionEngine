@@ -373,6 +373,14 @@ export default function EdgeExplanation({ handleClose2Modal }) {
           targetId: "tutorResImageGrid",
           placement: "top",
         },
+        {
+          title: "Download report",
+          content:
+            "Now, You can Click the Download Report button to save a detailed report of your simulation",
+          targetId: "download-report-btn-derivative",
+          placement: "bottom",
+          offset: [0, 10],
+        }
       );
     }
 
