@@ -15,27 +15,27 @@ import { HomeContextProvider } from "./components/context/HomeContext";
 import {SimContextProvider} from "./components/context/SimContext"; 
 
 function App() {
-  const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <WatershedPage />,
-        errorElement: <ErrorPage />,  
-    },
+  // const router = createBrowserRouter([
+  //   {
+  //     path: "/",
+  //     element: <WatershedPage />,
+  //       errorElement: <ErrorPage />,  
+  //   },
 
-    {
-      path: "/region/watershed",
-      element: <WatershedPage />,
-    },
+  //   {
+  //     path: "/region/watershed",
+  //     element: <WatershedPage />,
+  //   },
     
     
     
-  ]);
+  // ]);
 
   return (
     <OpenCvProvider>
       <HomeContextProvider>
         <SimContextProvider>
-          <RouterProvider router={router} />
+          <WatershedPage />
         </SimContextProvider>
       </HomeContextProvider>  
     </OpenCvProvider>
