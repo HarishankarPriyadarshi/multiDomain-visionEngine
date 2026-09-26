@@ -97,6 +97,9 @@ export default function WatershedPage() {
   };
 
   const [openWaterModal, setOpenWaterModal] = useState(false);
+  // The report timer begins when the Watershed experiment page is opened,
+  // rather than when the concept-simulation dialog is started.
+  const [simulationStartedAt] = useState(() => new Date().toISOString());
 
   const instr = () => {
     setIsInstructionOpen(true);
@@ -1071,7 +1074,10 @@ export default function WatershedPage() {
 
                   <DialogContent sx={{ padding: "0px", height: "1300px" }}>
                     {openWaterModal && (
-                      <WaterShed handleClose4Modal={handleClose4Modal} />
+                      <WaterShed
+                        handleClose4Modal={handleClose4Modal}
+                        simulationStartedAt={simulationStartedAt}
+                      />
                     )}
                     {/* {WaterShed()} */}
                   </DialogContent>

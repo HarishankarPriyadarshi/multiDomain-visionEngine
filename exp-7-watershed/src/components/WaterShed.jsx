@@ -1,6 +1,6 @@
 import "../region_animation.css";
 import "../App.css";
-import { useEffect, useRef, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { OpenCvProvider } from "opencv-react";
 import divide from "../assets/images/divide_sign.png";
 import multiply from "../assets/images/x_sign.png";
@@ -32,13 +32,15 @@ import {
   downloadWatershedReport,
 } from "./features/report/reportGenerator";
 
-export default function WaterShed({ handleClose4Modal }) {
+export default function WaterShed({
+  handleClose4Modal,
+  simulationStartedAt,
+}) {
   const [image, setImage] = useState(0);
   const [original, setOriginal] = useState(null);
   const [imageAnimateKey, setImageAnimateKey] = useState(0);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isVisible, setIsVisible] = useState(false);
-  const simulationStartedAt = useRef(null);
   const imageNames = ["Plus", "Minus", "Multiply", "Divide"];
   function handleImage(x) {
     setImage(x);
@@ -96,21 +98,18 @@ export default function WaterShed({ handleClose4Modal }) {
     setOriginal(signs[x]);
     setCurrentStep(-1);
     setIsVisible(false);
-    simulationStartedAt.current = null;
   }
   useEffect(() => {
     handleImage(0);
   }, []);
 
   function handleNextStep() {
-    if (currentStep === -1) simulationStartedAt.current = new Date().toISOString();
     setCurrentStep((prev) => Math.min(2, prev + 1));
     setIsVisible(true);
   }
   function handleRefresh() {
     setCurrentStep(-1);
     setIsVisible(false);
-    simulationStartedAt.current = null;
   }
   function handlePreviousStep() {
     setCurrentStep((prev) => Math.max(0, prev - 1));
@@ -126,7 +125,7 @@ export default function WaterShed({ handleClose4Modal }) {
       imageName: imageNames[image],
       input: original,
       finalStep: currentStep,
-      startedAt: simulationStartedAt.current || new Date().toISOString(),
+      startedAt: simulationStartedAt,
       completedAt: new Date().toISOString(),
     });
   }, [currentStep, image, original]);
