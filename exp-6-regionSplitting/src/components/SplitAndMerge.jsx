@@ -958,6 +958,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
   const [generation, setGeneration] = useState(0);
   const [currentStep, setCurrentStep] = useState(-1);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [autoPlayInterval, setAutoPlayInterval] = useState(1200);
 
   const { steps, tree, colorMap } = useMemo(
     () => buildSplitSteps(original, threshold),
@@ -1017,28 +1018,10 @@ export default function SplitAndMerge({ handleClose3Modal }) {
         }
         return prev + 1;
       });
-    }, 1200);
+    }, autoPlayInterval);
 
     return () => clearInterval(timer);
-  }, [isAutoPlaying, steps.length]);
-
-  const instructions = [
-    "1. Click to select an image and observe the resulting image.",
-    "2. Click the 'Process' button to see the output.",
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % instructions.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + instructions.length) % instructions.length,
-    );
-  };
+  }, [autoPlayInterval, isAutoPlaying, steps.length]);
 
   return (
     <OpenCvProvider>
@@ -1082,65 +1065,122 @@ export default function SplitAndMerge({ handleClose3Modal }) {
             </Button>
           </div>
         </DialogTitle>
-        <div id="inst_div_edge">
-          <div
-            id="inst_content_container"
-            style={{
-              padding: "2px",
-              border: "1px solid #ccc",
-              borderRadius: "8px",
-              minHeight: "30px",
-              backgroundColor: "black",
-              color: "white",
-            }}
-          >
-            <div id="inst_content_edge">
-              <button onClick={prevSlide} style={{ marginRight: "10px" }}>
-                <span className="prev-icon" aria-hidden="true">
-                  ⮜
-                </span>
-              </button>
-              <span>{instructions[currentIndex]}</span>
-              <button onClick={nextSlide} style={{ zIndex: 10001 }}>
-                <span className="next-icon" aria-hidden="true">
-                  ⮞
-                </span>
-              </button>
+        <div id="split-merge-layout">
+          <aside id="split-merge-left-panel">
+            <div id="generate-box-region">
+              <div className="generate-card-region">
+                <h2>Generate Matrix</h2>
+                <Button className="tool_btn" onClick={handleGenerateMatrix}>
+                  Generate Matrix
+                </Button>
+              </div>
             </div>
-          </div>
-        </div>
-        <div id="generate-box-region">
-          <div className="generate-card-region">
-            <div>
-              <h2>Generate Matrix</h2>
-              <p>Threshold: {threshold.toFixed(2)}</p>
-            </div>
-            <Button className="tool_btn" onClick={handleGenerateMatrix}>
-              Generate Matrix
-            </Button>
-          </div>
-        </div>
 
-        <div id="image-box-region">
-          <div id="left-image-box-region">
-            <div id="head-image-temp">
-              <h1>Input Image Matrix</h1>
-            </div>
-            <div id="original-image-temp">
-              <MatrixView matrix={original} animated />
-            </div>
-          </div>
+            <section className="threshold-card-region" aria-labelledby="threshold-heading">
+              <h2 id="threshold-heading">Threshold</h2>
+              <p>Suggested Threshold: {threshold.toFixed(2)}</p>
+            </section>
 
-          <div id="region_arrow">&#129066;</div>
+            <section className="control-panel-region" aria-labelledby="simulation-controls-heading">
+              <h2 id="simulation-controls-heading">Simulation Controls</h2>
+              <div className="control-buttons">
+                <button id="reset-btn" onClick={handleReset}>
+                  <span>↻</span>
+                  <span>Reset</span>
+                </button>
 
-          <div id="right-image-box-region">
-            <div id="head-image-temp">
-              <h1>Region Splitting Process</h1>
+                <button onClick={handlePreviousStep} disabled={currentStep < 0}>
+                  <span>⬅</span>
+                  <span>Previous</span>
+                </button>
+
+                <button
+                  id="next-btn"
+                  onClick={handleNextStep}
+                  disabled={currentStep >= steps.length - 1}
+                >
+                  <span>➡</span>
+                  <span>Next</span>
+                </button>
+
+                <button
+                  onClick={() => setIsAutoPlaying((prev) => !prev)}
+                  disabled={currentStep >= steps.length - 1}
+                >
+                  <span>▶</span>
+                  <span>{isAutoPlaying ? "Pause" : "Auto Play"}</span>
+                </button>
+              </div>
+              <label className="autoplay-speed-region" htmlFor="autoplay-speed">
+                <span className="autoplay-speed-title-region">Speed</span>
+                <input
+                  id="autoplay-speed"
+                  type="range"
+                  min="600"
+                  max="1800"
+                  step="50"
+                  value={autoPlayInterval}
+                  onChange={(event) =>
+                    setAutoPlayInterval(Number(event.target.value))
+                  }
+                  aria-label="Auto Play speed"
+                />
+              </label>
+            </section>
+          </aside>
+
+          <main id="split-merge-right-panel">
+            <div id="image-box-region">
+              <div id="left-image-box-region">
+                <div id="head-image-temp">
+                  <h1>Input Image Matrix</h1>
+                </div>
+                <div id="original-image-temp">
+                  <MatrixView matrix={original} animated />
+                </div>
+              </div>
+
+              <div id="region_arrow">&#129066;</div>
+
+              <div id="right-image-box-region">
+                <div id="head-image-temp">
+                  <h1>Region Splitting Process</h1>
+                </div>
+                <div id="animated-image-temp-region">
+                  <MatrixView
+                    matrix={original}
+                    cellRegionMap={cellRegionMap}
+                    statuses={statuses}
+                    currentStepData={currentStepData}
+                    colorMap={effectiveColorMap}
+                  />
+                </div>
+              </div>
+
+              <div id="nomenclature-arrow-region">&#129066;</div>
+
+              <div id="nomenclature-image-box-region">
+                <div id="head-image-temp">
+                  <h1>Region Labels</h1>
+                </div>
+                <div id="nomenclature-image-temp-region">
+                  <NomenclatureMatrixView
+                    cellRegionMap={cellRegionMap}
+                    activeRegions={displayRegions}
+                    statuses={statuses}
+                    currentStepData={currentStepData}
+                    colorMap={effectiveColorMap}
+                  />
+                </div>
+              </div>
             </div>
-            <div id="animated-image-temp-region">
-              <MatrixView
-                matrix={original}
-                cellRegionMap={cellRegionMap}
+
+            <div id="tree-container-region">
+              <h1>Recursive Quadtree Representation</h1>
+              <QuadtreeView
+                tree={tree}
+                steps={steps}
+                currentStep={currentStep}
                 statuses={statuses}
                 currentStepData={currentStepData}
                 colorMap={effectiveColorMap}
@@ -1151,64 +1191,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
               stepNumber={currentStep + 1}
               threshold={threshold}
             />
-            <div className="control-buttons">
-              <button id="reset-btn" onClick={handleReset}>
-                <span>↻</span>
-                <span>Reset</span>
-              </button>
-
-              <button onClick={handlePreviousStep} disabled={currentStep < 0}>
-                <span>⬅</span>
-                <span>Previous</span>
-              </button>
-
-              <button
-                id="next-btn"
-                onClick={handleNextStep}
-                disabled={currentStep >= steps.length - 1}
-              >
-                <span>➡</span>
-                <span>Next</span>
-              </button>
-
-              <button
-                onClick={() => setIsAutoPlaying((prev) => !prev)}
-                disabled={currentStep >= steps.length - 1}
-              >
-                <span>▶</span>
-                <span>{isAutoPlaying ? "Pause" : "Auto Play"}</span>
-              </button>
-            </div>
-          </div>
-
-          <div id="nomenclature-arrow-region">&#129066;</div>
-
-          <div id="nomenclature-image-box-region">
-            <div id="head-image-temp">
-              <h1>Region Labels</h1>
-            </div>
-            <div id="nomenclature-image-temp-region">
-              <NomenclatureMatrixView
-                cellRegionMap={cellRegionMap}
-                activeRegions={displayRegions}
-                statuses={statuses}
-                currentStepData={currentStepData}
-                colorMap={effectiveColorMap}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div id="tree-container-region">
-          <h1>Recursive Quadtree Representation</h1>
-          <QuadtreeView
-            tree={tree}
-            steps={steps}
-            currentStep={currentStep}
-            statuses={statuses}
-            currentStepData={currentStepData}
-            colorMap={effectiveColorMap}
-          />
+          </main>
         </div>
         <ToastContainer position="bottom-left" />
       </div>
