@@ -1069,6 +1069,15 @@ export default function SplitAndMerge({ handleClose3Modal }) {
               color="primary"
               style={{ backgroundColor: "beige", marginRight: "10px" }}
             >
+              Instruction
+            </Button>
+            <Button
+              onClick={() => {
+                handleClose3Modal();
+              }}
+              color="primary"
+              style={{ backgroundColor: "beige", marginRight: "10px" }}
+            >
               Close
             </Button>
           </div>
