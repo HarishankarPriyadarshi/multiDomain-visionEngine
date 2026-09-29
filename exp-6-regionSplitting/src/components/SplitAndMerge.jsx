@@ -698,22 +698,22 @@ function NomenclatureMatrixView({
   );
 }
 
-function ExplanationBox({ step, stepNumber, threshold }) {
+function ExplanationBox({ step, stepNumber, threshold, isCollapsed, onToggle }) {
+  let content;
+
   if (!step) {
-    return (
-      <div id="explanation-box">
+    content = (
+      <>
         <h2>Ready to Split</h2>
         <p>
           Generate a structured matrix, then use Next or Auto Play to inspect
           each recursive region check.
         </p>
-      </div>
+      </>
     );
-  }
-
-  if (step.type === "merge") {
-    return (
-      <div id="explanation-box">
+  } else if (step.type === "merge") {
+    content = (
+      <>
         <h2>Step {stepNumber}</h2>
         <p>Checking Merge</p>
         <p>
@@ -733,13 +733,11 @@ function ExplanationBox({ step, stepNumber, threshold }) {
             ? `Merged Successfully as ${step.mergedId}`
             : "Cannot Merge. Regions remain separate."}
         </p>
-      </div>
+      </>
     );
-  }
-
-  if (step.type === "complete") {
-    return (
-      <div id="explanation-box">
+  } else if (step.type === "complete") {
+    content = (
+      <>
         <h2>Region Splitting and Merging Completed</h2>
         <p>All non-homogeneous regions were recursively divided.</p>
         <p>
@@ -747,44 +745,59 @@ function ExplanationBox({ step, stepNumber, threshold }) {
           merged.
         </p>
         <p>The final segmented image is displayed.</p>
-      </div>
+      </>
+    );
+  } else {
+    const relation = step.sigma > threshold ? ">" : "<=";
+    content = (
+      <>
+        <h2>Step {stepNumber}</h2>
+        <p>Checking region {step.nodeId}</p>
+        <p>Standard deviation = {step.sigma.toFixed(2)}</p>
+        <p>Threshold = {threshold.toFixed(2)}</p>
+        {step.type === "split" && (
+          <>
+            <p>
+              Since: sigma {relation} threshold, region {step.nodeId} is not
+              homogeneous.
+            </p>
+            <p>Region {step.nodeId} flashes before its child regions appear.</p>
+          </>
+        )}
+        {step.type === "children" && (
+          <p>
+            Region {step.nodeId} splits into: {step.childIds.join(", ")}
+          </p>
+        )}
+        {step.type === "homogeneous" && (
+          <p>
+            Since: sigma {relation} threshold, region {step.nodeId} is
+            homogeneous. No further splitting required.
+          </p>
+        )}
+        {step.type === "merged" && (
+          <p>
+            Children {step.childIds.join(", ")} are complete, so region{" "}
+            {step.nodeId} is merged into the final segmentation tree.
+          </p>
+        )}
+      </>
     );
   }
 
-  const relation = step.sigma > threshold ? ">" : "<=";
-
   return (
     <div id="explanation-box">
-      <h2>Step {stepNumber}</h2>
-      <p>Checking region {step.nodeId}</p>
-      <p>Standard deviation = {step.sigma.toFixed(2)}</p>
-      <p>Threshold = {threshold.toFixed(2)}</p>
-      {step.type === "split" && (
-        <>
-          <p>
-            Since: sigma {relation} threshold, region {step.nodeId} is not
-            homogeneous.
-          </p>
-          <p>Region {step.nodeId} flashes before its child regions appear.</p>
-        </>
-      )}
-      {step.type === "children" && (
-        <p>
-          Region {step.nodeId} splits into: {step.childIds.join(", ")}
-        </p>
-      )}
-      {step.type === "homogeneous" && (
-        <p>
-          Since: sigma {relation} threshold, region {step.nodeId} is
-          homogeneous. No further splitting required.
-        </p>
-      )}
-      {step.type === "merged" && (
-        <p>
-          Children {step.childIds.join(", ")} are complete, so region{" "}
-          {step.nodeId} is merged into the final segmentation tree.
-        </p>
-      )}
+      <button
+        type="button"
+        className="explanation-toggle-region"
+        onClick={onToggle}
+        aria-expanded={!isCollapsed}
+      >
+        {isCollapsed ? "Show Explanation" : "Hide Explanation"}
+      </button>
+      <div className={`explanation-content-region${isCollapsed ? " is-collapsed" : ""}`}>
+        <div className="explanation-content-inner-region">{content}</div>
+      </div>
     </div>
   );
 }
@@ -955,6 +968,7 @@ export default function SplitAndMerge({ handleClose3Modal }) {
   const [currentStep, setCurrentStep] = useState(-1);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(1200);
+  const [isExplanationCollapsed, setIsExplanationCollapsed] = useState(false);
 
   const { steps, tree, colorMap } = useMemo(
     () => buildSplitSteps(original, threshold),
@@ -1176,6 +1190,8 @@ export default function SplitAndMerge({ handleClose3Modal }) {
                 step={currentStepData}
                 stepNumber={currentStep + 1}
                 threshold={threshold}
+                isCollapsed={isExplanationCollapsed}
+                onToggle={() => setIsExplanationCollapsed((isCollapsed) => !isCollapsed)}
               />
             </div>
 
