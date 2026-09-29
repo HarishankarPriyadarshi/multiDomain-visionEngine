@@ -94,13 +94,13 @@ function buildMatrix(seed = 0) {
       const pattern =
         random() > 0.5
           ? [
-              [low, high],
-              [high, low],
-            ]
+            [low, high],
+            [high, low],
+          ]
           : [
-              [high, low],
-              [low, high],
-            ];
+            [high, low],
+            [low, high],
+          ];
 
       for (let row = 0; row < 2; row += 1) {
         for (let col = 0; col < 2; col += 1) {
@@ -541,8 +541,8 @@ function getCellRegionStyle(
     (currentStepData.allowed
       ? currentStepData.mergedId === regionId
       : [currentStepData.leftLabel, currentStepData.rightLabel].includes(
-          regionId,
-        ));
+        regionId,
+      ));
   const decoration = {
     current: { color: "#facc15", width: 3 },
     homogeneous: { color: "#22c55e", width: 3 },
@@ -606,13 +606,13 @@ function MatrixView({
               animationDelay: `${rowIndex * 0.08}s`,
               ...(!animated
                 ? getCellRegionStyle(
-                    rowIndex,
-                    cellIndex,
-                    cellRegionMap,
-                    statuses,
-                    currentStepData,
-                    colorMap,
-                  )
+                  rowIndex,
+                  cellIndex,
+                  cellRegionMap,
+                  statuses,
+                  currentStepData,
+                  colorMap,
+                )
                 : {}),
             }}
           >
@@ -883,9 +883,8 @@ function TreeSVG({ lines, width, height }) {
       {lines.map((line) => (
         <path
           key={`${line.fromX}-${line.fromY}-${line.toX}-${line.toY}`}
-          d={`M ${line.fromX} ${line.fromY} V ${(line.fromY + line.toY) / 2} H ${
-            line.toX
-          } V ${line.toY}`}
+          d={`M ${line.fromX} ${line.fromY} V ${(line.fromY + line.toY) / 2} H ${line.toX
+            } V ${line.toY}`}
         />
       ))}
     </svg>
@@ -925,13 +924,10 @@ function QuadtreeView({
         const isCurrentSplit =
           currentStepData?.nodeId === node.id &&
           currentStepData?.type === "split";
-        const className = `tree-node-region tree-${
-          isCurrentSplit ? "split" : status
-        } ${status === "current" ? "tree-current" : ""} ${
-          mergeTreeState.fadedNodeIds.has(node.id) ? "tree-merge-faded" : ""
-        } ${
-          mergeTreeState.parentNodeIds.has(node.id) ? "tree-merge-parent" : ""
-        }`;
+        const className = `tree-node-region tree-${isCurrentSplit ? "split" : status
+          } ${status === "current" ? "tree-current" : ""} ${mergeTreeState.fadedNodeIds.has(node.id) ? "tree-merge-faded" : ""
+          } ${mergeTreeState.parentNodeIds.has(node.id) ? "tree-merge-parent" : ""
+          }`;
         return (
           <div
             key={node.id}
@@ -1130,49 +1126,57 @@ export default function SplitAndMerge({ handleClose3Modal }) {
           </aside>
 
           <main id="split-merge-right-panel">
-            <div id="image-box-region">
-              <div id="left-image-box-region">
-                <div id="head-image-temp">
-                  <h1>Input Image Matrix</h1>
+            <div id="image-and-explanation-box-region">
+              <div id="image-box-region">
+                <div id="left-image-box-region">
+
+                  <div id="head-image-temp">
+                    <h1>Input Image Matrix</h1>
+                  </div>
+                  <div id="original-image-temp">
+                    <MatrixView matrix={original} animated />
+                  </div>
                 </div>
-                <div id="original-image-temp">
-                  <MatrixView matrix={original} animated />
+
+                <div id="region_arrow">&#129066;</div>
+
+                <div id="right-image-box-region">
+                  <div id="head-image-temp">
+                    <h1>Region Splitting Process</h1>
+                  </div>
+                  <div id="animated-image-temp-region">
+                    <MatrixView
+                      matrix={original}
+                      cellRegionMap={cellRegionMap}
+                      statuses={statuses}
+                      currentStepData={currentStepData}
+                      colorMap={effectiveColorMap}
+                    />
+                  </div>
+                </div>
+
+                <div id="nomenclature-arrow-region">&#129066;</div>
+
+                <div id="nomenclature-image-box-region">
+                  <div id="head-image-temp">
+                    <h1>Region Labels</h1>
+                  </div>
+                  <div id="nomenclature-image-temp-region">
+                    <NomenclatureMatrixView
+                      cellRegionMap={cellRegionMap}
+                      activeRegions={displayRegions}
+                      statuses={statuses}
+                      currentStepData={currentStepData}
+                      colorMap={effectiveColorMap}
+                    />
+                  </div>
                 </div>
               </div>
-
-              <div id="region_arrow">&#129066;</div>
-
-              <div id="right-image-box-region">
-                <div id="head-image-temp">
-                  <h1>Region Splitting Process</h1>
-                </div>
-                <div id="animated-image-temp-region">
-                  <MatrixView
-                    matrix={original}
-                    cellRegionMap={cellRegionMap}
-                    statuses={statuses}
-                    currentStepData={currentStepData}
-                    colorMap={effectiveColorMap}
-                  />
-                </div>
-              </div>
-
-              <div id="nomenclature-arrow-region">&#129066;</div>
-
-              <div id="nomenclature-image-box-region">
-                <div id="head-image-temp">
-                  <h1>Region Labels</h1>
-                </div>
-                <div id="nomenclature-image-temp-region">
-                  <NomenclatureMatrixView
-                    cellRegionMap={cellRegionMap}
-                    activeRegions={displayRegions}
-                    statuses={statuses}
-                    currentStepData={currentStepData}
-                    colorMap={effectiveColorMap}
-                  />
-                </div>
-              </div>
+              <ExplanationBox
+                step={currentStepData}
+                stepNumber={currentStep + 1}
+                threshold={threshold}
+              />
             </div>
 
             <div id="tree-container-region">
@@ -1186,11 +1190,6 @@ export default function SplitAndMerge({ handleClose3Modal }) {
                 colorMap={effectiveColorMap}
               />
             </div>
-            <ExplanationBox
-              step={currentStepData}
-              stepNumber={currentStep + 1}
-              threshold={threshold}
-            />
           </main>
         </div>
         <ToastContainer position="bottom-left" />
