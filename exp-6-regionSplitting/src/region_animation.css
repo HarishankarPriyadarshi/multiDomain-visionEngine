@@ -6,7 +6,7 @@
 
 #main-box-region {
   display: flex; flex-direction: column; width: 100%; min-width: 0;
-  height: min(900px, calc(100dvh - 48px)); min-height: 0; margin: 0;
+  height: calc(100dvh - 64px); min-height: 0; margin: 0;
   background: #f2f9ff; color: #333; overflow: hidden;
 }
 
@@ -19,7 +19,7 @@
 #split-merge-layout {
   display: grid; grid-template-columns: minmax(240px, 0.36fr) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr); flex: 1; align-items: stretch; gap: 20px;
-  width: min(1440px, 100%); min-height: 0;
+  width: 100%; min-height: 0;
   margin: 0 auto; padding: 20px; overflow: hidden;
 }
 
@@ -75,14 +75,14 @@
 /* Right panel */
 #split-merge-right-panel {
   display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0;
-  padding: 0 10px 4px 0; overflow-y: auto;
-  scrollbar-color: #7384ad #e9f1fa; scrollbar-width: thin;
+  height: 100%; padding: 0 10px 4px 0; overflow-y: auto;
+  scrollbar-color: #8fb5da #e9f1fa; scrollbar-width: thin;
 }
 
 #split-merge-right-panel::-webkit-scrollbar { width: 8px; }
 #split-merge-right-panel::-webkit-scrollbar-track { background: #e9f1fa; border-radius: 999px; }
 #split-merge-right-panel::-webkit-scrollbar-thumb {
-  background: #7384ad; border: 2px solid #e9f1fa; border-radius: 999px;
+  background: #8fb5da; border: 2px solid #e9f1fa; border-radius: 999px;
 }
 #split-merge-right-panel::-webkit-scrollbar-thumb:hover { background: #1d2a6d; }
 
@@ -174,7 +174,7 @@
 
 /* Separate quadtree section */
 #tree-container-region {
-  width: 100%; min-width: 0; margin: 0; padding: 18px; background: #fff;
+  flex-shrink: 0; width: 100%; min-width: 0; margin: 0; padding: 18px; background: #fff;
   border: 1px solid #d5e2f0; border-radius: 10px;
   box-shadow: 0 4px 14px rgba(29, 42, 109, 0.08); text-align: center;
   overflow-x: auto; overflow-y: hidden;
