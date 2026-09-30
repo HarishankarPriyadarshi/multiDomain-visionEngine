@@ -19,7 +19,7 @@ import { useState, useRef, useEffect } from "react";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
-import sample1 from "../../assets/images/sample1.jpg";
+import sample1 from "../../assets/images/s1.jpg";
 import sample2 from "../../assets/images/sample2.jpg";
 import sample3 from "../../assets/images/sample3.jpg";
 import sample4 from "../../assets/images/sample4.jpg";
