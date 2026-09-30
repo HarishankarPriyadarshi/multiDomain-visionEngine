@@ -6,7 +6,7 @@
 
 #main-box-region {
   display: flex; flex-direction: column; width: 100%; min-width: 0;
-  height: calc(100dvh - 64px); min-height: 0; margin: 0;
+  height: calc(100dvh - 64px); min-height: 0; margin: 0 auto;
   background: #f2f9ff; color: #333; overflow: hidden;
 }
 
@@ -220,7 +220,7 @@
 
 /* Responsive layout */
 @media (max-width: 980px) {
-  #main-box-region { height: auto; min-height: 100%; overflow: visible; }
+  #main-box-region { width: 100%; height: auto; min-height: 100%; margin: 0; overflow: visible; }
   #split-merge-layout {
     grid-template-columns: minmax(0, 1fr); flex: none; min-height: auto;
     padding: 16px; overflow: visible;
