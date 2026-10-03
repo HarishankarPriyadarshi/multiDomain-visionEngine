@@ -1,12 +1,11 @@
 export function ControlPanel({ sim }) {
   const hasSeed = Boolean(sim.seed);
-  const running =
-    sim.process.phase !== "SELECT_SEED" && sim.process.phase !== "COMPLETE";
+
   return (
     <div className="derivative-card">
       <div className="card-header-derivative">
         <h4>
-          <span style={{ marginRight: "8px" }}>⚙</span>Simulation Controls
+         Simulation Controls
         </h4>
       </div>
       <div className="card-body-derivative">
@@ -23,32 +22,26 @@ export function ControlPanel({ sim }) {
             <span className="panel-icon">⚙</span>
             <div>
               <h2>Simulation Controls</h2>
-              <p>Configure the experiment</p>
+
             </div>
           </div>
           <section className="control-section">
             <label className="section-label">GRID SIZE</label>
-            <div className="segmented">
-              {[8, 16].map((n) => (
-                <button
-                  key={n}
-                  className={sim.size === n ? "active" : ""}
-                  onClick={() => sim.changeSize(n)}
-                >
-                  {n} × {n}
-                </button>
-              ))}
-            </div>
-          </section>
-          <section className="control-section">
+            <select
+              className="grid-size-select"
+              value={sim.size}
+              onChange={(e) => sim.changeSize(Number(e.target.value))}
+            >
+              <option value={8}>8 × 8</option>
+              <option value={16}>16 × 16</option>
+            </select>
             <label className="section-label">GENERATE IMAGE</label>
             <button className="wide-button secondary" onClick={sim.generate}>
               ↻ Generate New Image
             </button>
-            <p className="microcopy">
-              Organic intensity regions are generated for meaningful growth.
-            </p>
+
           </section>
+
           <section className="control-section">
             <label className="section-label">SEED SELECTION</label>
             <p className="instruction">
@@ -71,8 +64,6 @@ export function ControlPanel({ sim }) {
                 <span className="muted">No seed selected</span>
               )}
             </div>
-          </section>
-          <section className="control-section">
             <label className="section-label">CONNECTIVITY</label>
             {[4, 8].map((n) => (
               <label key={n} className="radio-row">
@@ -87,16 +78,20 @@ export function ControlPanel({ sim }) {
                 </small>
               </label>
             ))}
-            {hasSeed && (
-              <p className="reset-note">
-                Changing connectivity restarts the simulation.
-              </p>
-            )}
-          </section>
-          <section className="control-section">
             <div className="range-heading">
               <label className="section-label">THRESHOLD</label>
-              <output>Threshold = {sim.threshold}</output>
+              <input
+                className="number-input"
+                type="number"
+                min="0"
+                max="100"
+                value={sim.threshold}
+                onChange={(e) =>
+                  sim.setThreshold(
+                    Math.max(0, Math.min(100, Number(e.target.value))),
+                  )
+                }
+              />
             </div>
             <input
               className="threshold-slider"
@@ -110,19 +105,8 @@ export function ControlPanel({ sim }) {
               <span>0</span>
               <span>100</span>
             </div>
-            <input
-              className="number-input"
-              type="number"
-              min="0"
-              max="100"
-              value={sim.threshold}
-              onChange={(e) =>
-                sim.setThreshold(
-                  Math.max(0, Math.min(100, Number(e.target.value))),
-                )
-              }
-            />
           </section>
+
           <section className="control-section simulation-buttons">
             <label className="section-label">SIMULATION CONTROLS</label>
             <div className="button-grid">
@@ -131,47 +115,41 @@ export function ControlPanel({ sim }) {
                 onClick={sim.step}
                 disabled={!hasSeed || sim.process.phase === "COMPLETE"}
               >
-                Step <kbd>→</kbd>
+                Prev <kbd>←</kbd>
               </button>
               <button
-                onClick={() => sim.setIsPlaying(true)}
+                onClick={() => sim.setIsPlaying(!sim.isPlaying)}
                 disabled={!hasSeed || sim.process.phase === "COMPLETE"}
               >
-                ▶ Play
+                {sim.isPlaying ? "     Ⅱ Pause" : "                ▶ Play"}
               </button>
-              <button
-                onClick={() => sim.setIsPlaying(false)}
-                disabled={!sim.isPlaying}
+                            <button
+                className="primary"
+                onClick={sim.step}
+                disabled={!hasSeed || sim.process.phase === "COMPLETE"}
               >
-                Ⅱ Pause
+                Next <kbd>→</kbd>
               </button>
+              
               <button onClick={sim.reset}>↺ Reset</button>
             </div>
-            {!hasSeed && (
-              <p className="reset-note">Please select a seed pixel to begin.</p>
-            )}
+
             <div className="speed-row">
-              <span>Speed</span>
-              {["slow", "medium", "fast"].map((s) => (
-                <button
-                  key={s}
-                  className={sim.speed === s ? "selected-speed" : ""}
-                  onClick={() => sim.setSpeed(s)}
-                >
-                  {s}
-                </button>
-              ))}
+              <label className="section-label">SPEED</label>
+              <input
+                className="speed-slider"
+                type="range"
+                min="0.1"
+                max="10"
+                value={sim.speed}
+                onChange={(e) => sim.setSpeed(Number(e.target.value))}
+              />
+            <div className="range-endpoints">
+              <span>slow</span>
+              <span>fast</span>
+            </div>
             </div>
           </section>
-          <div
-            className={`status-chip ${sim.process.phase === "COMPLETE" ? "done" : running ? "running" : ""}`}
-          >
-            {sim.process.phase === "COMPLETE"
-              ? "● Complete"
-              : sim.isPlaying
-                ? "● Playing"
-                : "● Ready"}
-          </div>
         </aside>
       </div>
     </div>

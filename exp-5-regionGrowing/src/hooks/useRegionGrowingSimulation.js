@@ -17,7 +17,7 @@ const initialProcess = () => ({
   stepCount: 0,
 });
 
-const speedDelays = { slow: 1200, medium: 650, fast: 10 };
+
 
 export function useRegionGrowingSimulation() {
   const [size, setSize] = useState(8);
@@ -27,7 +27,7 @@ export function useRegionGrowingSimulation() {
   const [seed, setSeed] = useState(null);
   const [process, setProcess] = useState(initialProcess);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState("medium");
+  const [speed, setSpeed] = useState(200);
 
   const reset = useCallback(() => {
     setIsPlaying(false);
@@ -171,7 +171,7 @@ export function useRegionGrowingSimulation() {
 
   useEffect(() => {
     if (!isPlaying || !seed || process.phase === "COMPLETE") return undefined;
-    const timer = window.setTimeout(step, speedDelays[speed]);
+    const timer = window.setTimeout(step, speed);
     return () => window.clearTimeout(timer);
   }, [isPlaying, process, seed, speed, step]);
 
