@@ -17,7 +17,7 @@ const initialProcess = () => ({
   stepCount: 0,
 });
 
-const speedDelays = { slow: 1200, medium: 650, fast: 260 };
+const speedDelays = { slow: 1200, medium: 650, fast: 10 };
 
 export function useRegionGrowingSimulation() {
   const [size, setSize] = useState(8);
@@ -36,6 +36,8 @@ export function useRegionGrowingSimulation() {
   }, []);
   const generate = useCallback(() => {
     setIsPlaying(false);
+    console.log(generateStructuredImage(size));
+    
     setImage(generateStructuredImage(size));
     setSeed(null);
     setProcess(initialProcess());
