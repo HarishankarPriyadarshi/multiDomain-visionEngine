@@ -9,8 +9,9 @@ export function ControlPanel({ sim }) {
         </div>
         <div className="subbox-body">
           <section className="control-section">
-            <label className="section-label">Select Grid Size</label>
+            <label className="section-label" htmlFor="grid-size">Grid Size</label>
             <select
+              id="grid-size"
               className="grid-size-select"
               value={sim.size}
               onChange={(e) => sim.changeSize(Number(e.target.value))}
@@ -18,8 +19,8 @@ export function ControlPanel({ sim }) {
               <option value={8}>8 × 8</option>
               <option value={16}>16 × 16</option>
             </select>
-            <label className="section-label">Generate Image</label>
-            <button className="wide-button secondary" onClick={sim.generate}>
+
+            <button className="wide-button button-primary" onClick={sim.generate}>
               ↻ Generate New Image
             </button>
           </section>
@@ -32,27 +33,24 @@ export function ControlPanel({ sim }) {
         </div>
         <div className="subbox-body">
           <section className="control-section">
-            <label className="section-label">Select Seed</label>
-            <p className="instruction">
-              Click a pixel in the grayscale image to select the seed.
-            </p>
-            <div className="seed-info">
+            <p className="section-label">Select Seed</p>
+            <div className={`seed-status ${hasSeed ? "seed-status--success" : "seed-status--warning"}`}>
               {hasSeed ? (
-                <div className="seed-info-content">
-                <span>
-                    <b>✔ Seed Selected ⇒</b> {"  "}
-                  
-                   (<b>Row</b> {sim.seed.row + 1}<b>, Column</b> {sim.seed.col + 1}) {" "}
-
-                    <b>Intensity</b> {sim.seed.intensity}
-                  </span>
-                </div>
+                <>
+                  <span className="seed-status__icon">✓</span>
+                  <span><strong>Seed Selected</strong><small>Row {sim.seed.row + 1} · Column {sim.seed.col + 1} · Intensity {sim.seed.intensity}</small></span>
+                </>
               ) : (
-                <span className="muted">✖ No seed selected</span>
+                <>
+                  <span className="seed-status__icon">✖</span>
+                  <span><strong>No seed selected</strong><small>Click a pixel in the grayscale image to select the seed.</small></span>
+                </>
               )}
             </div>
-            <label className="section-label">Select Connectivity</label>
+
+            <label className="section-label" htmlFor="connectivity">Connectivity</label>
             <select
+              id="connectivity"
               className="connectivity-select"
               value={sim.connectivity}
               onChange={(e) => sim.setConnectivity(Number(e.target.value))}
@@ -61,22 +59,12 @@ export function ControlPanel({ sim }) {
               <option value={8}>8-connectivity</option>
             </select>
 
-            <div className="range-heading">
-              <label className="section-label">Select Threshold</label>
-              <input
-                className="number-input"
-                type="number"
-                min="0"
-                max="100"
-                value={sim.threshold}
-                onChange={(e) =>
-                  sim.setThreshold(
-                    Math.max(0, Math.min(100, Number(e.target.value))),
-                  )
-                }
-              />
+            <div className="range-heading control-heading">
+              <label className="section-label" htmlFor="threshold-slider">Threshold</label>
+              <span className="range-value">{sim.threshold}</span>
             </div>
             <input
+              id="threshold-slider"
               className="threshold-slider"
               type="range"
               min="0"
@@ -99,51 +87,52 @@ export function ControlPanel({ sim }) {
         <div className="subbox-body">
           <section className="control-section simulation-buttons">
             <div className="speed-row">
-              <label className="section-label">Set  Speed</label>
+              <div className="speed-heading-row control-heading">
+                <label className="section-label" htmlFor="speed-slider">Set Speed</label>
+                <span className="range-value">{Number(sim.speed).toString()}×</span>
+              </div>
               <input
+                id="speed-slider"
                 className="speed-slider"
                 type="range"
-                min="0.1"
+                min="0.5"
                 max="10"
+                step="0.5"
                 value={sim.speed}
                 onChange={(e) => sim.setSpeed(Number(e.target.value))}
               />
               <div className="range-endpoints">
-                <span>slow</span>
-                <span>fast</span>
+                <span>Slow</span>
+                <span>Fast</span>
               </div>
             </div>
+
             <div className="button-grid">
               <button
-                className="primary"
-                onClick={sim.step}
-                disabled={!hasSeed || sim.process.phase === "COMPLETE"}
+                className="button-secondary"
+                onClick={sim.previousStep}
+                disabled={!sim.history.length}
               >
-                  <span>⬅</span>
-                  <span>Previous</span>
+                ← Previous
               </button>
               <button
+                className="button-primary"
                 onClick={() => sim.setIsPlaying(!sim.isPlaying)}
                 disabled={!hasSeed || sim.process.phase === "COMPLETE"}
               >
-                {sim.isPlaying ? "     Ⅱ Pause" : "                ▶ Play"}
+                {sim.isPlaying ? "❚❚ Pause" : "▶ Play"}
               </button>
               <button
-                className="primary"
+                className="button-primary"
                 onClick={sim.step}
                 disabled={!hasSeed || sim.process.phase === "COMPLETE"}
               >
-                  
-                  <span>Next</span>
-                  <span>➡</span>
+                Next →
               </button>
-              
+              <button className="button-secondary" onClick={sim.reset}>
+                ↻ Reset
+              </button>
             </div>
-            <div className="button-grid">
-            <button onClick={sim.reset}>↺ Reset</button>
-            </div>
-
-            
           </section>
         </div>
       </div>

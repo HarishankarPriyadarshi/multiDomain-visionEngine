@@ -4,7 +4,6 @@ import { useRegionGrowingSimulation } from "../hooks/useRegionGrowingSimulation"
 import { ControlPanel } from "./ControlPanel";
 import { PixelGrid } from "./PixelGrid";
 import { Explanation } from "./Explanation";
-import { QueueVisualizer } from "./QueueVisualizer";
 
 
 import voice from "../assets/voice-play.png";
@@ -19,6 +18,9 @@ const Legend = () => (
         </span>
         <span>
             <i className="legend-candidate" /> Testing
+        </span>
+        <span>
+            <i className="legend-neighbour" /> Neighbour
         </span>
         <span>
             <i className="legend-accepted" /> Accepted
