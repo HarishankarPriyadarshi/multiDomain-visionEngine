@@ -35,7 +35,7 @@ export const RegionGrowing = () => {
 
 
     return (
-        <main className="lab-shell">
+        <main className="lab-shell region-growing-lab">
             <div id="main-box">
                 <div id="bottom-footer">
                     © 2026 Virtual Labs, IIT Roorkee
@@ -87,21 +87,17 @@ export const RegionGrowing = () => {
                                 <div className="input-output-row">
                                     <section className="visual-section derivative-card">
                                         <div className="card-header-light">
-                                            <h4>Generated Grayscale Image</h4>
+                                            <h4>Generated Grayscale Image ({sim.size} × {sim.size})</h4>
                                         </div>
                                         <div className="card-body-derivative">
                                             <div className="section-heading">
                                                 <div>
-                                                    <span className="eyebrow">01 · SELECT</span>
-                                                    <h2>Grayscale Pixel Grid</h2>
                                                     <p>
                                                         Click any pixel to establish the fixed intensity
                                                         reference.
                                                     </p>
                                                 </div>
-                                                <span className="grid-label">
-                                                    {sim.size} × {sim.size} pixels
-                                                </span>
+
                                             </div>
                                             <PixelGrid
                                                 image={sim.image}
@@ -114,18 +110,20 @@ export const RegionGrowing = () => {
                                         </div>
                                     </section>
 
+                                    <div className="visual-flow-arrow" aria-hidden="true">
+                <div id="region_arrow">&#129066;</div>
+                                    </div>
+
                                     <section className="visual-section derivative-card">
                                         <div className="card-header-light">
-                                            <h4>Pixel Intensity Matrix</h4>
+                                            <h4>Pixel Intensity Matrix ({sim.size} × {sim.size})</h4>
                                         </div>
                                         <div className="card-body-derivative">
                                             <div className="section-heading">
                                                 <div>
-                                                    <span className="eyebrow">02 · INSPECT</span>
-                                                    <h2>Intensity Values</h2>
+
                                                     <p>
-                                                        Every value exactly matches its grayscale pixel
-                                                        above.
+                                                        Every value exactly matches its grayscale image.
                                                     </p>
                                                 </div>
                                             </div>
@@ -142,15 +140,15 @@ export const RegionGrowing = () => {
                                 <section className="process-layout">
                                     <div className="visual-section grow-section derivative-card">
                                         <div className="card-header-light">
-                                            <h4>Region Growing Process</h4>
+                                            <h4>Live Region Growing Process</h4>
                                         </div>
                                         <div className="card-body-derivative">
                                             <div className="section-heading">
                                                 <div>
-                                                    <span className="eyebrow">03 · GROW</span>
-                                                    <h2>Live BFS Traversal</h2>
+                                                  
+
                                                     <p>
-                                                        Only connected neighbours can join the region.
+                                                        Only similar connected neighbours can join the region.
                                                     </p>
                                                 </div>
                                             </div>
@@ -161,10 +159,11 @@ export const RegionGrowing = () => {
                                                 mode="process"
                                             />
                                             <Legend />
-                                            <QueueVisualizer queue={sim.process.queue} />
+
                                         </div>
                                     </div>
                                     <Explanation sim={sim} />
+
                                 </section>
 
 
@@ -176,4 +175,3 @@ export const RegionGrowing = () => {
         </main>
     );
 }
-

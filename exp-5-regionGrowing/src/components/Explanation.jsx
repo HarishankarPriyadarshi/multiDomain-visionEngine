@@ -1,5 +1,5 @@
 import { coordinate } from "../utils/regionGrowingUtils";
-
+import { QueueVisualizer } from "./QueueVisualizer";
 const lineForPhase = {
   ADD_SEED: 1,
   DEQUEUE: 4,
@@ -44,24 +44,24 @@ export function Explanation({ sim }) {
           className="card-header-derivative"
           style={{ borderRadius: "12px 12px 0 0" }}
         >
-          <h4>Live Reasoning · Step {process.stepCount}</h4>
+          <h4>Explanation (Step-{process.stepCount})</h4>
         </div>
         <div className="card-body-derivative">
           <div className="card-heading">
-            <div>
-              <span className="eyebrow">LIVE REASONING</span>
-              <h3>Current Algorithm Step</h3>
-            </div>
-            <span className="step-badge">Step {process.stepCount}</span>
           </div>
           <p className="step-message">{process.message}</p>
+            <QueueVisualizer queue={sim.process.queue} />
           {seed && (
             <div className="detail-grid">
               <div>
-                <span>Seed reference</span>
+                <span>Selected seed pixel</span>
                 <b>
                   {coordinate(seed)} · {seed.intensity}
                 </b>
+              </div>
+              <div>
+                <span>Selected threshold</span>
+                <b>{threshold}</b>
               </div>
               <div>
                 <span>Current pixel</span>
@@ -72,16 +72,13 @@ export function Explanation({ sim }) {
               </div>
               {process.candidate && (
                 <div className="testing">
-                  <span>Testing neighbour</span>
+                  <span>Current testing neighbour</span>
                   <b>
                     {coordinate(process.candidate)} · {candidateVal}
                   </b>
                 </div>
               )}
-              <div>
-                <span>Threshold</span>
-                <b>{threshold}</b>
-              </div>
+              
             </div>
           )}
           {decision && (
@@ -118,7 +115,7 @@ export function Explanation({ sim }) {
           <h4>Queue-based BFS Algorithm</h4>
         </div>
         <div className="card-body-derivative">
-          <span className="eyebrow">ALGORITHM</span>
+          
           <h3>Pseudocode</h3>
           <ol>
             {code.map((text, index) => (
