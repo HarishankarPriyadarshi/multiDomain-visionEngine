@@ -160,12 +160,12 @@ select {
     color: var(--text-muted);
     font-size: 22px
 }
-
+/* 
 .process-layout {
     display: grid;
     grid-template-columns: minmax(280px, .9fr) minmax(340px, 1.1fr);
     gap: 18px
-}
+} */
 
 /* Cards and controls */
 .panel-subbox,
@@ -189,6 +189,9 @@ select {
 .subbox-header,
 .card-header-light,
 .card-header-derivative {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     padding: 11px 14px;
     border-bottom: 1px solid var(--border);
     background: #f8fafc
@@ -615,13 +618,13 @@ button:disabled {
 .seed-state-box--selected {
     border-color: #86efac;
     background: var(--success-bg);
-    color: #166534
+    color: #166534 !important;
 }
 
 .seed-state-box--empty {
     border-color: #fdba74;
     background: var(--warning-bg);
-    color: #9a3412
+    color: #9a3412 !important;
 }
 
 .explanation-section {
@@ -897,16 +900,33 @@ button:disabled {
 }
 
 @media(max-width:700px) {
+    .region-growing-lab #main-box {
+        flex-direction: column
+    }
+
     #top-header {
         position: relative;
-        flex-wrap: wrap;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
+        gap: 4px;
+        flex: none;
+        width: 100%;
         padding: 6px 10px
     }
 
     .header-heading {
-        flex-basis: 100%;
+        flex: none;
+        width: 100%;
         font-size: 1.2rem
+    }
+
+    #header_button {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding-right: 0
     }
 
     .region-growing-lab #main-box {
@@ -915,6 +935,7 @@ button:disabled {
     }
 
     .region-growing-lab #mainbox {
+        width: 100%;
         padding: 10px
     }
 
@@ -936,9 +957,19 @@ button:disabled {
 }
 
 @media(max-width:420px) {
+    #top-header {
+        flex-direction: column
+    }
+
+    .header-heading {
+        width: 100%;
+        font-size: 1rem
+    }
+
     #header_button {
         gap: 4px;
-        padding-right: 0
+        padding-right: 0;
+        flex-wrap: wrap
     }
 
     .instruction-btn,

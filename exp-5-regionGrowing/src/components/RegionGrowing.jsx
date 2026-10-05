@@ -113,7 +113,7 @@ export const RegionGrowing = () => {
                                     </section>
 
                                     <div className="visual-flow-arrow" aria-hidden="true">
-                <div id="region_arrow">&#129066;</div>
+                                        <div id="region_arrow">&#129066;</div>
                                     </div>
 
                                     <section className="visual-section derivative-card">
@@ -140,33 +140,34 @@ export const RegionGrowing = () => {
                                 </div>
 
                                 <section className="process-layout">
-                                    <div className="visual-section grow-section derivative-card">
-                                        <div className="card-header-light">
-                                            <h4>Live Region Growing Process</h4>
-                                        </div>
-                                        <div className="card-body-derivative">
-                                            <div className="section-heading">
-                                                <div>
-                                                  
 
-                                                    <p>
-                                                        Only similar connected neighbours can join the region.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <PixelGrid
-                                                image={sim.image}
-                                                seed={sim.seed}
-                                                process={sim.process}
-                                                mode="process"
-                                            />
-                                            <Legend />
-
-                                        </div>
-                                    </div>
                                     <Explanation sim={sim} />
 
                                 </section>
+                                <div className="visual-section grow-section derivative-card">
+                                    <div className="card-header-light">
+                                        <h4>Live Region Growing Process</h4>
+                                    </div>
+                                    <div className="card-body-derivative">
+                                        <div className="section-heading">
+                                            <div>
+
+
+                                                <p>
+                                                    Only similar connected neighbours can join the region.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <PixelGrid
+                                            image={sim.image}
+                                            seed={sim.seed}
+                                            process={sim.process}
+                                            mode="process"
+                                        />
+                                        <Legend />
+
+                                    </div>
+                                </div>
 
 
                             </section>

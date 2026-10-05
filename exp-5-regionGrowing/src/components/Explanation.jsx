@@ -37,17 +37,14 @@ export function Explanation({ sim }) {
     <div className="explain-stack">
       <section className="card explanation-card derivative-card" style={{ padding: "0" }}>
         <div className="card-header-derivative" style={{ borderRadius: "12px 12px 0 0" }}>
-          <h4>Explanation · Step {process.stepCount}</h4>
+          <h4>Explanation  </h4>
+          <h4>Step : {process.stepCount}</h4>
+          {/* <h4 className={`seed-state-box ${seed ? "seed-state-box--selected" : "seed-state-box--empty"}`} >Seed status: {seed ? " ✓Selected" : "⚠ No seed selected"}
+          </h4> */}
         </div>
+
         <div className="card-body-derivative">
-          <div className={`seed-state-box ${seed ? "seed-state-box--selected" : "seed-state-box--empty"}`}>
-            <span className="seed-state-label">Seed status</span>
-            {seed ? (
-              <strong>✓ Seed Selected <small>Row {seed.row + 1} · Column {seed.col + 1} · Intensity {seed.intensity}</small></strong>
-            ) : (
-              <strong>⚠ No seed selected</strong>
-            )}
-          </div>
+
 
           <div className="explanation-section">
             <h5>What is happening?</h5>
@@ -58,22 +55,22 @@ export function Explanation({ sim }) {
           <div className="explanation-section">
             <h5>Current state</h5>
             <div className="detail-grid">
-            <div>
-              <span>Selected seed</span>
-              <b>{seed ? `${coordinate(seed)} · ${seed.intensity}` : "No seed selected"}</b>
-            </div>
-            <div>
-              <span>Threshold</span>
-              <b>{threshold}</b>
-            </div>
-            <div>
-              <span>Current pixel</span>
-              <b>{process.current ? `${coordinate(process.current)} · ${currentVal}` : "None"}</b>
-            </div>
-            <div>
-              <span>Testing neighbour</span>
-              <b>{process.candidate ? `${coordinate(process.candidate)} · ${candidateVal}` : "None"}</b>
-            </div>
+              <div>
+                <span>Selected seed</span>
+                <b>{seed ? `${coordinate(seed)} · ${seed.intensity}` : "No seed selected"}</b>
+              </div>
+              <div>
+                <span>Threshold</span>
+                <b>{threshold}</b>
+              </div>
+              <div>
+                <span>Current pixel</span>
+                <b>{process.current ? `${coordinate(process.current)} · ${currentVal}` : "None"}</b>
+              </div>
+              <div>
+                <span>Testing neighbour</span>
+                <b>{process.candidate ? `${coordinate(process.candidate)} · ${candidateVal}` : "None"}</b>
+              </div>
             </div>
           </div>
 
