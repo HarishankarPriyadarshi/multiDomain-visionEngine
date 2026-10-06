@@ -144,14 +144,24 @@ select {
 
 .visual-panel {
     display: grid;
-    gap: 18px
+    gap: 18px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgb(23 32 51 / 6%)
+}
+
+.region-growing-lab .visual-panel {
+    min-width: 0;
+    padding-bottom: 28px
 }
 
 .input-output-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr);
     align-items: stretch;
-    gap: 14px
+    gap: 14px;
+    
 }
 
 .visual-flow-arrow {
@@ -160,16 +170,11 @@ select {
     color: var(--text-muted);
     font-size: 22px
 }
-/* 
-.process-layout {
-    display: grid;
-    grid-template-columns: minmax(280px, .9fr) minmax(340px, 1.1fr);
-    gap: 18px
-} */
+
 
 /* Cards and controls */
 .panel-subbox,
-.visual-section,
+.visual-sesction,
 .card {
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -187,23 +192,27 @@ select {
 }
 
 .subbox-header,
-.card-header-light,
-.card-header-derivative {
+.card-header-light {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 11px 14px;
-    border-bottom: 1px solid var(--border);
-    background: #f8fafc
+    justify-content: center;
+    flex-direction: column;
+    padding-top: 5px  ;
 }
 
-.subbox-header h4,
-.card-header-light h4,
-.card-header-derivative h4 {
+.subbox-header h4{
     margin: 0;
     color: var(--text);
     font-size: 15px;
-    line-height: 1.3
+    line-height: 1.3;
+    
+}
+.card-header-light h4{
+    margin: 0;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.3;
+    padding-top: 8px;
 }
 
 .subbox-header h4 {
@@ -212,21 +221,24 @@ select {
     font-size: 13px
 }
 
-.subbox-body,
+.subbox-body {
+    padding: 12px
+}
+
 .card-body-derivative {
-    padding: 14px
+    padding: 2px 14px;
 }
 
 .card-body-derivative {
     display: grid;
-    gap: 14px
+    gap: 2px
 }
 
 .visual-section {
     overflow: hidden
 }
 
-.section-heading p {
+.section-heading-p {
     margin: 0;
     color: var(--text-muted);
     font-size: 13px;
@@ -528,6 +540,8 @@ button:disabled {
 
 .legend {
     display: flex;
+    align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
     gap: 8px 14px;
     margin-top: 12px;
@@ -581,12 +595,166 @@ button:disabled {
 .explain-stack {
     display: grid;
     align-content: start;
-    gap: 14px
+    gap: 12px;
+    width: 100%;
+    min-width: 0
 }
 
 .explanation-card {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
     overflow: hidden
 }
+.explanation-header {
+  position: relative;
+  min-height: 40px;
+  padding: 0 90px 0 20px;
+ /*  border-bottom: 1px solid var(--border);
+  background: #eaf2f9; */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.explanation-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.explanation-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  color: #1d2a6d;
+
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.explanation-toggle:hover {
+  background: rgba(29, 42, 109, 0.08);
+  border-radius: 6px;
+}
+
+.explanation-toggle:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+.explanation-toggle:focus-visible,
+.pseudocode-disclosure summary:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: -3px
+}
+
+.explanation-content {
+    display: grid;
+    gap: 16px;
+    padding: 16px
+}
+
+.explanation-content[hidden] {
+    display: none
+}
+
+.state-queue-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+    gap: 20px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff
+}
+
+.state-queue-panel > * {
+    min-width: 0;
+    margin: 0
+}
+
+.current-state-section {
+    display: grid;
+    align-content: start;
+    gap: 8px
+}
+
+.current-state-section h5 {
+    margin: 0;
+    color: var(--text);
+    font-size: 13px
+}
+
+.current-state-rows {
+    display: grid
+}
+
+.current-state-rows > div {
+    display: grid;
+    grid-template-columns: minmax(112px, 0.9fr) minmax(0, 1fr);
+    align-items: baseline;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid #edf0f4
+}
+
+.current-state-rows > div:last-child {
+    border-bottom: 0
+}
+
+.current-state-rows span {
+    color: var(--text-muted);
+    font-size: 13px
+}
+
+.current-state-rows b {
+    color: var(--text);
+    font: 600 13px ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow-wrap: anywhere
+}
+
+.state-queue-panel .queue-card {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none
+}
+
+.state-queue-panel .queue-card .card-heading {
+    margin-bottom: 8px
+}
+
+.state-queue-panel .queue-card .card-heading p {
+    color: var(--text);
+    font-size: 13px
+}
+
+.state-queue-panel .queue-track {
+    min-height: 54px;
+    padding: 5px
+}
+
+.state-queue-panel .queue-label {
+    font-size: 10px
+}
+
+.state-queue-panel .queue-item {
+    padding: 7px;
+    font-size: 12px
+}
+
 
 .seed-state-box {
     display: grid;
@@ -641,25 +809,10 @@ button:disabled {
 
 .step-message {
     margin: 0;
-    padding: 10px;
-    border-left: 3px solid var(--info);
-    background: var(--info-bg);
-    color: #334155;
+
+
     font-size: 13px;
     line-height: 1.45
-}
-
-.detail-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px
-}
-
-.detail-grid div {
-    padding: 9px;
-    border: 1px solid #e2e8f0;
-    border-radius: 7px;
-    background: #f8fafc
 }
 
 .detail-grid span,
@@ -706,6 +859,68 @@ button:disabled {
     line-height: 1.45
 }
 
+
+
+.pseudocode-disclosure {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden
+}
+.pseudocode-header {
+  position: relative;
+  min-height: 48px;
+  padding: 0 90px 0 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pseudocode-title {
+  color: #1d2a6d;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pseudocode-toggle {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+
+  color: #1d2a6d;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pseudocode-toggle:hover {
+  background: rgba(29, 42, 109, 0.08);
+  border-radius: 6px;
+}
+
+.pseudocode-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.pseudocode-content {
+    padding: 0 16px 16px;
+    border-top: 1px solid var(--border)
+}
+
+.pseudocode-content h3 {
+    margin: 12px 0 8px;
+    color: var(--text);
+    font-size: 16px
+}
+
 .pseudocode ol {
     margin: 0;
     padding-left: 22px;
@@ -724,6 +939,18 @@ button:disabled {
     color: var(--primary-dark);
     font-weight: 700
 }
+
+.region-growing-lab .process-layout,
+.region-growing-lab .explain-stack {
+    width: 100%;
+    padding: 0px 10px;
+    min-width: 0;
+
+    display:flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
 
 /* Queue; removal is an absolute animation layer, independent of live items. */
 .queue-card {
@@ -943,8 +1170,21 @@ button:disabled {
         grid-template-columns: 1fr
     }
 
-    .detail-grid {
-        grid-template-columns: 1fr
+    
+
+    .state-queue-panel {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        padding: 12px
+    }
+
+    .current-state-rows > div {
+        grid-template-columns: minmax(112px, 0.7fr) minmax(0, 1fr)
+    }
+
+    .explanation-content {
+        gap: 12px;
+        padding: 12px
     }
 
     .queue-track {

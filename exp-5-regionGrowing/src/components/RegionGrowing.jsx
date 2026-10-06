@@ -87,20 +87,16 @@ export const RegionGrowing = () => {
                         <div className="flex-item-right">
                             <section className="visual-panel">
                                 <div className="input-output-row">
-                                    <section className="visual-section derivative-card">
+                                    <div className=" derivative-card">
                                         <div className="card-header-light">
                                             <h4>Generated Grayscale Image ({sim.size} × {sim.size})</h4>
+                                            {/* <p className="section-heading-p">
+                                                Click any pixel to establish the fixed intensity
+                                                reference.
+                                            </p> */}
                                         </div>
                                         <div className="card-body-derivative">
-                                            <div className="section-heading">
-                                                <div>
-                                                    <p>
-                                                        Click any pixel to establish the fixed intensity
-                                                        reference.
-                                                    </p>
-                                                </div>
 
-                                            </div>
                                             <PixelGrid
                                                 image={sim.image}
                                                 seed={sim.seed}
@@ -110,25 +106,21 @@ export const RegionGrowing = () => {
                                             />
                                             <Legend />
                                         </div>
-                                    </section>
+                                    </div>
 
                                     <div className="visual-flow-arrow" aria-hidden="true">
                                         <div id="region_arrow">&#129066;</div>
                                     </div>
 
-                                    <section className="visual-section derivative-card">
+                                    <div className=" derivative-card">
                                         <div className="card-header-light">
                                             <h4>Pixel Intensity Matrix ({sim.size} × {sim.size})</h4>
+                                            {/* <p className="section-heading-p">
+                                                        Every value exactly matches its grayscale image.
+                                                    </p> */}
                                         </div>
                                         <div className="card-body-derivative">
-                                            <div className="section-heading">
-                                                <div>
 
-                                                    <p>
-                                                        Every value exactly matches its grayscale image.
-                                                    </p>
-                                                </div>
-                                            </div>
                                             <PixelGrid
                                                 image={sim.image}
                                                 seed={sim.seed}
@@ -136,19 +128,18 @@ export const RegionGrowing = () => {
                                                 mode="matrix"
                                             />
                                         </div>
-                                    </section>
+                                    </div>
                                 </div>
 
-                                <section className="process-layout">
-
+                                <div className="process-layout">
                                     <Explanation sim={sim} />
+                                </div>
 
-                                </section>
-                                <div className="visual-section grow-section derivative-card">
+                                {/* <div className="visual-section grow-section derivative-card">
                                     <div className="card-header-light">
                                         <h4>Live Region Growing Process</h4>
                                     </div>
-                                    <div className="card-body-derivative">
+                                    <div className="visual-section card-body-derivative">
                                         <div className="section-heading">
                                             <div>
 
@@ -167,7 +158,7 @@ export const RegionGrowing = () => {
                                         <Legend />
 
                                     </div>
-                                </div>
+                                </div> */}
 
 
                             </section>
