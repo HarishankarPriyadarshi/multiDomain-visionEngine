@@ -5,7 +5,7 @@ export function ControlPanel({ sim }) {
     <div className="left-panel-stack">
       <div className="panel-subbox">
         <div className="subbox-header">
-          <h4>Generate Image</h4>
+          <h4>Generate Grayscale Image</h4>
         </div>
         <div className="subbox-body">
           <section className="control-section">
@@ -21,7 +21,7 @@ export function ControlPanel({ sim }) {
             </select>
 
             <button className="wide-button button-primary" onClick={sim.generate}>
-              ↻ Generate New Image
+              Generate  Image
             </button>
           </section>
         </div>
@@ -115,6 +115,13 @@ export function ControlPanel({ sim }) {
               >
                 ← Previous
               </button>
+                            <button
+                className="button-primary"
+                onClick={sim.step}
+                disabled={!hasSeed || sim.process.phase === "COMPLETE"}
+              >
+                Next →
+              </button>
               <button
                 className="button-primary"
                 onClick={() => sim.setIsPlaying(!sim.isPlaying)}
@@ -122,13 +129,7 @@ export function ControlPanel({ sim }) {
               >
                 {sim.isPlaying ? "❚❚ Pause" : "▶ Play"}
               </button>
-              <button
-                className="button-primary"
-                onClick={sim.step}
-                disabled={!hasSeed || sim.process.phase === "COMPLETE"}
-              >
-                Next →
-              </button>
+
               <button className="button-secondary" onClick={sim.reset}>
                 ↻ Reset
               </button>

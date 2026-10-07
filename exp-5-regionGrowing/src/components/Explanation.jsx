@@ -71,40 +71,49 @@ export function Explanation({ sim }) {
             <p className="step-message">{process.message}</p>
           </section>
           <div className="state-queue-panel">
-            <section className="current-state-section">
-              <h5>Current State</h5>
-              <div className="current-state-rows">
-                <div>
-                  <span>Selected seed</span>
-                  <b>
-                    {seed
-                      ? `${coordinate(seed)} · ${seed.intensity}`
-                      : "No seed selected"}
-                  </b>
-                </div>
-                <div>
-                  <span>Current pixel</span>
-                  <b>
-                    {process.current
-                      ? `${coordinate(process.current)} · ${currentVal}`
-                      : "None"}
-                  </b>
-                </div>
-                <div>
-                  <span>Testing neighbour</span>
-                  <b>
-                    {process.candidate
-                      ? `${coordinate(process.candidate)} · ${candidateVal}`
-                      : "None"}
-                  </b>
-                </div>
-                <div>
-                  <span>Threshold</span>
-                  <b>{threshold}</b>
-                </div>
-              </div>
-            </section>
 
+<section className="current-state-section">
+ 
+
+  <div className="current-state-rows">
+    {/* Header */}
+    <div className="current-state-header">
+      <h5>Current State</h5>
+      <h5>Position</h5>
+      <h5>Pixel Value</h5>
+    </div>
+
+    {/* Selected Seed */}
+    <div>
+      <span>Selected seed</span>
+      <b>{seed ? coordinate(seed) : "None"}</b>
+      <b>{seed ? seed.intensity : "—"}</b>
+    </div>
+
+    {/* Current Pixel */}
+    <div>
+      <span>Current pixel</span>
+      <b>{process.current ? coordinate(process.current) : "None"}</b>
+      <b>{process.current ? currentVal : "—"}</b>
+    </div>
+
+    {/* Testing Neighbour */}
+    <div>
+      <span>Testing neighbour</span>
+      <b>
+        {process.candidate ? coordinate(process.candidate) : "None"}
+      </b>
+      <b>{process.candidate ? candidateVal : "—"}</b>
+    </div>
+
+    {/* Threshold */}
+    <div className="threshold-row">
+      <span>Threshold</span>
+      <b></b>
+      <b>{threshold}</b>
+    </div>
+  </div>
+</section>
             <QueueVisualizer
               queue={sim.process.queue}
               lastDequeued={process.lastDequeued}
@@ -152,7 +161,7 @@ export function Explanation({ sim }) {
       onClick={() => setIsPseudocodeOpen((open) => !open)}
       aria-expanded={isPseudocodeOpen}
     >
-      {isPseudocodeOpen ? "▼ Hide" : "▶ Show Queue-based BFS Algorithm"}
+      {isPseudocodeOpen ? "▼ Hide" : "▶   Show Queue-based BFS Algorithm"}
     </button>
   </div>
 
