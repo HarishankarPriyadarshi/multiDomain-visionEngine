@@ -1,5 +1,6 @@
 import ".././App.css";
 
+import { useState } from "react";
 import { useRegionGrowingSimulation } from "../hooks/useRegionGrowingSimulation";
 import { ControlPanel } from "./ControlPanel";
 import { PixelGrid } from "./PixelGrid";
@@ -33,7 +34,7 @@ const Legend = () => (
 
 export const RegionGrowing = () => {
     const sim = useRegionGrowingSimulation();
-
+    const [showInstructions, setShowInstructions] = useState(false);
 
 
     return (
@@ -59,7 +60,9 @@ export const RegionGrowing = () => {
                         <button
                             id="instruction-btn"
                             className="instruction-btn"
-                            onClick={() => { }}
+                            aria-haspopup="dialog"
+                            aria-expanded={showInstructions}
+                            onClick={() => setShowInstructions(true)}
                         >
                             Instructions
                         </button>
@@ -73,6 +76,53 @@ export const RegionGrowing = () => {
                         </button>
                     </div>
                 </div>
+
+                {showInstructions && (
+                    <div
+                        className="instructions-overlay"
+                        onClick={(event) => {
+                            if (event.target === event.currentTarget) {
+                                setShowInstructions(false);
+                            }
+                        }}
+                    >
+                        <section
+                            className="instructions-dialog"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="instructions-title"
+                        >
+                            <div className="instructions-dialog-header">
+                                <h2 id="instructions-title">Instructions – Region Growing Segmentation</h2>
+                            </div>
+<ol className="instructions-list">
+    <li><strong>Generate Image:</strong> Select the grid size and click Generate New Image.</li>
+    <li><strong>Select Seed:</strong> Click any pixel to select it as the seed pixel.</li>
+    <li><strong>Set Connectivity:</strong> Select 4-connectivity or 8-connectivity.</li>
+    <li><strong>Set Threshold:</strong> Adjust the threshold to control pixel similarity with the seed.</li>
+    <li><strong>Run Simulation:</strong> Click Next for step-by-step execution or Play for automatic execution.</li>
+    <li><strong>Control Speed:</strong> Use the Speed slider and click Pause when needed.</li>
+    <li><strong>Previous Step:</strong> Click Previous to view the previous simulation step.</li>
+    <li><strong>Observe the Process:</strong> Monitor the pixel grid, queue, decisions, and explanation as the region grows.</li>
+    <li><strong>Reset:</strong> Click Reset to restart the simulation.</li>
+</ol>
+
+
+                            <footer className="instructions-dialog-footer">
+                                <p className="instructions-note">
+                                    <strong>Note:</strong> A seed pixel must be selected before starting the simulation.
+                                </p>
+                                <button
+                                    className="instructions-close"
+                                    type="button"
+                                    onClick={() => setShowInstructions(false)}
+                                >
+                                    Close
+                                </button>
+                            </footer>
+                        </section>
+                    </div>
+                )}
 
                 <div id="mainbox">
 

@@ -1,6 +1,8 @@
 :root {
     --page-bg: #f5f7fb;
     --surface: #fff;
+    --header-color: #1D2A6D;
+    --header-text-color: #fff;
     --text: #172033;
     --text-muted: #383d46;
     --border: #dce2ea;
@@ -109,6 +111,104 @@ select {
     color: #fff;
     text-align: center;
     font: 12px "Helvetica Neue", Helvetica, Arial, sans-serif
+}
+
+.instructions-overlay {
+    position: fixed;
+    z-index: 2000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    overflow-y: auto;
+    background: rgb(15 23 42 / 42%)
+}
+
+.instructions-dialog {
+    display: flex;
+    flex-direction: column;
+    width: min(100%, 520px);
+    max-height: min(100%, 650px);
+    overflow-y: auto;
+    border: 1px solid #1d2a6d;
+    border-radius: 5px;
+    background: #fff;
+    color: var(--text);
+    box-shadow: 0 3px 12px rgb(15 23 42 / 20%)
+}
+
+.instructions-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    background: #25296f;
+    text-align: center
+}
+
+.instructions-dialog-header h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35
+}
+
+.instructions-close {
+    min-width: 54px;
+    min-height: 30px;
+    padding: 5px 12px;
+    border: 0;
+    border-radius: 18px;
+    background: #25296f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer
+}
+
+.instructions-list {
+    display: block;
+    counter-reset: instruction-step;
+    margin: 0;
+    padding: 10px 36px 4px;
+    list-style: none;
+    font-size: 13px;
+    line-height: 1.6
+}
+
+.instructions-list li {
+    counter-increment: instruction-step;
+    position: relative;
+    margin: 0 0 3px;
+    padding-left: 0
+}
+
+.instructions-list li::before {
+    content: "Step " counter(instruction-step) ": ";
+    font-weight: 700
+}
+
+.instructions-dialog-footer {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding: 8px 8px 8px 36px
+}
+
+.instructions-note {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.45
+}
+
+.instructions-dialog-footer .instructions-close {
+    flex: 0 0 auto
 }
 
 /* Simulation layout */
