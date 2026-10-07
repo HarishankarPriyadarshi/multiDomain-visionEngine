@@ -96,7 +96,7 @@ export function ControlPanel({ sim }) {
                 className="speed-slider"
                 type="range"
                 min="0.5"
-                max="10"
+                max="100"
                 step="0.5"
                 value={sim.speed}
                 onChange={(e) => sim.setSpeed(Number(e.target.value))}

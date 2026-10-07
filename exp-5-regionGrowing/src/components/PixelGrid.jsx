@@ -12,6 +12,23 @@ export function PixelGrid({
   const classesFor = (row, col) => {
     const key = keyOf(row, col);
     const classes = [];
+    const isComplete = process.phase === "COMPLETE";
+
+    if (isComplete) {
+      if (process.region.has(key)) {
+        classes.push("accepted", "region-complete");
+        if (row > 0 && process.region.has(keyOf(row - 1, col)))
+          classes.push("accepted-neighbor-top");
+        if (row < size - 1 && process.region.has(keyOf(row + 1, col)))
+          classes.push("accepted-neighbor-bottom");
+        if (col > 0 && process.region.has(keyOf(row, col - 1)))
+          classes.push("accepted-neighbor-left");
+        if (col < size - 1 && process.region.has(keyOf(row, col + 1)))
+          classes.push("accepted-neighbor-right");
+      }
+      return classes.join(" ");
+    }
+
     if (seed && key === keyOf(seed.row, seed.col)) classes.push("seed");
     if (
       process.current &&
@@ -60,7 +77,9 @@ export function PixelGrid({
               >
                 {mode === "matrix"
                   ? value
-                  : isSeed && <span className="seed-dot">S</span>}
+                  : isSeed && process.phase !== "COMPLETE" && (
+                      <span className="seed-dot">S</span>
+                    )}
               </button>
             );
           }),

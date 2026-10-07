@@ -221,7 +221,7 @@ export function useRegionGrowingSimulation() {
 
   useEffect(() => {
     if (!isPlaying || !seed) return undefined;
-    const delay = Math.max(100, 1000 / Math.max(speed, 0.1));
+    const delay = Math.max(10, 1000 / Math.max(speed, 0.1));
     const timer = window.setTimeout(() => {
       step(true);
     }, delay);
