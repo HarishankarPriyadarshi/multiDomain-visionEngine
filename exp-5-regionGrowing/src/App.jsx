@@ -1,14 +1,10 @@
-
-import { RegionGrowing } from "./components/RegionGrowing";
-
-
-
+import  GrowingPage from "./homePage/GrowingPage.jsx";
+import { OpenCvProvider } from "opencv-react";
 function App() {
-
   return (
-    <>
-      <RegionGrowing />
-    </>
+    <OpenCvProvider>
+      <GrowingPage />
+    </OpenCvProvider>
   );
 }
 

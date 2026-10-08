@@ -1,4 +1,4 @@
-import ".././App.css";
+import ".././regionGrowing.css";
 
 import { useState } from "react";
 import { useRegionGrowingSimulation } from "../hooks/useRegionGrowingSimulation";
