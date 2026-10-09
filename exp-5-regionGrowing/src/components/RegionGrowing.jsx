@@ -32,7 +32,7 @@ const Legend = () => (
     </div>
 );
 
-export const RegionGrowing = () => {
+export const RegionGrowing = ({ onClose }) => {
     const sim = useRegionGrowingSimulation();
     const [showInstructions, setShowInstructions] = useState(false);
 
@@ -40,12 +40,10 @@ export const RegionGrowing = () => {
     return (
         <main className="lab-shell region-growing-lab">
             <div id="main-box">
-                <div id="bottom-footer">
-                    © 2026 Virtual Labs, IIT Roorkee
-                </div>
-
                 <div id="top-header">
-                    <h2 className="header-heading">Region Growing Segmentation</h2>
+                    <h2 id="explanation-dialog-title" className="header-heading">
+                        Region Growing Segmentation
+                    </h2>
 
                     <div id="header_button">
                         <button
@@ -74,6 +72,16 @@ export const RegionGrowing = () => {
                         >
                             Guided Tutor
                         </button>
+
+                        {onClose && (
+                            <button
+                                className="rg-concept-close-control"
+                                type="button"
+                                onClick={onClose}
+                            >
+                                Close
+                            </button>
+                        )}
                     </div>
                 </div>
 

@@ -40,7 +40,7 @@ select {
 }
 
 /* Site header/footer are intentionally separate from simulation styling. */
-#top-header {
+.region-growing-lab #top-header {
     position: fixed;
     z-index: 1000;
     top: 0;
@@ -55,7 +55,7 @@ select {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
 }
 
-.header-heading {
+.region-growing-lab .header-heading {
     flex: 1;
     margin: 0;
     padding: 8px 0;
@@ -64,7 +64,7 @@ select {
     font: bold 1.5rem "Helvetica Neue", Helvetica, Arial, sans-serif
 }
 
-#header_button {
+.region-growing-lab #header_button {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -100,7 +100,7 @@ select {
     background: #ffd700
 }
 
-#bottom-footer {
+.region-growing-lab #bottom-footer {
     position: fixed;
     z-index: 999;
     bottom: 0;
@@ -1342,7 +1342,7 @@ button:disabled {
         flex-direction: column
     }
 
-    #top-header {
+    .region-growing-lab #top-header {
         position: relative;
         display: flex;
         flex-direction: column;
@@ -1354,13 +1354,13 @@ button:disabled {
         padding: 6px 10px
     }
 
-    .header-heading {
+    .region-growing-lab .header-heading {
         flex: none;
         width: 100%;
         font-size: 1.2rem
     }
 
-    #header_button {
+    .region-growing-lab #header_button {
         width: 100%;
         flex-wrap: wrap;
         justify-content: center;
@@ -1406,16 +1406,16 @@ button:disabled {
 }
 
 @media(max-width:420px) {
-    #top-header {
+    .region-growing-lab #top-header {
         flex-direction: column
     }
 
-    .header-heading {
+    .region-growing-lab .header-heading {
         width: 100%;
         font-size: 1rem
     }
 
-    #header_button {
+    .region-growing-lab #header_button {
         gap: 4px;
         padding-right: 0;
         flex-wrap: wrap

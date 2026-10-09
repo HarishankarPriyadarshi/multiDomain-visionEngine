@@ -891,38 +891,23 @@ export  default function GrowingPage() {
                 <Dialog
                   open={openRegionModal}
                   onClose={handleClose2Modal}
+                  disableScrollLock
+                  BackdropProps={{ className: "rg-concept-backdrop" }}
                   aria-labelledby="explanation-dialog-title"
                   aria-describedby="explanation-dialog-description"
                   PaperProps={{
                     id: "explanation-dialog",
+                    className: "rg-concept-dialog",
                   }}
                 >
-                  <DialogTitle id="instructions-dialog-title">
-                    <div style={{ width: "50%" }}> Region Growing Concept</div>
-                    <div
-                      style={{
-                        width: "50%",
-                        justifyContent: "flex-end",
-                        display: "flex",
-                      }}
-                    >
-                      <Button
-                        onClick={handleClose2Modal}
-                        color="primary"
-                        style={{
-                          backgroundColor: "beige",
-                          width: "fit-content",
-                          height: "fit-content",
-                        }}
-                      >
-                        Close
-                      </Button>
-                    </div>
-                  </DialogTitle>
-
-                  <DialogContent sx={{ padding: "0px", height: "1200px" }}>
-                    {openRegionModal && <RegionGrowing />}
-                    {/* {RegionGrowing()} */}
+                  <DialogContent
+                    id="explanation-dialog-description"
+                    className="rg-concept-dialog-content"
+                    sx={{ padding: 0, overflow: "hidden" }}
+                  >
+                    {openRegionModal && (
+                      <RegionGrowing onClose={handleClose2Modal} />
+                    )}
                   </DialogContent>
                 </Dialog>
               </div>
