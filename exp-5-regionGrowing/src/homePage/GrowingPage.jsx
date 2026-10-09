@@ -437,8 +437,6 @@ export  default function GrowingPage() {
   return (
     <>
       <div id="main-box" className="region-growing-page">
-        <div id="bottom-footer"> &copy; 2026 Virtual Labs, IIT Roorkee</div>
-
         <div id="top-header">
           {/* Hamburger Icon for Mobile */}
 
@@ -447,13 +445,11 @@ export  default function GrowingPage() {
           {/* Tabs for Desktop */}
           <h2 className="header-heading">Region Growing Segmentation</h2>
           <div id="header_button">
-            <Button title="Play" ref={voicePlay}>
+            <Button id="sound-btn" title="Play" ref={voicePlay}>
               <img
-              id ="sound-btn"
                 src={voice}
                 alt="voice"
                 style={{ width: "40px", height: "auto" }}
-               
               />
             </Button>
 
@@ -466,28 +462,40 @@ export  default function GrowingPage() {
               />
             </Button>
 
-            <Button className="rg-header-button" onClick={instr}>
+            <Button
+              id="instruction-btn"
+              className="rg-header-button"
+              onClick={instr}
+            >
               Instructions
             </Button>
           </div>
 
           {/* Instructions Modal */}
           <Dialog
+            className="rg-instructions-dialog"
             open={openInstructionsModal}
             onClose={handleCloseModal}
             aria-labelledby="instructions-dialog-title"
             aria-describedby="instructions-dialog-description"
-            style={{ height: "80%" }}
+            BackdropProps={{ className: "rg-instructions-backdrop" }}
+            PaperProps={{ className: "rg-instructions-paper" }}
           >
             <DialogTitle id="instructions-dialog-title">
-              Instructions
+              Instructions – Region Growing
             </DialogTitle>
-            <DialogContent style={{ paddingTop: "10px" }}>
-              
+            <DialogContent
+              id="instructions-dialog-description"
+              className="rg-instructions-content"
+            >
               {getInstructions()}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleCloseModal} color="primary">
+              <Button
+                onClick={handleCloseModal}
+                className="rg-instructions-close"
+                color="primary"
+              >
                 Close
               </Button>
             </DialogActions>
@@ -920,10 +928,7 @@ export  default function GrowingPage() {
               </div>
             </div>
           </TabPanel>
-
-
-
-
+          <div id="bottom-footer">&copy; 2026 Virtual Labs, IIT Roorkee</div>
         </div>
       </div>
     </>
