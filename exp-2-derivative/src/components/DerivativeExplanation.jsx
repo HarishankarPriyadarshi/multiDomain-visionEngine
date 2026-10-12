@@ -38,7 +38,7 @@ const OPERATOR_OBSERVATIONS = {
     "The output edge map highlights the boundaries of the selected pattern by responding to rapid changes in intensity using the second-order derivative."
 };
 
-export default function EdgeExplanation({ handleClose2Modal }) {
+export default function DerivativeExplanation({ handleClose2Modal }) {
   const [image, setImage] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [kernel, setKernel] = useState("sobel");

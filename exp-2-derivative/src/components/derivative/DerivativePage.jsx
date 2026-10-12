@@ -34,7 +34,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 
-import EdgeExplanation from "../EdgeExplanation";
+import DerivativeExplanation from "../DerivativeExplanation";
 import Tutor from "../features/tutor/Tutor";
 //returns a tab panel
 function TabPanel(props) {
@@ -263,6 +263,7 @@ export default function DerivativePage() {
           "Welcome to the Derivative-Based Edge Detection simulation. In this experiment, you will explore how first and second order derivatives help detect edges in digital images. Click Next to begin the guided walkthrough.",
         targetId: "guided-tutor-btn",
         placement: "bottom",
+        audioId: "step1.welcome.mp3",
       },
       {
         title: "Read Instructions",
@@ -271,6 +272,7 @@ export default function DerivativePage() {
         targetId: "instruction-btn",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "step2.instruction.mp3",
       },
       {
         title: "Sound Mute or Unmute",
@@ -1160,7 +1162,7 @@ export default function DerivativePage() {
                   >
                     {/* {EdgeExplanation()} */}
                     {openExplanationModal && (
-                      <EdgeExplanation handleClose2Modal={handleClose2Modal} />
+                      <DerivativeExplanation handleClose2Modal={handleClose2Modal} />
                     )}
                   </DialogContent>
                 </Dialog>
