@@ -212,49 +212,49 @@ export default function DerivativePage() {
 
   // Tutor steps
   const getOutputTutorContent = () => {
-  let operator = "";
-  let effect = "";
-     if (!processedConfig) {
-    return "Observe the resulting edge-detected image.";
-  }
-const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
-  if (derivativeMethod === "First Order") {
-    operator = filter1Type || "First Order";
-
-    switch (true) {
-      case filter1Type?.startsWith("Sobel"):
-        effect =
-          "Observe how the output highlights intensity changes along edges. The selected Sobel kernel size affects the smoothness and scale of the detected edges.";
-        break;
-
-      case filter1Type === "Prewitt":
-        effect =
-          "Observe how the output highlights edges by detecting intensity changes in horizontal and vertical directions.";
-        break;
-
-      case filter1Type === "Scharr":
-        effect =
-          "Observe how the output highlights edges with improved sensitivity to intensity changes, particularly for diagonal structures.";
-        break;
-
-      case filter1Type === "Roberts":
-        effect =
-          "Observe how the output highlights fine edges using a small 2×2 derivative kernel.";
-        break;
-
-      default:
-        effect =
-          "Compare the processed image with the input image to observe the detected edges.";
+    let operator = "";
+    let effect = "";
+    if (!processedConfig) {
+      return "Observe the resulting edge-detected image.";
     }
-  } else {
-    operator = `Laplacian (${o2Kernel}×${o2Kernel})`;
+    const { derivativeMethod, filter1Type, o2Kernel } = processedConfig;
+    if (derivativeMethod === "First Order") {
+      operator = filter1Type || "First Order";
 
-    effect =
-      "Observe how the output highlights regions with rapid intensity changes. A larger kernel generally produces a smoother response but may reduce fine edge details.";
-  }
+      switch (true) {
+        case filter1Type?.startsWith("Sobel"):
+          effect =
+            "Observe how the output highlights intensity changes along edges. The selected Sobel kernel size affects the smoothness and scale of the detected edges.";
+          break;
 
-  return `The output shows the result of ${operator}. ${effect}`;
-};
+        case filter1Type === "Prewitt":
+          effect =
+            "Observe how the output highlights edges by detecting intensity changes in horizontal and vertical directions.";
+          break;
+
+        case filter1Type === "Scharr":
+          effect =
+            "Observe how the output highlights edges with improved sensitivity to intensity changes, particularly for diagonal structures.";
+          break;
+
+        case filter1Type === "Roberts":
+          effect =
+            "Observe how the output highlights fine edges using a small 2×2 derivative kernel.";
+          break;
+
+        default:
+          effect =
+            "Compare the processed image with the input image to observe the detected edges.";
+      }
+    } else {
+      operator = `Laplacian (${o2Kernel}×${o2Kernel})`;
+
+      effect =
+        "Observe how the output highlights regions with rapid intensity changes. A larger kernel generally produces a smoother response but may reduce fine edge details.";
+    }
+
+    return `The output shows the result of ${operator}. ${effect}`;
+  };
   useEffect(() => {
     const baseSteps = [
       {
@@ -342,14 +342,14 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
       return;
     }
     baseSteps.push(
- {
-    title: "Observe Output",
-    content:
-      getOutputTutorContent(),
-    targetId: "output-image-zone",
-    placement: "top",
-    offset: [0, 12],
-  },
+      {
+        title: "Observe Output",
+        content:
+          getOutputTutorContent(),
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
       {
         title: "Print Results",
         content:
@@ -366,7 +366,7 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
         placement: "bottom",
         offset: [-60, 12],
       },
-  );
+    );
     setTutorSteps(baseSteps);
   }, [derivativeMethod, setTutorSteps, isImageProcessed, processedConfig]);
   // Instructions list
@@ -457,7 +457,7 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
     // setImageName(`Sample ${index + 1}`);
   };
 
-  
+
 
   const handleClose2Modal = () => {
     setOpenExplanationModal(false);
@@ -887,9 +887,9 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
                             }}
                             onChange={(e) => setO2Kernel(e.target.value)}
                           >
-<MenuItem value="3">Laplacian (3×3)</MenuItem>
-      <MenuItem value="5">Laplacian (5×5)</MenuItem>
-      <MenuItem value="7">Laplacian (7×7)</MenuItem>
+                            <MenuItem value="3">Laplacian (3×3)</MenuItem>
+                            <MenuItem value="5">Laplacian (5×5)</MenuItem>
+                            <MenuItem value="7">Laplacian (7×7)</MenuItem>
                           </Select>
                         </>
                       ) : (
@@ -1047,14 +1047,14 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
                           alignItems: "center",
                         }}
                       >
-                        
+
                         <canvas style={{
-                            display: isImageProcessed
-                              ? "block"
-                              : "none",
-                          }} id="finalImage" alt="Output Image" />
+                          display: isImageProcessed
+                            ? "block"
+                            : "none",
+                        }} id="finalImage" alt="Output Image" />
                         {/* <p>Output Image</p>  */}
-                        {!isImageProcessed  && (
+                        {!isImageProcessed && (
                           <div className="process-message-container">
                             <div className="placeholder-content">
                               <div className="file-icon">
@@ -1153,7 +1153,7 @@ const {derivativeMethod, filter1Type, o2Kernel} = processedConfig;
                     id: "explanation-dialog",
                   }}
                 >
-                  
+
 
                   <DialogContent
                     sx={{ padding: "0px", height: "1200px", overflow: "clip" }}
