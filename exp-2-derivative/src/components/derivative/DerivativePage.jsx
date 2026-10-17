@@ -31,6 +31,7 @@ import sample2 from "../../assets/images/sample2.jpg";
 import sample3 from "../../assets/images/sample3.jpg";
 import sample4 from "../../assets/images/sample4.jpg";
 import { addHomePageAudioToSteps } from "../features/speech/homePageAudio";
+import { getOrCreateExperimentStartedAt } from "../features/report/reportGenerator";
 
 const getOutputTutorAudioId = (config) => {
   if (!config) return "";
@@ -97,12 +98,23 @@ export default function DerivativePage() {
   } = useContext(HomeContext);
   const { resetTutorSim } = useContext(SimContext);
   const myProcess1Button = useRef(null);
+  const [experimentStartedAt, setExperimentStartedAt] = useState(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
   // const [isImageProcessed, setIsImageProcessed] = useState(false);
   const [isAnimationPlaying, setIsAnimationPlaying] = useState(false);
   const [processedConfig, setProcessedConfig] = useState(null);
+
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      setExperimentStartedAt(getOrCreateExperimentStartedAt());
+    };
+
+    document.addEventListener("click", handleFirstInteraction, true);
+    return () =>
+      document.removeEventListener("click", handleFirstInteraction, true);
+  }, []);
 
   const notifyS = (msg) => {
     toast.success(msg, {
@@ -1200,7 +1212,10 @@ export default function DerivativePage() {
                   >
                     {/* {EdgeExplanation()} */}
                     {openExplanationModal && (
-                      <DerivativeExplanation handleClose2Modal={handleClose2Modal} />
+                      <DerivativeExplanation
+                        handleClose2Modal={handleClose2Modal}
+                        experimentStartedAt={experimentStartedAt}
+                      />
                     )}
                   </DialogContent>
                 </Dialog>

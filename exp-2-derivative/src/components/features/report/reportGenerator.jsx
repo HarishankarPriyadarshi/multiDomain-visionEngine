@@ -43,6 +43,21 @@ function readReport() {
     return { results: [] };
   }
 }
+export function getOrCreateExperimentStartedAt() {
+  const report = readReport();
+  if (report.experimentStartedAt) return report.experimentStartedAt;
+
+  const startedAt = new Date().toISOString();
+  report.experimentStartedAt = startedAt;
+
+  try {
+    localStorage.setItem(REPORT_KEY, JSON.stringify(report));
+  } catch (error) {
+    console.error("Could not save experiment start time", error);
+  }
+
+  return startedAt;
+}
 const cloneMatrix = (matrix) =>
   Array.isArray(matrix)
     ? matrix.map((row) => (Array.isArray(row) ? [...row] : []))
@@ -150,7 +165,7 @@ function buildSummary(results) {
     total +
     " derivative operator" +
     (total > 1 ? "s were" : " was") +
-    " applied to selected binary image patterns. " +
+    " applied to selected image patterns. " +
     parts.join(" and ") +
     " were used to detect intensity transitions and object boundaries. " +
     "The resulting edge maps were generated from the corresponding derivative responses, " +
@@ -162,10 +177,12 @@ function buildReport(data) {
   if (!results.length) return null;
   const completedOperations = new Set(results.map((entry) => entry.operator))
     .size;
-  const started = results
-    .map((entry) => entry.startedAt)
-    .filter(Boolean)
-    .sort()[0];
+  const started =
+    data?.experimentStartedAt ||
+    results
+      .map((entry) => entry.startedAt)
+      .filter(Boolean)
+      .sort()[0];
   const completed = results
     .map((entry) => entry.completedAt || entry.updatedAt)
     .filter(Boolean)
@@ -256,6 +273,8 @@ export function appendDerivativeSimulation(entry) {
     output: cloneMatrix(entry.output),
     updatedAt: entry.completedAt || new Date().toISOString(),
   };
+  report.experimentStartedAt =
+    entry.experimentStartedAt || report.experimentStartedAt || entry.startedAt;
   report.results = report.results.filter(
     (item) => item.operator !== result.operator,
   );
