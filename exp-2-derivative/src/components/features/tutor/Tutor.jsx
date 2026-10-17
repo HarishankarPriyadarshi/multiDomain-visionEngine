@@ -186,6 +186,11 @@ export const Tutor = () => {
              <Typography id="tutor-step-title" className={isActionRequired ? "tutor-title-action" : "tutor-title"}>
                 {tutorSteps[tutorStep].title}
               </Typography>
+              {tutorSteps[tutorStep].subtitle && (
+                <p className="tutor-subtitle">
+                  {tutorSteps[tutorStep].subtitle}
+                </p>
+              )}
 
               <p className="tutor-content">
                 {renderHighlightedText(

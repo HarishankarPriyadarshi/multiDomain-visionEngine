@@ -96,6 +96,16 @@
   font-weight: bold !important;
 }
 
+.tutor-subtitle {
+  margin: -2px 0 10px;
+  color: #526078;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
 .tutor-content {
   font-size: 0.95rem;
   line-height: 1.4;

@@ -1,0 +1,23 @@
+{
+  "step1.welcome.wav": [
+    { "start": 0, "end": 5 },
+    { "start": 5, "end": 13 },
+    { "start": 13, "end": 16 }
+  ],
+  "step2.instruction.wav": [],
+  "step3.sound.wav": [],
+  "step4.select-image.wav": [],
+  "step5.upload-image.wav": [],
+  "step6.choose-order.wav": [],
+  "step7.select-filter.wav": [],
+  "step7.select-kernel-size.wav": [],
+  "step8.process.wav": [],
+  "step9.action-required.wav": [],
+  "output.sobel.wav": [],
+  "output.prewitt.wav": [],
+  "output.scharr.wav": [],
+  "output.roberts.wav": [],
+  "output.laplacian.wav": [],
+  "step12.print-results.wav": [],
+  "step13.proceed-to-concept.wav": []
+}

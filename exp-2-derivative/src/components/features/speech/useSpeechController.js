@@ -2,153 +2,145 @@ import { useRef, useState, useEffect, useCallback } from "react";
 
 
 export const useSpeechController = () => {
-  const utteranceRef = useRef(null);
-  const voicesRef = useRef([]);
+  const audioRef = useRef(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  //highlight sentences
   const [sentences, setSentences] = useState([]);
-const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
-
-  // Load voices
-  useEffect(() => {
-    if (!window?.speechSynthesis) return;
-
-    const loadVoices = () => {
-      voicesRef.current = window.speechSynthesis.getVoices();
-    };
-
-    loadVoices();
-
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
-  }, []);
+  const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
 
   const stop = useCallback(() => {
-    if (!window?.speechSynthesis) return;
+    if (audioRef.current) {
+      const audio = audioRef.current;
+      audioRef.current = null;
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
 
-    window.speechSynthesis.cancel();
-    utteranceRef.current = null;
     setIsSpeaking(false);
     setIsPaused(false);
     setSentences([]);
     setCurrentSentenceIndex(0);
   }, []);
 
-  const getIndianVoice = () => {
-    const voices = voicesRef.current;
-
-    // Priority order
-    return (
-      voices.find((v) => v.lang === "en-IN") ||
-      voices.find((v) => v.lang === "hi-IN") ||
-      voices.find((v) => v.name.toLowerCase().includes("india")) ||
-      voices.find((v) => v.name.toLowerCase().includes("english")) ||
-      voices.find((v) => v.default) ||
-      voices[0]
-    );
+  const splitIntoSentences = (text) => {
+    return text
+      .split(/(?<=[.!?])\s+/)
+      .filter((sentence) => sentence.trim().length > 0);
   };
 
-  const splitIntoSentences = (text) => {
-  return text
-    .split(/(?<=[.!?])\s+/)
-    .filter((s) => s.trim().length > 0);
-};
+  const estimateSentenceTimestamps = (sentences, duration) => {
+    const wordCounts = sentences.map((sentence) => sentence.trim().split(/\s+/).length);
+    const totalWords = wordCounts.reduce((total, count) => total + count, 0);
+    let start = 0;
 
-const speak = useCallback(
-  (text) => {
-    if (!window?.speechSynthesis) return;
+    return wordCounts.map((wordCount, index) => {
+      const end =
+        index === wordCounts.length - 1
+          ? duration
+          : start + (duration * wordCount) / totalWords;
+      const timestamp = { start, end };
+      start = end;
+      return timestamp;
+    });
+  };
 
-    const normalizedText = typeof text === "string" ? text.trim() : "";
-    stop();
-    if (!normalizedText) return;
+  const playAudio = useCallback(
+    async (source, transcriptText, sentenceTimestamps = []) => {
+      if (!source) return;
 
-    const split = splitIntoSentences(normalizedText);
-    setSentences(split);
-    setCurrentSentenceIndex(0);
+      stop();
+      const normalizedText = typeof transcriptText === "string" ? transcriptText.trim() : "";
+      const split = splitIntoSentences(normalizedText);
+      const hasSentenceTimestamps = sentenceTimestamps.length === split.length;
+      setSentences(split);
+      setCurrentSentenceIndex(0);
 
-    const speakSentence = (index) => {
-      if (!split[index]) return;
+      const audio = new Audio(source);
+      audioRef.current = audio;
 
-      const utterance = new SpeechSynthesisUtterance(split[index]);
-
-      const indianVoice = getIndianVoice();
-      if (indianVoice) {
-        utterance.voice = indianVoice;
-        utterance.lang = indianVoice.lang;
-      }
-
-      utterance.rate = 0.9;
-
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setIsPaused(false);
-        setCurrentSentenceIndex(index);
-      };
-
-      utterance.onend = () => {
-        if (index < split.length - 1) {
-          speakSentence(index + 1);
-        } else {
-          setIsSpeaking(false);
-          setIsPaused(false);
-          setSentences([]);
-          setCurrentSentenceIndex(0);
-        }
-      };
-
-      utterance.onerror = () => {
+      const handleAudioFailure = (error) => {
+        if (audioRef.current !== audio) return;
+        console.error("Recorded tutor audio could not play:", error);
+        audioRef.current = null;
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
         setIsSpeaking(false);
         setIsPaused(false);
         setSentences([]);
         setCurrentSentenceIndex(0);
       };
 
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-    };
+      audio.onplay = () => {
+        setIsSpeaking(true);
+        setIsPaused(false);
+      };
+      audio.onpause = () => {
+        if (audioRef.current !== audio || audio.ended) return;
+        setIsSpeaking(false);
+        setIsPaused(true);
+      };
+      audio.ontimeupdate = () => {
+        if (!split.length || !Number.isFinite(audio.duration)) return;
+        const timestamps = hasSentenceTimestamps
+          ? sentenceTimestamps
+          : estimateSentenceTimestamps(split, audio.duration);
+        const matchingIndex = timestamps.findIndex(
+          ({ start, end }) => audio.currentTime >= start && audio.currentTime < end,
+        );
+        if (matchingIndex !== -1) {
+          setCurrentSentenceIndex(matchingIndex);
+        }
+      };
+      audio.onended = () => {
+        if (audioRef.current !== audio) return;
+        audioRef.current = null;
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setSentences([]);
+        setCurrentSentenceIndex(0);
+      };
+      audio.onerror = () => handleAudioFailure(audio.error);
 
-    speakSentence(0);
-  },
-  [stop]
-);
+      try {
+        await audio.play();
+      } catch (error) {
+        handleAudioFailure(error);
+      }
+    },
+    [stop],
+  );
 
   const pause = useCallback(() => {
-    if (!window?.speechSynthesis?.speaking) return;
-
-    window.speechSynthesis.pause();
-    setIsSpeaking(false);
-    setIsPaused(true);
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
+    }
   }, []);
 
   const resume = useCallback(() => {
-    if (!window?.speechSynthesis?.paused) return;
-
-    window.speechSynthesis.resume();
-    setIsSpeaking(true);
-    setIsPaused(false);
+    if (audioRef.current?.paused) {
+      audioRef.current.play().catch((error) => {
+        console.error("Recorded tutor audio could not resume:", error);
+      });
+    }
   }, []);
 
   useEffect(() => {
-    if (!window?.speechSynthesis) return;
-
     const handleBeforeUnload = () => {
-      window.speechSynthesis.cancel();
+      stop();
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.speechSynthesis.cancel();
+      stop();
     };
-  }, []);
+  }, [stop]);
 
   return {
-    speak,
+    playAudio,
     pause,
     resume,
     stop,

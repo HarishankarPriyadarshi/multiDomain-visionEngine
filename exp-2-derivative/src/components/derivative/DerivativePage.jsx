@@ -22,6 +22,7 @@ import Grow from "@mui/material/Grow";
 
 import { useContext, useEffect, useRef, useState } from "react";
 import { HomeContext } from "../context/HomeContext";
+import { SimContext } from "../context/SimContext";
 
 import voice from "../../assets/images/voice-play.png";
 import voice_pause from "../../assets/images/voice-pause.png";
@@ -29,6 +30,22 @@ import sample1 from "../../assets/images/sample1.jpg";
 import sample2 from "../../assets/images/sample2.jpg";
 import sample3 from "../../assets/images/sample3.jpg";
 import sample4 from "../../assets/images/sample4.jpg";
+import { addHomePageAudioToSteps } from "../features/speech/homePageAudio";
+
+const getOutputTutorAudioId = (config) => {
+  if (!config) return "";
+
+  if (config.derivativeMethod === "Second Order") {
+    return "output.laplacian.wav";
+  }
+
+  const filterName = config.filter1Type || "Sobel 3x3";
+  const operatorId = filterName.startsWith("Sobel")
+    ? "sobel"
+    : filterName.toLowerCase();
+
+  return `output.${operatorId}.wav`;
+};
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -78,6 +95,7 @@ export default function DerivativePage() {
     setShowWelcome,
     stop,
   } = useContext(HomeContext);
+  const { resetTutorSim } = useContext(SimContext);
   const myProcess1Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
@@ -89,7 +107,7 @@ export default function DerivativePage() {
   const notifyS = (msg) => {
     toast.success(msg, {
       theme: "dark",
-      position: "bottom-left", // Set toast position
+      position: "top-right", // Set toast position
       autoClose: 2000, // Toast auto-closes after 3 seconds
       hideProgressBar: false, // Show progress bar
       closeOnClick: true, // Close toast when clicked
@@ -212,34 +230,31 @@ export default function DerivativePage() {
 
   // Tutor steps
   const getOutputTutorContent = () => {
-    let operator = "";
     let effect = "";
     if (!processedConfig) {
       return "Observe the resulting edge-detected image.";
     }
-    const { derivativeMethod, filter1Type, o2Kernel } = processedConfig;
+    const { derivativeMethod, filter1Type } = processedConfig;
     if (derivativeMethod === "First Order") {
-      operator = filter1Type || "First Order";
-
       switch (true) {
         case filter1Type?.startsWith("Sobel"):
           effect =
-            "Observe how the output highlights intensity changes along edges. The selected Sobel kernel size affects the smoothness and scale of the detected edges.";
+            "The output shows the result of Sobel. Observe how the output highlights intensity changes along edges.";
           break;
 
         case filter1Type === "Prewitt":
           effect =
-            "Observe how the output highlights edges by detecting intensity changes in horizontal and vertical directions.";
+            "The output shows the result of Prewitt. Observe how the output highlights edges by detecting intensity changes in horizontal and vertical directions.";
           break;
 
         case filter1Type === "Scharr":
           effect =
-            "Observe how the output highlights edges with improved sensitivity to intensity changes, particularly for diagonal structures.";
+            "The output shows the result of Scharr. Observe how the output highlights edges with improved sensitivity to intensity changes, particularly for diagonal structures.";
           break;
 
         case filter1Type === "Roberts":
           effect =
-            "Observe how the output highlights fine edges using a small 2×2 derivative kernel.";
+            "The output shows the result of Roberts. Observe how the output highlights fine edges using a small 2×2 derivative kernel.";
           break;
 
         default:
@@ -247,14 +262,22 @@ export default function DerivativePage() {
             "Compare the processed image with the input image to observe the detected edges.";
       }
     } else {
-      operator = `Laplacian (${o2Kernel}×${o2Kernel})`;
-
       effect =
-        "Observe how the output highlights regions with rapid intensity changes. A larger kernel generally produces a smoother response but may reduce fine edge details.";
+        "The output shows the result of Laplacian. Observe how the output highlights regions with rapid intensity changes.";
     }
-
-    return `The output shows the result of ${operator}. ${effect}`;
+    return effect;
   };
+  const outputConfig = processedConfig || { derivativeMethod, filter1Type, o2Kernel };
+  const outputKernelName =
+    outputConfig.derivativeMethod === "First Order"
+      ? outputConfig.filter1Type === "Roberts"
+        ? "Roberts 2×2"
+        : outputConfig.filter1Type?.startsWith("Sobel")
+          ? outputConfig.filter1Type.replace("x", "×")
+          : `${outputConfig.filter1Type} 3×3`
+      : `Laplacian ${outputConfig.o2Kernel}×${outputConfig.o2Kernel}`;
+  const outputTutorSubtitle = `Kernel: ${outputKernelName}`;
+
   useEffect(() => {
     const baseSteps = [
       {
@@ -263,7 +286,7 @@ export default function DerivativePage() {
           "Welcome to the Derivative-Based Edge Detection simulation. In this experiment, you will explore how first and second order derivatives help detect edges in digital images. Click Next to begin the guided walkthrough.",
         targetId: "guided-tutor-btn",
         placement: "bottom",
-        audioId: "step1.welcome.mp3",
+        audioId: "step1.welcome.wav",
       },
       {
         title: "Read Instructions",
@@ -272,7 +295,7 @@ export default function DerivativePage() {
         targetId: "instruction-btn",
         placement: "bottom",
         offset: [-60, 12],
-        audioId: "step2.instruction.mp3",
+        audioId: "step2.instruction.wav",
       },
       {
         title: "Sound Mute or Unmute",
@@ -281,6 +304,7 @@ export default function DerivativePage() {
         targetId: "sound-btn",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "step3.sound.wav",
       },
       {
         title: "Select Image",
@@ -289,6 +313,7 @@ export default function DerivativePage() {
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
+        audioId: "step4.select-image.wav",
       },
       {
         title: "Upload Image",
@@ -297,6 +322,7 @@ export default function DerivativePage() {
         targetId: "upload-btn-zone",
         placement: "right-start",
         offset: [-35, 22],
+        audioId: "step5.upload-image.wav",
       },
       {
         title: "Choose Order of Derivative",
@@ -305,6 +331,7 @@ export default function DerivativePage() {
         targetId: "derivative-order-zone",
         placement: "right",
         offset: [0, 12],
+        audioId: "step6.choose-order.wav",
       },
       {
         title:
@@ -321,6 +348,10 @@ export default function DerivativePage() {
             : "kernel-size-zone",
         placement: "right",
         offset: [0, 12],
+        audioId:
+          derivativeMethod === "First Order"
+            ? "step7.select-filter.wav"
+            : "step7.select-kernel-size.wav",
       },
       {
         title: "Process",
@@ -329,6 +360,7 @@ export default function DerivativePage() {
         targetId: "process-button",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "step8.process.wav",
       },
 
     ];
@@ -339,18 +371,21 @@ export default function DerivativePage() {
         targetId: "process-button",
         placement: "top",
         offset: [0, 10],
+        audioId: "step9.action-required.wav",
       });
-      setTutorSteps(baseSteps);
+      setTutorSteps(addHomePageAudioToSteps(baseSteps));
       return;
     }
     baseSteps.push(
       {
         title: "Observe Output",
+        subtitle: outputTutorSubtitle,
         content:
           getOutputTutorContent(),
         targetId: "output-image-zone",
         placement: "top",
         offset: [0, 12],
+        audioId: getOutputTutorAudioId(processedConfig),
       },
       {
         title: "Print Results",
@@ -359,6 +394,7 @@ export default function DerivativePage() {
         targetId: "print-button",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "step12.print-results.wav",
       },
       {
         title: "Proceed to Concept – Perform Derivative Convolution",
@@ -367,10 +403,11 @@ export default function DerivativePage() {
         targetId: "concept-button",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "step13.proceed-to-concept.wav",
       },
     );
-    setTutorSteps(baseSteps);
-  }, [derivativeMethod, setTutorSteps, isImageProcessed, processedConfig]);
+    setTutorSteps(addHomePageAudioToSteps(baseSteps));
+  }, [derivativeMethod, setTutorSteps, isImageProcessed, processedConfig, outputTutorSubtitle]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -468,7 +505,8 @@ export default function DerivativePage() {
     setTutorStep(0);
     setShowWelcome(false);
 
-    // Stop speech completely
+    // Stop any audio started by the concept tutor/speech controllers.
+    resetTutorSim();
     stop();
   };
 

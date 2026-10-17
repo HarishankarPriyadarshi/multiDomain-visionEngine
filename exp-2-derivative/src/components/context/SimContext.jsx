@@ -1,6 +1,7 @@
 import { createContext, useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useSpeechController } from "../features/speech/useSpeechController";
+import { getSimAudio } from "../features/speech/simAudio";
 export const SimContext = createContext(null);
 
 export const SimContextProvider = ({ children }) => {
@@ -20,7 +21,7 @@ export const SimContextProvider = ({ children }) => {
 
   const previousPlayStateRef = useRef(true);
   const {
-    speak,
+    playAudio,
     pause,
     resume,
     stop,
@@ -34,13 +35,11 @@ export const SimContextProvider = ({ children }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowWelcomeSim(true);
-      speak(
-        "Welcome to the Gradient Convolution Visualization experiment. In this simulation, you will observe how edge detection works step-by-step using convolution with Kernel X and Kernel Y operators.",
-      );
+      setIsSimPlaying(true);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [speak]);
+  }, []);
 
   const startTutorSim = () => {
     setTutorStepSim(0);
@@ -91,10 +90,17 @@ export const SimContextProvider = ({ children }) => {
     : showWelcomeSim
       ? welcomeText
       : "";
-  const activeSpeechKey = `${isTutorOpenSim ? "tutor" : showWelcomeSim ? "welcome" : "idle"}:${activeSpeechText}`;
+  const activeAudioId = isTutorOpenSim
+    ? currentStepSim?.audioId
+    : showWelcomeSim
+      ? "step1.welcome.mp3"
+      : "";
+  const { audioSrc: activeAudioSrc, audioTimestamps: activeAudioTimestamps } =
+    getSimAudio(activeAudioId);
+  const activeSpeechKey = `${isTutorOpenSim ? "tutor" : showWelcomeSim ? "welcome" : "idle"}:${activeAudioId}:${activeSpeechText}`;
 
   const handleSpeechToggleSim = () => {
-    if (!activeSpeechText) {
+    if (!activeSpeechText || !activeAudioSrc) {
       return;
     }
 
@@ -104,9 +110,9 @@ export const SimContextProvider = ({ children }) => {
       setIsSimPlaying(true);
     } else {
       // If neither speaking nor paused (e.g. finished or not started)
-      // Reset the key ref to force a fresh speak() call in the useEffect
-      lastSpokenKeyRef.current = "";
+      lastSpokenKeyRef.current = activeSpeechKey;
       setIsSimPlaying(true);
+      void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
     }
   };
 
@@ -122,11 +128,20 @@ export const SimContextProvider = ({ children }) => {
     }
 
     if (lastSpokenKeyRef.current !== activeSpeechKey) {
-      speak(activeSpeechText);
       lastSpokenKeyRef.current = activeSpeechKey;
+      void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
     }
 
-  }, [activeSpeechKey, activeSpeechText, isPaused, isSimPlaying, speak, stop]);
+  }, [
+    activeAudioSrc,
+    activeAudioTimestamps,
+    activeSpeechKey,
+    activeSpeechText,
+    isPaused,
+    isSimPlaying,
+    playAudio,
+    stop,
+  ]);
 
   useEffect(() => {
     const wasPlaying = previousPlayStateRef.current;
@@ -146,7 +161,6 @@ export const SimContextProvider = ({ children }) => {
     <SimContext.Provider
       value={{
         isMobile,
-        speak,
         pause,
         resume,
         stop,

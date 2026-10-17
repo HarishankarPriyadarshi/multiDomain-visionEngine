@@ -16,6 +16,7 @@ import { SimContext } from "./context/SimContext";
 import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import TutorSim from "./features/tutor/TutorSim";
+import { addSimAudioToSteps } from "./features/speech/simAudio";
 import {
   appendDerivativeSimulation,
   downloadDerivativeReport,
@@ -54,7 +55,9 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
       ? "\\Delta I = |\\nabla^2 I|"
       : "\\Delta G = \\sqrt{(\\Delta x)^2 + (\\Delta y)^2}";
 
-  const equation2 = " \\frac{\\Delta G}{Max Value * 255}";
+  
+  const equation2 =
+  "\\frac{\\Delta G}{\\Delta G_{\\max}} \\times 255";
 
   const [label, setLabel] = useState("3 x 3");
   const [resultLabel, setResultLabel] = useState("5 x 5");
@@ -103,22 +106,29 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
     setTutorStepSim,
   } = useContext(SimContext);
 
+  useEffect(() => {
+    return () => {
+      resetTutorSim();
+      setIsSimPlaying(false);
+    };
+  }, []);
+
   const getKernelDescription = () => {
     switch (kernel) {
       case "sobel":
-        return "Sobel uses first-order derivative kernels in the X and Y directions to detect intensity changes while providing some smoothing.";
+        return "You have selected sobel. Sobel uses first-order derivative kernels in the X and Y directions to detect intensity changes while providing some smoothing.";
 
       case "prewitt":
-        return "Prewitt uses first-order derivative kernels in the X and Y directions to detect horizontal and vertical intensity changes.";
+        return "You have selected prewitt. Prewitt uses first-order derivative kernels in the X and Y directions to detect horizontal and vertical intensity changes.";
 
       case "roberts":
-        return "Roberts uses small 2×2 kernels to detect rapid intensity changes along diagonal directions.";
+        return "You have selected roberts. Roberts uses small 2×2 kernels to detect rapid intensity changes along diagonal directions.";
 
       case "scharr":
-        return "Scharr uses optimized first-order derivative kernels in the X and Y directions for improved gradient estimation.";
+        return "You have selected scharr. Scharr uses optimized first-order derivative kernels in the X and Y directions for improved gradient estimation.";
 
       case "laplacian":
-        return "Laplacian is a second-order derivative operator that uses a single kernel to detect regions of rapid intensity change.";
+        return "You have selected laplacian. Laplacian is a second-order derivative operator that uses a single kernel to detect regions of rapid intensity change.";
 
       default:
         return "The selected operator is applied to detect intensity changes in the image.";
@@ -135,17 +145,17 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           : "Divide";
 
   const operatorImageContent = {
-    sobel: `The resultant Sobel image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Sobel operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+    sobel: `The resultant Sobel image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. The Sobel operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
 
-    prewitt: `The resultant Prewitt image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Prewitt operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+    prewitt: `The resultant Prewitt image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. The Prewitt operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
 
-    roberts: `The resultant Roberts image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Roberts operator detects rapid intensity changes along diagonal directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+    roberts: `The resultant Roberts image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. The Roberts operator detects rapid intensity changes along diagonal directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
 
-    scharr: `The resultant Scharr image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Scharr operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
+    scharr: `The resultant Scharr image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. The Scharr operator calculates intensity changes in the horizontal and vertical directions. Pixels with larger gradient values indicate significant intensity changes and are displayed brighter, representing detected edges.`,
 
-    laplacian: `The resultant Laplacian image for the ${imageName} input image is normalized and displayed as the final edge-detected image. The Laplacian operator calculates the second-order intensity change using a single kernel. Regions with larger Laplacian responses indicate rapid changes in image intensity and are displayed brighter, representing detected edges.`,
+    laplacian: `The resultant Laplacian image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. The Laplacian operator calculates the second-order intensity change using a single kernel. Regions with larger Laplacian responses indicate rapid changes in image intensity and are displayed brighter, representing detected edges.`,
 
-    default: `The resultant image for the ${imageName} input image is normalized and displayed as the final edge-detected image. Regions with significant intensity changes produce stronger derivative responses and are displayed brighter, indicating detected edges.`,
+    default: `The resultant image for the (${imageName}) input image is normalized and displayed as the final edge-detected image. Regions with significant intensity changes produce stronger derivative responses and are displayed brighter, indicating detected edges.`,
   };
   useEffect(() => {
     const baseSteps = [
@@ -155,6 +165,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "Welcome to the Gradient Convolution Visualization experiment. In this simulation, you will observe how edge detection works step-by-step using convolution with Kernel X and Kernel Y operators.",
         targetId: "guided-tutor-btn-sim",
         placement: "top",
+        audioId: "step1.welcome.wav",
       },
       {
         title: "Instruction Panel",
@@ -162,6 +173,15 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "Use the navigation arrows here to read step-by-step instructions for performing the experiment correctly.",
         targetId: "inst_content_container",
         placement: "bottom",
+        audioId: "step2.instruction.wav",
+      },
+      {
+        title: "Sound Mute or Unmute",
+        content:
+          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+        targetId: "sound-btn-sim",
+        placement: "bottom",
+        audioId: "step3.sound.wav",
       },
       {
         title: "Select Input Image",
@@ -169,18 +189,23 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing, by default the Plus image is selected.",
         targetId: "image-box",
         placement: "right",
+        audioId: "step4.select-input-image.wav",
+                offset:[10,10]
       },
       {
-        title: "Selected Image",
-        content: `You can see the selected ${image === 0 ? "Plus" : image === 1 ? "Minus" : image === 2 ? "multiply" : "divide"} image in the image box.`,
+        title: `Selected Image (${image === 0 ? "Plus" : image === 1 ? "Minus" : image === 2 ? "multiply" : "divide"})`,
+        content: `You can see the selected image in the image box.`,
         targetId: "ogimage",
         placement: "right",
+        audioId: "step5.selected-image.wav",
       },
       {
         title: "Select Edge Detection Kernel",
-        content: `You have selected ${kernel}. ${getKernelDescription()}`,
+        content: `${getKernelDescription()}`,
         targetId: "tool-box",
         placement: "right",
+        audioId: `step6.select-kernel-${kernel}.wav`,
+        offset:[10,10]
       },
       {
         title:
@@ -188,11 +213,12 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
 
         content:
           kernel === "laplacian"
-            ? `You have selected the Laplacian operator. ${getKernelDescription()} Observe the single Laplacian kernel used to calculate the second-order derivative response of the image.`
-            : `You have selected ${kernel}. ${getKernelDescription()} Observe Kernel X and Kernel Y matrices for the selected ${kernel} kernel. Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
+            ? "You have selected the Laplacian operator. Observe the single Laplacian kernel used to calculate the second-order derivative response of the image."
+            : `Observe Kernel X and Kernel Y matrices for the selected kernel (${kernel}). Kernel X calculates the intensity gradient in the X-direction, while Kernel Y calculates the intensity gradient in the Y-direction.`,
 
         targetId: "kernels",
         placement: "top",
+        audioId: kernel==="laplacian"? "step7.kernel-matrices-laplacian.wav" : "step7.kernel-matrices-all.wav"
       },
       {
         title: "Speed Down",
@@ -200,6 +226,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "You can click the Speed Down button to slow the convolution animation.",
         targetId: "speed-down-btn",
         placement: "bottom",
+        audioId: "step8.speed-down.wav",
       },
       {
         title: "Speed Up",
@@ -207,6 +234,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "You can click the Speed Up button to increase the convolution speed. ",
         targetId: "speed-up-btn",
         placement: "bottom",
+        audioId: "step9.speed-up.wav",
       },
       {
         title: "Reset",
@@ -214,6 +242,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "You can click the Reset button to stop the simulation and return everything to the initial state. ",
         targetId: "reset-btn",
         placement: "bottom",
+        audioId: "step10.reset.wav",
       },
       {
         title: "Play / Pause",
@@ -221,6 +250,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "Now, Click the Play button to start the convolution process.  You can pause the simulation at any time by clicking the Pause button.",
         targetId: "sim-play-pause-btn",
         placement: "bottom",
+        audioId: "step11.play-pause.wav",
       },
     ];
 
@@ -233,8 +263,9 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           "Please click the Play button to begin the convolution process.",
         targetId: "sim-play-pause-btn",
         placement: "bottom",
+        audioId: "step12.action-required.wav",
       });
-      setTutorStepsSim(baseSteps);
+      setTutorStepsSim(addSimAudioToSteps(baseSteps));
       return;
     }
 
@@ -250,6 +281,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "kernel-sliding-box",
           placement: "top",
           offset: [-10, 12],
+          audioId: "step12.sliding-window-laplacian.wav",
         },
         {
           title: "Observe Laplacian Convolution Steps",
@@ -258,6 +290,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "convStepsX",
           placement: "right",
           offset: [1, 12],
+          audioId: "step13.observe-laplacian-convolution.wav",
         },
         {
           title: "Laplacian Response",
@@ -266,6 +299,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorDXGrid",
           placement: "top",
           offset: [-10, 32],
+          audioId: "step14.laplacian-response.wav",
         },
         {
           title: "Laplacian Result Calculation",
@@ -274,6 +308,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResCalculationGrid",
           placement: "top",
           offset: [-10, 32],
+          audioId: "step15.laplacian-result-calculation.wav",
         },
         {
           title: "Laplacian Result",
@@ -282,6 +317,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResGrid",
           placement: "top",
           offset: [-10, 12],
+          audioId: "step16.laplacian-result.wav",
         },
         {
           title: "Resultant Image",
@@ -289,6 +325,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResImageGrid",
           placement: "bottom",
           offset: [-10, 12],
+          audioId: `output.${kernel}.wav`,
         },
         {
           title: "Experiment Completed",
@@ -296,6 +333,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
             "Congratulations! You have successfully visualized how Laplacian-based edge detection works using second-order derivative convolution.",
           targetId: "tutorResImageGrid",
           placement: "top",
+          audioId: "step18.experiment-completed-laplacian.wav",
         },
       );
     } else {
@@ -310,6 +348,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "kernel-sliding-box",
           placement: "top",
           offset: [-10, 12],
+          audioId: "step12.sliding-window-first-order.wav",
         },
         {
           title: "Observe Kernel X Convolution Steps",
@@ -318,6 +357,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "convStepsX",
           placement: "right",
           offset: [1, 12],
+          audioId: "step13.observe-kernel-x.wav",
         },
         {
           title: "Gradient X",
@@ -326,6 +366,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorDXGrid",
           placement: "top",
           offset: [-10, 32],
+          audioId: "step14.gradient-x.wav",
         },
         {
           title: "Observe Kernel Y Convolution Steps",
@@ -334,6 +375,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "convStepsY",
           placement: "left",
           offset: [1, 12],
+          audioId: "step15.observe-kernel-y.wav",
         },
         {
           title: "Gradient Y",
@@ -342,6 +384,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorDYGrid",
           placement: "bottom",
           offset: [-10, 32],
+          audioId: "step16.gradient-y.wav",
         },
         {
           title: "Resultant ΔG Calculation",
@@ -350,6 +393,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResCalculationGrid",
           placement: "top",
           offset: [-10, 32],
+          audioId: "step17.resultant-gradient-calculation.wav",
         },
         {
           title: "Resultant Gradient",
@@ -358,6 +402,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResGrid",
           placement: "top",
           offset: [-10, 12],
+          audioId: "step18.resultant-gradient.wav",
         },
         {
           title: "Resultant Image",
@@ -365,6 +410,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "tutorResImageGrid",
           placement: "bottom",
           offset: [-10, 12],
+          audioId: `output.${kernel}.wav`,
         },
         {
           title: "Experiment Completed",
@@ -372,6 +418,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
             "Congratulations! You have successfully visualized how gradient-based edge detection works using convolution and magnitude calculation.",
           targetId: "tutorResImageGrid",
           placement: "top",
+          audioId: "step20.experiment-completed-first-order.wav",
         },
         {
           title: "Download report",
@@ -380,11 +427,12 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
           targetId: "download-report-btn-derivative",
           placement: "bottom",
           offset: [0, 10],
+          audioId: "step21.download-report.wav",
         }
       );
     }
 
-    setTutorStepsSim(baseSteps);
+    setTutorStepsSim(addSimAudioToSteps(baseSteps));
   }, [isConceptAnimationPlaying, kernel, image, tutorStepSim]);
 
   useEffect(() => {
@@ -485,7 +533,7 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
+        [255, 255,255, 255, 255,255,255],
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0],
@@ -1158,7 +1206,8 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
                         id="originalGrid"
                         className="matrix-animate"
                         style={{
-                          color: cell === 1 ? "red" : "black",
+                          backgroundColor: cell === 1 || cell === 255 ? "white" : "black",
+                          color: cell === 1 || cell === 255 ? "black" : "white",
                           animationDelay: `${rowIndex * 0.15}s`,
                         }}
                       >
@@ -1290,7 +1339,8 @@ export default function DerivativeExplanation({ handleClose2Modal }) {
               <div id="kernelx">
                 <h3
                   style={{
-                    marginBottom: "10px",
+                    marginBottom: "-5px",
+                    marginTop: "-15px",
                     color: "black",
                     fontSize: "22px",
                   }}
