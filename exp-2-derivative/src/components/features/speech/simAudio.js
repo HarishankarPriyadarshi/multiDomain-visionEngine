@@ -5,7 +5,8 @@ const simAudioFiles = import.meta.glob(
   { eager: true, query: "?url", import: "default" },
 );
 
-const DEFAULT_SIM_AUDIO_ID = "step2.instruction.mp3";
+// Set a fallback filename only when testing simulations with incomplete recordings.
+const DEFAULT_SIM_AUDIO_ID = null;
 
 export const getSimAudio = (audioId) => {
   
@@ -13,12 +14,15 @@ export const getSimAudio = (audioId) => {
   const audioIdToPlay = simAudioFiles[requestedPath]
     ? audioId
     : DEFAULT_SIM_AUDIO_ID;
-  const audioFileToPlay = audioIdToPlay.replace(/\.mp3$/, ".wav");
-  const audioPath = `../../../assets/audios/conceptPageAudio/${audioFileToPlay}`;
+  const audioPath = audioIdToPlay
+    ? `../../../assets/audios/conceptPageAudio/${audioIdToPlay.replace(/\.mp3$/, ".wav")}`
+    : null;
 
   return {
-    audioSrc: simAudioFiles[audioPath] || "",
-    audioTimestamps: simAudioTimestamps[audioIdToPlay] || [],
+    audioSrc: audioPath ? simAudioFiles[audioPath] || "" : "",
+    audioTimestamps: audioIdToPlay
+      ? simAudioTimestamps[audioIdToPlay] || []
+      : [],
   };
 };
 

@@ -5,17 +5,23 @@ const homePageAudioFiles = import.meta.glob(
   { eager: true, query: "?url", import: "default" },
 );
 
-const DEFAULT_HOME_PAGE_AUDIO_ID = "step2.instruction.wav";
+// Set a fallback filename only when testing simulations with incomplete recordings.
+const DEFAULT_HOME_PAGE_AUDIO_ID = null;
 
 export const getHomePageAudio = (audioId) => {
   const requestedPath = `../../../assets/audios/homePageAudio/${audioId}`;
   const audioIdToPlay = homePageAudioFiles[requestedPath]
     ? audioId
     : DEFAULT_HOME_PAGE_AUDIO_ID;
-  const audioPath = `../../../assets/audios/homePageAudio/${audioIdToPlay}`;
- return {
-    audioSrc: homePageAudioFiles[audioPath] || "",
-    audioTimestamps: homePageAudioTimestamps[audioIdToPlay] || [],
+  const audioPath = audioIdToPlay
+    ? `../../../assets/audios/homePageAudio/${audioIdToPlay}`
+    : null;
+
+  return {
+    audioSrc: audioPath ? homePageAudioFiles[audioPath] || "" : "",
+    audioTimestamps: audioIdToPlay
+      ? homePageAudioTimestamps[audioIdToPlay] || []
+      : [],
   };
 };
 
