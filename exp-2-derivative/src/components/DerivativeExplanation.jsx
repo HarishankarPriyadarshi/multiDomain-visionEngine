@@ -189,7 +189,7 @@ export default function DerivativeExplanation({
       {
         title: "Select Input Image",
         content:
-          "Select a sample binary image (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing, by default the Plus image is selected.",
+          "Select a sample grayscale image such as (Plus, Minus, Multiply, or Divide). This 7×7 image will be used for convolution processing, by default the Plus image is selected.",
         targetId: "image-box",
         placement: "right",
         audioId: "step4.select-input-image.wav",
@@ -523,43 +523,84 @@ export default function DerivativeExplanation({
     setImage(x);
     setImageAnimateKey((prev) => prev + 1);
     const signs = [
-      [
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-      ], // Plus
-      [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [255, 255,255, 255, 255,255,255],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-      ], // Minus
-      [
-        [1, 0, 0, 0, 0, 0, 1],
-        [0, 1, 0, 0, 0, 1, 0],
-        [0, 0, 1, 0, 1, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 1, 0, 1, 0, 0],
-        [0, 1, 0, 0, 0, 1, 0],
-        [1, 0, 0, 0, 0, 0, 1],
-      ], // Multiply
-      [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-      ], // Divide
-    ];
+  [
+    [15,  20,  35, 190,  35,  20, 15],
+    [20,  35,  55, 220,  55,  35, 20],
+    [35,  55, 100, 245, 100,  55, 35],
+    [190,220, 245, 255, 245, 220,190],
+    [35,  55, 100, 245, 100,  55, 35],
+    [20,  35,  55, 220,  55,  35, 20],
+    [15,  20,  35, 190,  35,  20, 15],
+  ], // Plus
+
+  [
+    [10,  15,  20,  25,  20,  15, 10],
+    [15,  20,  30,  40,  30,  20, 15],
+    [25,  35,  55,  75,  55,  35, 25],
+    [190,220, 245, 255, 245, 220,190],
+    [25,  35,  55,  75,  55,  35, 25],
+    [15,  20,  30,  40,  30,  20, 15],
+    [10,  15,  20,  25,  20,  15, 10],
+  ], // Minus
+
+  [
+    [250,  25,  15,  10,  15,  25, 250],
+    [25,  245,  30,  20,  30, 245,  25],
+    [15,   30, 250,  45, 250,  30,  15],
+    [10,   20,  45, 255,  45,  20,  10],
+    [15,   30, 250,  45, 250,  30,  15],
+    [25,  245,  30,  20,  30, 245,  25],
+    [250,  25,  15,  10,  15,  25, 250],
+  ], // Multiply
+
+  [
+    [10,  15,  20,  25,  20,  15, 10],
+    [15,  30,  45, 250,  45,  30, 15],
+    [20,  40,  65,  85,  65,  40, 20],
+    [190,220, 245, 255, 245, 220,190],
+    [20,  40,  65,  85,  65,  40, 20],
+    [15,  30,  45, 250,  45,  30, 15],
+    [10,  15,  20,  25,  20,  15, 10],
+  ], // Divide
+];
+    // const signs = [
+    //   [
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [1, 1, 1, 1, 1, 1, 1],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //   ], // Plus
+    //   [
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [255, 255,255, 255, 255,255,255],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //   ], // Minus
+    //   [
+    //     [1, 0, 0, 0, 0, 0, 1],
+    //     [0, 1, 0, 0, 0, 1, 0],
+    //     [0, 0, 1, 0, 1, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 1, 0, 1, 0, 0],
+    //     [0, 1, 0, 0, 0, 1, 0],
+    //     [1, 0, 0, 0, 0, 0, 1],
+    //   ], // Multiply
+    //   [
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [1, 1, 1, 1, 1, 1, 1],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //     [0, 0, 0, 1, 0, 0, 0],
+    //     [0, 0, 0, 0, 0, 0, 0],
+    //   ], // Divide
+    // ];
     setOriginal(signs[x]);
   }
 
@@ -896,6 +937,7 @@ export default function DerivativeExplanation({
         experimentStartedAt: experimentStartedAt || startedAt,
         completedAt: new Date().toISOString(),
       });
+
       setHasCompletedReport(true);
     }
   }
@@ -920,6 +962,13 @@ export default function DerivativeExplanation({
         (prevIndex - 1 + instructions.length) % instructions.length,
     );
   };
+
+  const maxResult = res.reduce(
+    (max, row) => row.reduce((rowMax, cell) => Math.max(rowMax, cell), max),
+    0,
+  );
+  const getResultIntensity = (value) =>
+    maxResult > 0 ? Math.round((value / maxResult) * 255) : 0;
 
   return (
     <OpenCvProvider>
@@ -1210,8 +1259,8 @@ export default function DerivativeExplanation({
                         id="originalGrid"
                         className="matrix-animate"
                         style={{
-                          backgroundColor: cell === 1 || cell === 255 ? "white" : "black",
-                          color: cell === 1 || cell === 255 ? "black" : "white",
+                          backgroundColor: `rgb(${cell}, ${cell}, ${cell})`,
+                          color: cell > 127 ? "black" : "white",
                           animationDelay: `${rowIndex * 0.15}s`,
                         }}
                       >
@@ -1641,7 +1690,7 @@ export default function DerivativeExplanation({
                                 : ""
                             }
                             style={{
-                              backgroundColor: `rgb(${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255}, ${(cell / Math.max(...res.flat())) * 255})`,
+                              backgroundColor: `rgb(${getResultIntensity(cell)}, ${getResultIntensity(cell)}, ${getResultIntensity(cell)})`,
                             }}
                           ></div>
                         )),

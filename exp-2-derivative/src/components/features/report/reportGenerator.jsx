@@ -86,12 +86,12 @@ function renderMatrix(matrix, type = "input") {
         shade =
           type === "output"
             ? Math.max(
-              0,
-              Math.min(255, Math.round((Math.abs(value) / maximum) * 255)),
-            )
-            : null;
+                0,
+                Math.min(255, Math.round((Math.abs(value) / maximum) * 255)),
+              )
+            : Math.max(0, Math.min(255, Math.round(value)));
       const style =
-        type === "output"
+        type === "input" || type === "output"
           ? ' style="background:rgb(' +
           shade +
           "," +
@@ -102,10 +102,10 @@ function renderMatrix(matrix, type = "input") {
           (shade > 145 ? "#111827" : "#fff") +
           '"'
           : "";
-      const className =
-        type === "input" ? (value ? "one" : "zero") : "kernel-cell";
+      const className = type === "kernel" ? "kernel-cell" : "image-cell";
+      const content = type === "output" ? "" : escapeHTML(cell);
       return (
-        '<i class="' + className + '"' + style + ">" + escapeHTML(cell) + "</i>"
+        '<i class="' + className + '"' + style + ">" + content + "</i>"
       );
     })
     .join("");
@@ -165,7 +165,7 @@ function buildSummary(results) {
     total +
     " derivative operator" +
     (total > 1 ? "s were" : " was") +
-    " applied to selected image patterns. " +
+    " applied to selected grayscale image patterns. " +
     parts.join(" and ") +
     " were used to detect intensity transitions and object boundaries. " +
     "The resulting edge maps were generated from the corresponding derivative responses, " +
@@ -232,7 +232,7 @@ function buildReport(data) {
     )
     .join("");
   const css =
-    "*{box-sizing:border-box}body{margin:0;background:#eef4fb;color:#1f2d3d;font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.5}#scale{width:944px;padding:30px 22px 44px}.page{max-width:900px;margin:auto;padding:26px 28px;background:#fff;border-radius:18px}h2,h3,h4{margin-top:0;color:#243b53}h2{font-size:23px}h3{font-size:16px;margin-bottom:5px}h4{font-size:15px;margin-bottom:6px}p{font-size:15px;margin:0 0 10px}.header{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:24px}.logo{width:78px;height:70px;object-fit:contain}.title{flex:1;text-align:center;border-bottom:3px solid #2f7bfa;padding-bottom:14px}.section{background:#f6f9fc;border:1px solid #e0e8f2;border-radius:14px;padding:18px 20px;margin-bottom:18px}.top,.operator-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.badge,.stamp,.operator-heading span{margin:0;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600}.badge,.operator-heading span{background:#e8f1ff;color:#1f62d0}.stamp{background:#fff;border:1px solid #dce5ef;color:#50657c}.label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#60778f;font-weight:700}.experiment{font-size:25px;font-weight:700;color:#16324b;margin:0 0 18px}.cards{display:flex;gap:12px;flex-wrap:wrap}.card{flex:1 1 150px;background:#fff;border:1px solid #dde6f0;border-radius:14px;padding:14px}.card span{display:block;font-weight:600;font-size:15px;}.execution-order{margin:0;padding-left:25px;font-size:14px}.execution-order li{padding:2px 0}.result-row{display:flex;gap:10px;align-items:stretch}.result{flex:1 1 0;background:#fff;border:1px solid #dde6f0;border-radius:12px;padding:12px;min-width:0}.matrix{display:grid;gap:2px;width:max-content;max-width:100%;border:1px solid #d1d5db;padding:6px;background:#f9fafb}.matrix i{display:flex;width:24px;height:24px;align-items:center;justify-content:center;border:1px solid #d1d5db;font-style:normal;font-size:10px;font-weight:700}.zero{background:#111827;color:#fff}.one{background:#fff;color:#111827}.kernel-cell{background:#edf3fa;color:#16324b}.kernel-pair{display:flex;gap:8px;flex-wrap:wrap}.kernel{min-width:0}.observation{margin-top:12px;padding:12px 14px;background:#fff;border-radius:0 10px 10px 0}.observation p{margin:0}.empty{color:#60778f}@media print{body{background:#fff}.page{border-radius:0}#scale{width:100%;padding:0}}";
+    "*{box-sizing:border-box}body{margin:0;background:#eef4fb;color:#1f2d3d;font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.5}#scale{width:944px;padding:30px 22px 44px}.page{max-width:900px;margin:auto;padding:26px 28px;background:#fff;border-radius:18px}h2,h3,h4{margin-top:0;color:#243b53}h2{font-size:23px}h3{font-size:16px;margin-bottom:5px}h4{font-size:15px;margin-bottom:6px}p{font-size:15px;margin:0 0 10px}.header{display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:24px}.logo{width:78px;height:70px;object-fit:contain}.title{flex:1;text-align:center;border-bottom:3px solid #2f7bfa;padding-bottom:14px}.section{background:#f6f9fc;border:1px solid #e0e8f2;border-radius:14px;padding:18px 20px;margin-bottom:18px}.top,.operator-heading{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}.badge,.stamp,.operator-heading span{margin:0;padding:8px 14px;border-radius:20px;font-size:13px;font-weight:600}.badge,.operator-heading span{background:#e8f1ff;color:#1f62d0}.stamp{background:#fff;border:1px solid #dce5ef;color:#50657c}.label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#60778f;font-weight:700}.experiment{font-size:25px;font-weight:700;color:#16324b;margin:0 0 18px}.cards{display:flex;gap:12px;flex-wrap:wrap}.card{flex:1 1 150px;background:#fff;border:1px solid #dde6f0;border-radius:14px;padding:14px}.card span{display:block;font-weight:600;font-size:15px;}.execution-order{margin:0;padding-left:25px;font-size:14px}.execution-order li{padding:2px 0}.result-row{display:flex;gap:10px;align-items:stretch}.result{flex:1 1 0;background:#fff;border:1px solid #dde6f0;border-radius:12px;padding:12px;min-width:0}.matrix{display:grid;gap:2px;width:max-content;max-width:100%;border:1px solid #d1d5db;padding:6px;background:#f9fafb}.matrix i{display:flex;width:24px;height:24px;align-items:center;justify-content:center;border:1px solid #d1d5db;font-style:normal;font-size:10px;font-weight:700}.image-cell{color:#111827}.kernel-cell{background:#edf3fa;color:#16324b}.kernel-pair{display:flex;gap:8px;flex-wrap:wrap}.kernel{min-width:0}.observation{margin-top:12px;padding:12px 14px;background:#fff;border-radius:0 10px 10px 0}.observation p{margin:0}.empty{color:#60778f}@media print{body{background:#fff}.page{border-radius:0}#scale{width:100%;padding:0}}";
   return (
     '<!doctype html><html><head><meta charset="UTF-8"><script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><style>' +
     css +
@@ -306,10 +306,10 @@ export function appendDerivativeSimulation(entry) {
   const activeHash = localStorage.getItem(
     "vlab_exp_active_user_hash"
   );
-  console.log("activeHash1:(vlab_exp_active_user_hash)",activeHash);
-console.log("activeHash2:(vlab_exp2_active_user_hash)",localStorage.getItem(
-    "vlab_exp2_active_user_hash"
-  ));
+  //console.log("activeHash1:(vlab_exp_active_user_hash)",activeHash);
+// console.log("activeHash2:(vlab_exp2_active_user_hash)",localStorage.getItem(
+//     "vlab_exp2_active_user_hash"
+//   ));
 
 
   if (activeHash) {
