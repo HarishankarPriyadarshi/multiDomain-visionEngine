@@ -181,10 +181,15 @@ export const Tutor = () => {
               aria-labelledby="tutor-step-title"
             >
               <div className="tutor-arrow" />
-                          <Typography id="tutor-step-title" className={isActionRequired ? "tutor-title-action" : "tutor-title"}>
+              <Typography
+                id="tutor-step-title"
+                className={
+                  isActionRequired ? "tutor-title-action" : "tutor-title"
+                }
+              >
                 {tutorSteps[tutorStep].title}
               </Typography>
-                            {tutorSteps[tutorStep].subtitle && (
+              {tutorSteps[tutorStep].subtitle && (
                 <p className="tutor-subtitle">
                   {tutorSteps[tutorStep].subtitle}
                 </p>
@@ -223,14 +228,14 @@ export const Tutor = () => {
                   </Button>
                 )}
                 {!isActionRequired && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleTutorNext}
-                  sx={{ backgroundColor: "#1D2A6D" }}
-                >
-                  {tutorStep === tutorSteps.length - 1 ? "Finish" : "Next"}
-                </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={handleTutorNext}
+                    sx={{ backgroundColor: "#1D2A6D" }}
+                  >
+                    {tutorStep === tutorSteps.length - 1 ? "Finish" : "Next"}
+                  </Button>
                 )}
               </div>
             </Paper>

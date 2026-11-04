@@ -191,6 +191,11 @@ export const TutorSim = () => {
                 
                 {tutorStepsSim[tutorStepSim]?.title}
               </Typography>
+                            {tutorStepsSim[tutorStepSim].subtitle && (
+                <p className="tutor-subtitle">
+                  {tutorStepsSim[tutorStepSim].subtitle}
+                </p>
+              )}
 
               <p className="tutor-content">
                 {renderHighlightedText(

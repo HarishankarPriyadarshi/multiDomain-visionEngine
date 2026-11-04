@@ -1,0 +1,33 @@
+{
+  "e4.step1.welcome.wav": [],
+  "e4.step2.instruction.wav": [],
+  "e4.step3.select-input-image.wav": [],
+  "e4.step4.selected-image.wav": [],
+  "e4.step5.select-morphological-operation.wav": [],
+  "e4.step6.kernel.wav": [],
+  "e4.step7.reset.wav": [],
+  "e4.step8.speed-up.wav": [],
+  "e4.step9.speed-down.wav": [],
+  "e4.step10.play-pause.wav": [],
+  "e4.step11.action-required.wav": [],
+  "e4.step11.moving-kernel-overlay.wav": [],
+  "e4.step12.kernel-center.wav": [],
+  "e4.step13.current-processing-explanation.wav": [],
+
+  "e4.step14.opening.stage1.erosion.wav": [],
+  "e4.step14.opening.stage2.dilation.wav": [],
+  "e4.step14.closing.stage1.dilation.wav": [],
+  "e4.step14.closing.stage2.erosion.wav": [],
+  "e4.step14.dilation.wav": [],
+  "e4.step14.erosion.wav": [],
+  "e4.step15.output-image.wav": [],
+  "e4.step16.processing-in-progress.wav": [],
+  
+  "e4.step17.dilation.completed.wav": [],
+  "e4.step17.erosion.completed.wav": [],
+  "e4.step17.opening.completed.wav": [],
+  "e4.step17.closing.completed.wav": [],
+  "e4.step18.download-report.wav": []
+
+ 
+}

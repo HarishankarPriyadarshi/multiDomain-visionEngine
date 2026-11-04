@@ -1,0 +1,21 @@
+{
+  "step1.welcome.wav": [],
+  "step2.instruction.wav": [],
+  "step3.sound.wav": [],
+  "step4.select-image.wav": [],
+  "step5.upload-image.wav": [],
+  "step6.select-morphology-operation-order.wav": [],
+  "step7.select-kernel-size.wav": [],
+  "step7.select-kernel-shape.wav": [],
+  "step8.process.wav": [],
+  "step9.action-required.wav": [],
+
+  "output.dilation.wav": [],
+  "output.erosion.wav": [],
+  "output.opening.wav": [],
+  "output.closing.wav": [],
+  "output.default.wav": [],
+
+  "step11.print-results.wav": [],
+  "step12.proceed-to-concept.wav": []
+}

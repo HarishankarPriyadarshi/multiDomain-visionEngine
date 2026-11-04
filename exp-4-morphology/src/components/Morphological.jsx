@@ -466,6 +466,7 @@ export default function Morphological({ handleClose4Modal }) {
     };
   }
 
+
   const instructions = [
     "1. Select an image from image box.",
     "2. Select a Process from the dropdown menu.",
@@ -489,12 +490,13 @@ export default function Morphological({ handleClose4Modal }) {
 
   useEffect(() => {
     const baseSteps = [
-      { 
+      {
         title: "Welcome ",
         content:
           "This simulation demonstrates Dilation, Erosion, Opening, and Closing using a structuring element (kernel). Observe how the kernel scans the image and generates the output image step-by-step.",
         targetId: "guided-tutor-btn-sim",
         placement: "bottom",
+        
       },
 
       {
@@ -563,7 +565,8 @@ export default function Morphological({ handleClose4Modal }) {
 
       {
         title: "Start Processing",
-        content: "Click Play to begin the selected morphological operation.You can pause the simulation at any time by clicking the Pause button.",
+        content:
+          "Click Play to begin the selected morphological operation.You can pause the simulation at any time by clicking the Pause button.",
         targetId: "playPauseBtn-container",
         placement: "bottom",
       },
@@ -624,6 +627,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.opening.stage1.erosion.wav",
       });
 
       baseSteps.push({
@@ -633,6 +637,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.opening.stage2.dilation.wav",
       });
     } else if (process === "closing") {
       baseSteps.push({
@@ -642,6 +647,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.closing.stage1.dilation.wav",
       });
 
       baseSteps.push({
@@ -651,6 +657,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-stage-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.closing.stage2.erosion.wav",
       });
     } else if (process === "dilation") {
       baseSteps.push({
@@ -660,6 +667,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "processed-img-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.dilation.wav",
       });
     } else if (process === "erosion") {
       baseSteps.push({
@@ -669,19 +677,21 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "processed-img-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step14.erosion.wav",
       });
     }
     /*
      * OUTPUT
      */
     baseSteps.push({
-  title: `${process.charAt(0).toUpperCase() + process.slice(1)} Output`,
-  content:
-    `The ${process} result is generated as the kernel moves across the image. Compare the output with the Selected Image to observe how ${process} changes the foreground regions.`,
-  targetId: "processed-img-zone",
-  placement: "bottom",
-  offset: [0, 10],
-});
+      title: `${process.charAt(0).toUpperCase() + process.slice(1)} Output`,
+      content:
+        "This result is generated as the kernel moves across the image. Compare the output with the Selected Image to observe how selected process changes the foreground regions.",
+      targetId: "processed-img-zone",
+      placement: "bottom",
+      offset: [0, 10],
+      audioId: "e4.step15.output-image.wav",
+    });
 
     if (step < totalSteps) {
       baseSteps.push({
@@ -691,6 +701,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "processed-img-zone",
         placement: "bottom",
         offset: [0, 10],
+        audioId:"e4.step16.processing-in-progress.wav"
       });
     } else {
       baseSteps.push({
@@ -705,6 +716,14 @@ export default function Morphological({ handleClose4Modal }) {
                 : "Closing completed successfully. Dilation followed by Erosion has been applied to the image.",
         targetId: "processed-img-zone",
         placement: "bottom",
+         audioId:
+    process === "dilation"
+      ? "e4.step17.dilation.completed.wav"
+      : process === "erosion"
+        ? "e4.step17.erosion.completed.wav"
+        : process === "opening"
+          ? "e4.step17.opening.completed.wav"
+          : "e4.step17.closing.completed.wav",
       });
       baseSteps.push({
         title: "Download report",
@@ -713,6 +732,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "download-report-btn-morph",
         placement: "bottom",
         offset: [0, 10],
+        audioId:"e4.step18.download-report.wav"
       });
     }
     setTutorStepsSim(baseSteps);
