@@ -1,21 +1,21 @@
 {
-  "step1.welcome.wav": [],
-  "step2.instruction.wav": [],
-  "step3.sound.wav": [],
-  "step4.select-image.wav": [],
-  "step5.upload-image.wav": [],
-  "step6.select-morphology-operation-order.wav": [],
-  "step7.select-kernel-size.wav": [],
-  "step7.select-kernel-shape.wav": [],
-  "step8.process.wav": [],
-  "step9.action-required.wav": [],
+  "e4.step1.welcome.wav": [],
+  "e4.step2.instruction.wav": [],
+  "e4.step3.sound.wav": [],
+  "e4.step4.select-image.wav": [],
+  "e4.step5.upload-image.wav": [],
+  "e4.step6.select-morphology-operation-order.wav": [],
+  "e4.step7.select-kernel-size.wav": [],
+  "e4.step7.select-kernel-shape.wav": [],
+  "e4.step8.process.wav": [],
+  "e4.step9.action-required.wav": [],
 
-  "output.dilation.wav": [],
-  "output.erosion.wav": [],
-  "output.opening.wav": [],
-  "output.closing.wav": [],
-  "output.default.wav": [],
+  "e4.output.dilation.wav": [],
+  "e4.output.erosion.wav": [],
+  "e4.output.opening.wav": [],
+  "e4.output.closing.wav": [],
+  "e4.output.default.wav": [],
 
-  "step11.print-results.wav": [],
-  "step12.proceed-to-concept.wav": []
+  "e4.step11.print-results.wav": [],
+  "e4.step12.proceed-to-concept.wav": []
 }

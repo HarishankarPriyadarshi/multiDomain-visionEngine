@@ -92,7 +92,7 @@ export default function MorphologyPage() {
   const getOutputTutorContent = () => {
     const operation = morphologicalOperation
       ? morphologicalOperation.charAt(0).toUpperCase() +
-      morphologicalOperation.slice(1)
+        morphologicalOperation.slice(1)
       : "Morphological";
 
     const kernelSize = gaussKernelSize
@@ -100,8 +100,7 @@ export default function MorphologyPage() {
       : "";
 
     const kernelShapeName = kernelShape
-      ? kernelShape.charAt(0).toUpperCase() +
-      kernelShape.slice(1)
+      ? kernelShape.charAt(0).toUpperCase() + kernelShape.slice(1)
       : "";
 
     let effect = "";
@@ -109,35 +108,35 @@ export default function MorphologyPage() {
     switch (morphologicalOperation) {
       case "dilation":
         effect =
- "Observe how bright regions expand and small gaps become narrower or disappear.";
+          "Observe how bright regions expand and small gaps become narrower or disappear.";
         break;
 
       case "erosion":
         effect =
-         "Observe how bright regions shrink as boundary pixels are removed, causing small details to disappear.";
+          "Observe how bright regions shrink as boundary pixels are removed, causing small details to disappear.";
         break;
 
       case "opening":
         effect =
-   "Observe how small bright noise is removed while the larger structures are preserved. Opening applies Erosion followed by Dilation.";
+          "Observe how small bright noise is removed while the larger structures are preserved. Opening applies Erosion followed by Dilation.";
         break;
 
       case "closing":
         effect =
-            "Observe how small gaps and holes are filled while the overall structures are preserved. Closing applies Dilation followed by Erosion.";
+          "Observe how small gaps and holes are filled while the overall structures are preserved. Closing applies Dilation followed by Erosion.";
         break;
 
       default:
         effect =
-            "Compare the processed image with the input image to observe the changes in image structure.";
+          "Compare the processed image with the input image to observe the changes in image structure.";
     }
 
-return `The output shows the result of ${operation} using the given structuring element. ${effect}`;
+    return `The output shows the result of ${operation} using the given structuring element. ${effect}`;
   };
-  const outputSubtitle = ()=>{
-        const operation = morphologicalOperation
+  const outputSubtitle = () => {
+    const operation = morphologicalOperation
       ? morphologicalOperation.charAt(0).toUpperCase() +
-      morphologicalOperation.slice(1)
+        morphologicalOperation.slice(1)
       : "Morphological";
 
     const kernelSize = gaussKernelSize
@@ -145,11 +144,22 @@ return `The output shows the result of ${operation} using the given structuring 
       : "";
 
     const kernelShapeName = kernelShape
-      ? kernelShape.charAt(0).toUpperCase() +
-      kernelShape.slice(1)
+      ? kernelShape.charAt(0).toUpperCase() + kernelShape.slice(1)
       : "";
-  return `Operation: ${operation}, Kernel:  ${kernelShapeName}(${kernelSize})`;
+    return `Operation: ${operation}, Kernel:  ${kernelShapeName}(${kernelSize})`;
+  };
+  const getOutputTutorAudioId = (morphologicalOperation) => {
+    if (!morphologicalOperation) return "";
 
+    if (morphologicalOperation == "dilation") {
+      return "e4.output.dilation.mp3.wav";
+    } else if(morphologicalOperation=="erosion"){
+      return  "e4.output.erosion.mp3.wav"
+    } else if(morphologicalOperation=="opening"){
+      return "e4.output.opening.wav"
+    } else {
+      return  "e4.output.closing.wav"
+    }
   };
 
   useEffect(() => {
@@ -160,6 +170,7 @@ return `The output shows the result of ${operation} using the given structuring 
           "Welcome to the Morphological Operations experiment. This experiment demonstrates how Dilation, Erosion, Opening, and Closing modify image structures using different kernels.",
         targetId: "guided-tutor-btn",
         placement: "bottom",
+        audioId: "e4.step1.welcome.wav",
       },
 
       {
@@ -169,6 +180,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "instruction-btn",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "e4.step2.instruction.wav",
       },
       {
         title: "Sound Control",
@@ -177,6 +189,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "sound-btn",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "e4.step3.sound.wav",
       },
       {
         title: "Select Image",
@@ -185,6 +198,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-70, 12],
+        audioId: "e4.step4.select-image.wav",
       },
       {
         title: "Upload Image",
@@ -193,6 +207,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "upload-btn-zone",
         placement: "right-start",
         offset: [-35, 22],
+        audioId: "e4.step5.upload-image.wav",
       },
       {
         title: "Select Morphological Operation",
@@ -201,6 +216,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "morph-operation-zone",
         placement: "right",
         offset: [0, 10],
+        audioId: "e4.step6.select-morphology-operation-order.wav",
       },
 
       {
@@ -210,6 +226,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "kernel-size-zone",
         placement: "right",
         offset: [0, 10],
+        audioId: "e4.step7.select-kernel-size.wav",
       },
 
       {
@@ -219,6 +236,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "kernel-shape-zone",
         placement: "right",
         offset: [0, 10],
+        audioId: "e4.step7.select-kernel-shape.wav",
       },
       {
         title: "Process Image",
@@ -227,6 +245,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "process-button-zone",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "e4.step8.process.wav",
       },
     ];
 
@@ -238,20 +257,19 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "process-button-zone",
         placement: "top",
         offset: [0, 10],
+        audioId: "e4.step9.action-required.wav",
       });
       setTutorSteps(steps);
-
-
     }
     steps.push(
-
       {
         title: "Output Image",
-                subtitle: outputSubtitle(),
+        subtitle: outputSubtitle(),
         content: getOutputTutorContent(),
         targetId: "output-image-zone",
         placement: "top",
         offset: [0, 12],
+        audioId: getOutputTutorAudioId(morphologicalOperation),
       },
 
       {
@@ -261,6 +279,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "print-button-zone",
         placement: "bottom",
         offset: [-60, 12],
+        audioId: "e4.step11.print-results.wav",
       },
 
       {
@@ -270,6 +289,7 @@ return `The output shows the result of ${operation} using the given structuring 
         targetId: "concept-button-zone",
         placement: "top",
         offset: [-60, 12],
+        audioId: "e4.step12.proceed-to-concept.wav",
       },
     );
     setTutorSteps(steps);
@@ -717,7 +737,6 @@ return `The output shows the result of ${operation} using the given structuring 
                       </h4>
                     </Box>
                     <Box
-
                       sx={{
                         p: 2,
                         display: "flex",
@@ -819,7 +838,11 @@ return `The output shows the result of ${operation} using the given structuring 
                         </div>
 
                         <div style={{ marginTop: "15px", textAlign: "center" }}>
-                          <label id="upload-btn-zone" htmlFor="file-upload" className="upload-btn">
+                          <label
+                            id="upload-btn-zone"
+                            htmlFor="file-upload"
+                            className="upload-btn"
+                          >
                             <svg
                               className="upload-icon"
                               viewBox="0 0 24 24"
@@ -858,7 +881,6 @@ return `The output shows the result of ${operation} using the given structuring 
                         Morphological Operation:
                       </h4>
                       <Select
-
                         value={morphologicalOperation}
                         className="derivative-btn"
                         onChange={handleOperationChange}
@@ -897,7 +919,6 @@ return `The output shows the result of ${operation} using the given structuring 
                         className="derivative-btn"
                         onChange={handleKernelSizeChange}
                         sx={{
-
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
                             // Caret (dropdown icon) color
@@ -1077,7 +1098,6 @@ return `The output shows the result of ${operation} using the given structuring 
                       }}
                     >
                       <Box
-
                         sx={{
                           p: 2,
                           borderBottom: 1,
@@ -1106,7 +1126,8 @@ return `The output shows the result of ${operation} using the given structuring 
                         <canvas
                           style={{
                             minHeight: "190px",
-                            display: isImageProcessed === true ? "block" : "none"
+                            display:
+                              isImageProcessed === true ? "block" : "none",
                           }}
                           id="finalImage"
                           alt="Output Image"

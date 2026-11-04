@@ -496,6 +496,7 @@ export default function Morphological({ handleClose4Modal }) {
           "This simulation demonstrates Dilation, Erosion, Opening, and Closing using a structuring element (kernel). Observe how the kernel scans the image and generates the output image step-by-step.",
         targetId: "guided-tutor-btn-sim",
         placement: "bottom",
+            audioId: "e4.step1.welcome.wav",
         
       },
 
@@ -505,6 +506,7 @@ export default function Morphological({ handleClose4Modal }) {
           "Use the navigation arrows here to read step-by-step instructions for performing the experiment correctly.",
         targetId: "inst_content-zone",
         placement: "bottom",
+        audioId: "e4.step2.instruction.wav",
       },
 
       {
@@ -514,6 +516,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "input-image-zone",
         placement: "right",
         offset: [-12, 10],
+         audioId: "e4.step3.select-input-image.wav",
       },
       {
         title: " Selected Image",
@@ -522,6 +525,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "original-image-zone",
         placement: "bottom",
         offset: [0, 10],
+        audioId: "e4.step4.selected-image.wav",
       },
       {
         title: "Select Morphological Operation",
@@ -530,6 +534,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "operation-selection-zone",
         placement: "right",
         offset: [0, 12],
+         audioId: "e4.step5.select-morphological-operation.wav",
       },
       {
         title: "Kernel",
@@ -537,6 +542,7 @@ export default function Morphological({ handleClose4Modal }) {
           "This is the structuring element B. The kernel slides over the image and determines how each output pixel is calculated from its neighboring pixels.",
         targetId: "kernel-zone",
         placement: "bottom",
+          audioId: "e4.step6.kernel.wav",
       },
 
       {
@@ -546,6 +552,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "resetBtn-zone",
         placement: "right",
         offset: [0, 10],
+        audioId: "e4.step7.reset.wav",
       },
 
       {
@@ -554,6 +561,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "speedUpBtn-zone",
         placement: "right",
         offset: [0, 10],
+         audioId: "e4.step8.speed-up.wav",
       },
       {
         title: "Speed Down",
@@ -561,6 +569,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "speedDownBtn-zone",
         placement: "left",
         offset: [0, 10],
+        audioId: "e4.step9.speed-down.wav",
       },
 
       {
@@ -569,6 +578,7 @@ export default function Morphological({ handleClose4Modal }) {
           "Click Play to begin the selected morphological operation.You can pause the simulation at any time by clicking the Pause button.",
         targetId: "playPauseBtn-container",
         placement: "bottom",
+         audioId: "e4.step10.play-pause.wav",
       },
     ];
 
@@ -579,6 +589,7 @@ export default function Morphological({ handleClose4Modal }) {
         content: "Please click Play to begin the morphological operation.",
         targetId: "playPauseBtn-container",
         placement: "bottom",
+         audioId: "e4.step11.action-required.wav",
       });
 
       setTutorStepsSim(baseSteps);
@@ -595,6 +606,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "original-image-zone",
         placement: "top",
         offset: [0, 10],
+           audioId: "e4.step11.moving-kernel-overlay.wav",
       },
 
       {
@@ -604,6 +616,7 @@ export default function Morphological({ handleClose4Modal }) {
         targetId: "original-image-zone",
         placement: "top",
         offset: [0, 10],
+          audioId: "e4.step12.kernel-center.wav",
       },
 
       {
@@ -612,6 +625,7 @@ export default function Morphological({ handleClose4Modal }) {
           "This panel explains the current kernel operation and how it determines the output pixel value. Follow the explanation to understand why the pixel becomes 0 or 1. ",
         targetId: "explanation-zone",
         placement: "bottom",
+           audioId: "e4.step13.current-processing-explanation.wav",
       },
     );
 
