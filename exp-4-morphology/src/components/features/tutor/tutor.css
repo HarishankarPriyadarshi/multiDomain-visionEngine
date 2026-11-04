@@ -192,3 +192,14 @@
   width: 100%;
   font-weight: bold !important;
 }
+
+
+.tutor-subtitle {
+  margin: -2px 0 10px;
+  color: #000000;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}

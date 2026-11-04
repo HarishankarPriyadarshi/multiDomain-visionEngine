@@ -467,7 +467,7 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   const instructions = [
-    "1. Choose an image from image box.",
+    "1. Select an image from image box.",
     "2. Select a Process from the dropdown menu.",
     "3. click on the 'Play' button to start the simulation.",
   ];
@@ -489,7 +489,7 @@ export default function Morphological({ handleClose4Modal }) {
 
   useEffect(() => {
     const baseSteps = [
-      {
+      { 
         title: "Welcome ",
         content:
           "This simulation demonstrates Dilation, Erosion, Opening, and Closing using a structuring element (kernel). Observe how the kernel scans the image and generates the output image step-by-step.",
@@ -506,7 +506,7 @@ export default function Morphological({ handleClose4Modal }) {
       },
 
       {
-        title: "Choose Input Image",
+        title: "Select Input Image",
         content:
           "Select one of the available binary images. This image will be used as the input image A for the morphological operation, by default the Plus image is selected.",
         targetId: "input-image-zone",
@@ -514,17 +514,17 @@ export default function Morphological({ handleClose4Modal }) {
         offset: [-12, 10],
       },
       {
-        title: "Original Image",
+        title: " Selected Image",
         content:
-          "This is the padded binary image. A border of zeros is added around the image so that kernel behavior at boundaries can be visualized clearly.",
+          "This is the selected padded binary image. A border of zeros is added around the image so that kernel behavior at boundaries can be visualized clearly.",
         targetId: "original-image-zone",
         placement: "bottom",
         offset: [0, 10],
       },
       {
-        title: "Choose Morphological Operation",
+        title: "Select Morphological Operation",
         content:
-          "Select the morphological operation you want to apply to the image. You can choose Dilation, Erosion, Opening, or Closing.",
+          "Select the morphological operation you want to apply to the image. You can select Dilation, Erosion, Opening, or Closing.",
         targetId: "operation-selection-zone",
         placement: "right",
         offset: [0, 12],
@@ -540,21 +540,21 @@ export default function Morphological({ handleClose4Modal }) {
       {
         title: "Reset Simulation",
         content:
-          "Click Reset to clear all progress and return the simulation to its initial state.",
+          "You can click the Reset button to stop the simulation and return everything to the initial state.",
         targetId: "resetBtn-zone",
         placement: "right",
         offset: [0, 10],
       },
 
       {
-        title: "Animation Speed Up",
+        title: "Speed Up",
         content: "Use these controls to increase the speed of kernel movement.",
         targetId: "speedUpBtn-zone",
         placement: "right",
         offset: [0, 10],
       },
       {
-        title: "Animation Speed Down",
+        title: "Speed Down",
         content: "Use these controls to decrease the speed of kernel movement.",
         targetId: "speedDownBtn-zone",
         placement: "left",
@@ -563,7 +563,7 @@ export default function Morphological({ handleClose4Modal }) {
 
       {
         title: "Start Processing",
-        content: "Click Play to begin the selected morphological operation.",
+        content: "Click Play to begin the selected morphological operation.You can pause the simulation at any time by clicking the Pause button.",
         targetId: "playPauseBtn-container",
         placement: "bottom",
       },
@@ -677,7 +677,7 @@ export default function Morphological({ handleClose4Modal }) {
     baseSteps.push({
   title: `${process.charAt(0).toUpperCase() + process.slice(1)} Output`,
   content:
-    `The ${process} result is generated as the kernel moves across the image. Compare the output with the original image to observe how ${process} changes the foreground regions.`,
+    `The ${process} result is generated as the kernel moves across the image. Compare the output with the Selected Image to observe how ${process} changes the foreground regions.`,
   targetId: "processed-img-zone",
   placement: "bottom",
   offset: [0, 10],
@@ -833,7 +833,7 @@ export default function Morphological({ handleClose4Modal }) {
         <div id="Choose_box_morph">
           <div className="coolinput_morph">
             <label htmlFor="input" className="text">
-              Choose:
+              Select:
             </label>
             <Box
               sx={{

@@ -90,50 +90,67 @@ export default function MorphologyPage() {
   // Tutor steps
 
   const getOutputTutorContent = () => {
-  const operation = morphologicalOperation
-    ? morphologicalOperation.charAt(0).toUpperCase() +
+    const operation = morphologicalOperation
+      ? morphologicalOperation.charAt(0).toUpperCase() +
       morphologicalOperation.slice(1)
-    : "Morphological";
+      : "Morphological";
 
-  const kernelSize = gaussKernelSize
-    ? `${gaussKernelSize}×${gaussKernelSize}`
-    : "";
+    const kernelSize = gaussKernelSize
+      ? `${gaussKernelSize}×${gaussKernelSize}`
+      : "";
 
-  const kernelShapeName = kernelShape
-    ? kernelShape.charAt(0).toUpperCase() +
+    const kernelShapeName = kernelShape
+      ? kernelShape.charAt(0).toUpperCase() +
       kernelShape.slice(1)
-    : "";
+      : "";
 
-  let effect = "";
+    let effect = "";
 
-  switch (morphologicalOperation) {
-    case "dilation":
-      effect =
-        "Observe how bright regions appear expanded and small gaps may be reduced.";
-      break;
+    switch (morphologicalOperation) {
+      case "dilation":
+        effect =
+ "Observe how bright regions expand and small gaps become narrower or disappear.";
+        break;
 
-    case "erosion":
-      effect =
-        "Observe how bright regions appear reduced and small details may be removed.";
-      break;
+      case "erosion":
+        effect =
+         "Observe how bright regions shrink as boundary pixels are removed, causing small details to disappear.";
+        break;
 
-    case "opening":
-      effect =
-        "Observe how small bright noise is reduced while the main structures are preserved. Opening applies Erosion followed by Dilation.";
-      break;
+      case "opening":
+        effect =
+   "Observe how small bright noise is removed while the larger structures are preserved. Opening applies Erosion followed by Dilation.";
+        break;
 
-    case "closing":
-      effect =
-        "Observe how small gaps and holes are filled while the main structures are preserved. Closing applies Dilation followed by Erosion.";
-      break;
+      case "closing":
+        effect =
+            "Observe how small gaps and holes are filled while the overall structures are preserved. Closing applies Dilation followed by Erosion.";
+        break;
 
-    default:
-      effect =
-        "Compare the processed image with the input image to observe the morphological effect.";
-  }
+      default:
+        effect =
+            "Compare the processed image with the input image to observe the changes in image structure.";
+    }
 
-  return `The output shows the result of ${operation} using a ${kernelSize} ${kernelShapeName} structuring element. ${effect}`;
-};
+return `The output shows the result of ${operation} using the given structuring element. ${effect}`;
+  };
+  const outputSubtitle = ()=>{
+        const operation = morphologicalOperation
+      ? morphologicalOperation.charAt(0).toUpperCase() +
+      morphologicalOperation.slice(1)
+      : "Morphological";
+
+    const kernelSize = gaussKernelSize
+      ? `${gaussKernelSize}×${gaussKernelSize}`
+      : "";
+
+    const kernelShapeName = kernelShape
+      ? kernelShape.charAt(0).toUpperCase() +
+      kernelShape.slice(1)
+      : "";
+  return `Operation: ${operation}, Kernel:  ${kernelShapeName}(${kernelSize})`;
+
+  };
 
   useEffect(() => {
     const steps = [
@@ -178,32 +195,32 @@ export default function MorphologyPage() {
         offset: [-35, 22],
       },
       {
-        title: "Morphological Operation",
+        title: "Select Morphological Operation",
         content:
-            "Select the morphological operation you want to apply to the image. You can choose Dilation, Erosion, Opening, or Closing.",
+          "Select the morphological operation you want to apply to the image. You can choose Dilation, Erosion, Opening, or Closing.",
         targetId: "morph-operation-zone",
         placement: "right",
         offset: [0, 10],
       },
 
       {
-        title: "Kernel Size",
-         content: 
-         "Choose the size of the structuring element. A larger size considers a wider neighborhood of pixels and generally produces a stronger morphological effect.",
-          targetId: "kernel-size-zone",
+        title: "Select Kernel Size",
+        content:
+          "Select the size of the structuring element. A larger size considers a wider neighborhood of pixels and generally produces a stronger morphological effect.",
+        targetId: "kernel-size-zone",
         placement: "right",
         offset: [0, 10],
       },
 
       {
-        title: "Kernel Shape",
+        title: " Select Kernel Shape",
         content:
- "Choose the shape of the structuring element: Rectangle, Ellipse, or Cross. The selected shape determines the neighborhood of pixels considered during processing.",
+          "Select the shape of the structuring element: Rectangle, Ellipse, or Cross. The selected shape determines the neighborhood of pixels considered during processing.",
         targetId: "kernel-shape-zone",
         placement: "right",
         offset: [0, 10],
       },
-            {
+      {
         title: "Process Image",
         content:
           "Click the Process button to apply the selected morphological operation using the chosen kernel size and shape.",
@@ -215,31 +232,32 @@ export default function MorphologyPage() {
 
     //Only push this step if image is processed
     if (!isImageProcessed) {
-            steps.push({
+      steps.push({
         title: "Action Required",
-        content: "Click the 'Process' button to continue to the next step.",
+        content: "Click the 'Process' button to continue.",
         targetId: "process-button-zone",
         placement: "top",
         offset: [0, 10],
       });
-       setTutorSteps(steps);
-     
+      setTutorSteps(steps);
+
 
     }
     steps.push(
 
-{
-  title: "Output Image",
-  content: getOutputTutorContent(),
-  targetId: "output-image-zone",
-  placement: "top",
-  offset: [0, 12],
-},
+      {
+        title: "Output Image",
+                subtitle: outputSubtitle(),
+        content: getOutputTutorContent(),
+        targetId: "output-image-zone",
+        placement: "top",
+        offset: [0, 12],
+      },
 
       {
         title: "Print Results",
         content:
-          "Click Print to save or document the experimental results and observations.",
+          "Click the Print button if you wish to save or document your experimental results for further analysis.",
         targetId: "print-button-zone",
         placement: "bottom",
         offset: [-60, 12],
@@ -304,7 +322,7 @@ export default function MorphologyPage() {
   };
 
   const processImage = () => {
-   // console.log("Processing Image");
+    // console.log("Processing Image");
     if (!cv || !cv.imread) {
       console.error("⛔ OpenCV.js is not fully loaded yet!");
       return;
@@ -425,7 +443,7 @@ export default function MorphologyPage() {
   const handleImageChange = (event) => {
     const file = event.target.files?.[0];
     setIsImageProcessed(false);
-        // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
+    // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpen && tutorStep >= 9) {
       setTutorStep(9);
     }
@@ -453,7 +471,7 @@ export default function MorphologyPage() {
   const handleImageClick = (index) => {
     setSelectedImage(index);
     setIsImageProcessed(false);
-        // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
+    // Reset tutor step if it's beyond the base steps (index 9 is Action Required)
     if (isTutorOpen && tutorStep >= 9) {
       setTutorStep(9);
     }
@@ -475,49 +493,49 @@ export default function MorphologyPage() {
     // Stop speech completely
     stop();
   };
-const handleOperationChange = (event) => {
-  const value = event.target.value;
+  const handleOperationChange = (event) => {
+    const value = event.target.value;
 
-  // Change operation
-  setMorphologicalOperation(value);
+    // Change operation
+    setMorphologicalOperation(value);
 
-  // Remove processed/output image
-  setIsImageProcessed(false);
+    // Remove processed/output image
+    setIsImageProcessed(false);
 
-  // Reset tutor to Action Required step
-  if (isTutorOpen && tutorStep >= 9) {
-    setTutorStep(9);
-  }
-};
-const handleKernelSizeChange = (event) => {
-  const value = event.target.value;
+    // Reset tutor to Action Required step
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
+  };
+  const handleKernelSizeChange = (event) => {
+    const value = event.target.value;
 
-  // Change operation
-  setGaussKernelSize(value);
+    // Change operation
+    setGaussKernelSize(value);
 
-  // Remove processed/output image
-  setIsImageProcessed(false);
+    // Remove processed/output image
+    setIsImageProcessed(false);
 
-  // Reset tutor to Action Required step
-  if (isTutorOpen && tutorStep >= 9) {
-    setTutorStep(9);
-  }
-};
-const handleKernelShapeChange = (event) => {
-  const value = event.target.value;
+    // Reset tutor to Action Required step
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
+  };
+  const handleKernelShapeChange = (event) => {
+    const value = event.target.value;
 
-  // Change operation
-  setKernelShape(value);
+    // Change operation
+    setKernelShape(value);
 
-  // Remove processed/output image
-  setIsImageProcessed(false);
+    // Remove processed/output image
+    setIsImageProcessed(false);
 
-  // Reset tutor to Action Required step
-  if (isTutorOpen && tutorStep >= 9) {
-    setTutorStep(9);
-  }
-};
-  
+    // Reset tutor to Action Required step
+    if (isTutorOpen && tutorStep >= 9) {
+      setTutorStep(9);
+    }
+  };
+
   return (
     <OpenCvProvider>
       <div id="main-box">
@@ -716,7 +734,7 @@ const handleKernelShapeChange = (event) => {
                         },
                       }}
                     >
-                      <div  class="contentog">
+                      <div class="contentog">
                         <h4
                           style={{
                             margin: "5px 0px",
@@ -727,7 +745,7 @@ const handleKernelShapeChange = (event) => {
                           Choose an Image:
                         </h4>
                         <div
-                                            id="image-selection-zone"
+                          id="image-selection-zone"
                           className="image-grid"
                           sx={{
                             width: "100%",
@@ -840,7 +858,7 @@ const handleKernelShapeChange = (event) => {
                         Morphological Operation:
                       </h4>
                       <Select
-                      
+
                         value={morphologicalOperation}
                         className="derivative-btn"
                         onChange={handleOperationChange}
@@ -857,7 +875,7 @@ const handleKernelShapeChange = (event) => {
                           },
                           borderRadius: "10px",
                         }}
-                          id="morph-operation-zone"
+                        id="morph-operation-zone"
                       >
                         <MenuItem value="dilation">Dilation</MenuItem>
                         <MenuItem value="erosion">Erosion</MenuItem>
@@ -879,7 +897,7 @@ const handleKernelShapeChange = (event) => {
                         className="derivative-btn"
                         onChange={handleKernelSizeChange}
                         sx={{
-                          
+
                           color: "#1D2A6D",
                           "& .MuiSelect-icon": {
                             // Caret (dropdown icon) color
@@ -1059,7 +1077,7 @@ const handleKernelShapeChange = (event) => {
                       }}
                     >
                       <Box
-                    
+
                         sx={{
                           p: 2,
                           borderBottom: 1,
@@ -1087,8 +1105,9 @@ const handleKernelShapeChange = (event) => {
                       >
                         <canvas
                           style={{
-                             minHeight: "190px",
-                            display:isImageProcessed === true ? "block" : "none" }}
+                            minHeight: "190px",
+                            display: isImageProcessed === true ? "block" : "none"
+                          }}
                           id="finalImage"
                           alt="Output Image"
                         />
@@ -1149,7 +1168,7 @@ const handleKernelShapeChange = (event) => {
                     </svg>
                   </Button>
                   <Button
-                  id="print-button-zone"
+                    id="print-button-zone"
                     class="tool_btn print_btn"
                     onClick={handlePrint}
                     variant="outlined"
@@ -1161,7 +1180,7 @@ const handleKernelShapeChange = (event) => {
                     </svg>
                   </Button>
                   <Button
-                  id="concept-button-zone"
+                    id="concept-button-zone"
                     class="tool_btn"
                     onClick={exp3}
                     variant="outlined"
