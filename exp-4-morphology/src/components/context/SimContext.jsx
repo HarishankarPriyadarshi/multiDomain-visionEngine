@@ -1,6 +1,8 @@
 import { createContext, useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useSpeechController } from "../features/speech/useSpeechController";
+import { getSimAudio } from "../features/speech/simAudio";
+
 export const SimContext = createContext(null);
 
 export const SimContextProvider = ({ children }) => {
@@ -12,38 +14,35 @@ export const SimContextProvider = ({ children }) => {
   const [prevStepSim, setPrevStepSim] = useState(0);
   const [isTutorOpenSim, setIsTutorOpenSim] = useState(false);
   const tutorBtnRefSim = useRef(null);
-  const [showWelcomeSim, setShowWelcomeSim] = useState(true);
+  const [showWelcomeSim, setShowWelcomeSim] = useState(false);
 
   const previousSpeechKeyRef = useRef("");
   const lastSpokenKeyRef = useRef("");
   const previousPlayStateRef = useRef(true);
   const {
-    speak,
+    playAudio,
     pause,
     resume,
     stop,
     isSpeaking,
-    isPausedSpeaking,
+    isPaused,
     sentences,
     currentSentenceIndex,
   } = useSpeechController();
 
-  // Show welcome modal on initial load for sim
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWelcomeSim(true);
-      speak(
-        "",
-      );
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [speak]);
-
   const startTutorSim = () => {
+    setShowWelcomeSim(false);
     setTutorStepSim(0);
     setIsTutorOpenSim(true);
     setIsSimPlaying(true);
+  };
+
+  const openTutorWelcomeSim = () => {
+    stop();
+    setTutorStepSim(0);
+    setIsTutorOpenSim(false);
+    setIsSimPlaying(false);
+    setShowWelcomeSim(true);
   };
 
   const handleTutorNextSim = () => {
@@ -53,6 +52,7 @@ export const SimContextProvider = ({ children }) => {
     } else {
       setIsTutorOpenSim(false);
       setTutorStepSim(0);
+      setIsSimPlaying(false);
       stop();
     }
   };
@@ -65,6 +65,8 @@ export const SimContextProvider = ({ children }) => {
   const resetTutorSim = () => {
     setTutorStepSim(0);
     setIsTutorOpenSim(false);
+    setIsSimPlaying(false);
+    setShowWelcomeSim(false);
     stop();
   };
 
@@ -78,8 +80,7 @@ export const SimContextProvider = ({ children }) => {
       }
     : currentStepSim;
 
-  const welcomeText =
-    "";
+  const welcomeText = tutorStepsSim[0]?.content || "";
   const currentTutorText = tutorStepsSim[tutorStepSim]?.content || "";
 
   const activeSpeechText = isTutorOpenSim
@@ -87,22 +88,28 @@ export const SimContextProvider = ({ children }) => {
     : showWelcomeSim
       ? welcomeText
       : "";
-  const activeSpeechKey = `${isTutorOpenSim ? "tutor" : showWelcomeSim ? "welcome" : "idle"}:${activeSpeechText}`;
+  const activeAudioId = isTutorOpenSim
+    ? currentStepSim?.audioId
+    : showWelcomeSim
+      ? tutorStepsSim[0]?.audioId
+      : "";
+  const { audioSrc: activeAudioSrc, audioTimestamps: activeAudioTimestamps } =
+    getSimAudio(activeAudioId);
+  const activeSpeechKey = `${isTutorOpenSim ? "tutor" : showWelcomeSim ? "welcome" : "idle"}:${activeAudioId}:${activeSpeechText}`;
 
   const handleSpeechToggleSim = () => {
-    if (!activeSpeechText) {
+    if (!activeSpeechText || !activeAudioSrc) {
       return;
     }
 
-    if (isSpeaking && !isPausedSpeaking) {
+    if (isSpeaking && !isPaused) {
       setIsSimPlaying(false);
-    } else if (isPausedSpeaking) {
+    } else if (isPaused) {
       setIsSimPlaying(true);
     } else {
-      // If neither speaking nor paused (e.g. finished or not started)
-      // Reset the key ref to force a fresh speak() call in the useEffect
-      lastSpokenKeyRef.current = "";
+      lastSpokenKeyRef.current = activeSpeechKey;
       setIsSimPlaying(true);
+      void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
     }
   };
 
@@ -110,23 +117,28 @@ export const SimContextProvider = ({ children }) => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {
       stop();
       previousSpeechKeyRef.current = activeSpeechKey;
-      lastSpokenKeyRef.current = ""; // Reset when key changes
+      lastSpokenKeyRef.current = "";
     }
 
-    if (!activeSpeechText || !isSimPlaying || isPausedSpeaking) {
+    if (
+      !activeSpeechText ||
+      !isSimPlaying ||
+      isPaused ||
+      lastSpokenKeyRef.current === activeSpeechKey
+    ) {
       return;
     }
 
-    if (lastSpokenKeyRef.current !== activeSpeechKey) {
-      speak(activeSpeechText);
-      lastSpokenKeyRef.current = activeSpeechKey;
-    }
+    lastSpokenKeyRef.current = activeSpeechKey;
+    void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
   }, [
+    activeAudioSrc,
+    activeAudioTimestamps,
     activeSpeechKey,
     activeSpeechText,
-    isPausedSpeaking,
+    isPaused,
     isSimPlaying,
-    speak,
+    playAudio,
     stop,
   ]);
 
@@ -137,25 +149,25 @@ export const SimContextProvider = ({ children }) => {
       pause();
     }
 
-    if (!wasPlaying && isSimPlaying && isPausedSpeaking) {
+    if (!wasPlaying && isSimPlaying && isPaused) {
       resume();
     }
 
     previousPlayStateRef.current = isSimPlaying;
-  }, [isPausedSpeaking, isSimPlaying, pause, resume]);
+  }, [isPaused, isSimPlaying, pause, resume]);
 
   return (
     <SimContext.Provider
       value={{
         isMobile,
-        speak,
         pause,
         resume,
         stop,
         sentences,
         currentSentenceIndex,
         isSpeaking,
-        isPausedSpeaking,
+        isPaused,
+        isPausedSpeaking: isPaused,
 
         // Simulation State
         tutorStepsSim,
@@ -171,6 +183,7 @@ export const SimContextProvider = ({ children }) => {
         showWelcomeSim,
         setShowWelcomeSim,
         startTutorSim,
+        openTutorWelcomeSim,
         handleTutorNextSim,
         handleTutorBackSim,
         currentStepSim,

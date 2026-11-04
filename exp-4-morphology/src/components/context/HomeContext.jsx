@@ -1,6 +1,7 @@
 import { createContext, useState, useRef, useEffect } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useSpeechController } from "../features/speech/useSpeechController";
+
 export const HomeContext = createContext(null);
 
 export const HomeContextProvider = ({ children }) => {
@@ -17,17 +18,18 @@ export const HomeContextProvider = ({ children }) => {
   const [showWelcome, setShowWelcome] = useState(false);
   const tutorBtnRef = useRef(null);
   const previousSpeechKeyRef = useRef("");
+  const lastSpokenKeyRef = useRef("");
   const previousPlayStateRef = useRef(true);
 
   const [isGaussOnTutor, setIsGaussOnTutor] = useState("");
 
   const {
-    speak,
+    playAudio,
     pause,
     resume,
     stop,
     isSpeaking,
-    isPausedSpeaking,
+    isPaused,
     sentences,
     currentSentenceIndex,
   } = useSpeechController();
@@ -47,7 +49,8 @@ export const HomeContextProvider = ({ children }) => {
     } else {
       setIsTutorOpen(false);
       setTutorStep(0);
-      stop(); // Clear speech when tutor finished
+      setIsPlaying(false);
+      stop();
     }
   };
 
@@ -59,6 +62,7 @@ export const HomeContextProvider = ({ children }) => {
 
   const startTutor = () => {
     setTutorStep(0);
+    setIsPlaying(true);
     setIsTutorOpen(true);
   };
 
@@ -87,21 +91,6 @@ export const HomeContextProvider = ({ children }) => {
   //   }
   // }, [isGaussOnTutor, isImageProcessed]);
 
-  // Read instructions aloud once when reaching the instruction button step
-  const hasReadInstructionsRef = useRef(false);
-  useEffect(() => {
-    if (isTutorOpen && tutorStep === 1 && !hasReadInstructionsRef.current) {
-      const text = tutorSteps[1]?.content || "";
-      if (text) {
-        speak(text);
-        hasReadInstructionsRef.current = true;
-      }
-    }
-    if (!isTutorOpen) {
-      hasReadInstructionsRef.current = false;
-    }
-  }, [isTutorOpen, tutorStep, tutorSteps, speak]);
-
   const getInstructionsText = () => {
     const steps = instructionsList[0];
     return steps ? steps.join("\n") : "No instructions available.";
@@ -114,39 +103,60 @@ export const HomeContextProvider = ({ children }) => {
     : isTutorOpen
       ? currentTutorText
       : "";
-  const activeSpeechKey = `${isInstructionOpen ? "instruction" : isTutorOpen ? "tutor" : "idle"}:${activeSpeechText}`;
+  const activeAudioSrc =
+    isTutorOpen && !isInstructionOpen ? currentStep?.audioSrc : "";
+  const activeAudioTimestamps = currentStep?.audioTimestamps;
+  const activeSpeechKey = `${isInstructionOpen ? "instruction" : isTutorOpen ? "tutor" : "idle"}:${activeAudioSrc || "recording"}:${activeSpeechText}`;
 
   const handleSpeechToggle = () => {
-    if (!activeSpeechText) {
+    if (!activeSpeechText || !activeAudioSrc) {
       return;
     }
 
-    if (isSpeaking && !isPausedSpeaking) {
+    if (isSpeaking && !isPaused) {
       setIsPlaying(false);
       return;
     }
 
-    if (isPausedSpeaking) {
+    if (isPaused) {
       setIsPlaying(true);
       return;
     }
 
     setIsPlaying(true);
-    speak(activeSpeechText);
+    lastSpokenKeyRef.current = activeSpeechKey;
+    void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
   };
 
   useEffect(() => {
     if (previousSpeechKeyRef.current !== activeSpeechKey) {
       stop();
       previousSpeechKeyRef.current = activeSpeechKey;
+      lastSpokenKeyRef.current = "";
     }
 
-    if (!activeSpeechText || !isPlaying || isPausedSpeaking) {
+    if (
+      !activeSpeechText ||
+      !activeAudioSrc ||
+      !isPlaying ||
+      isPaused ||
+      lastSpokenKeyRef.current === activeSpeechKey
+    ) {
       return;
     }
 
-    speak(activeSpeechText);
-  }, [activeSpeechKey, activeSpeechText, isPausedSpeaking, isPlaying, speak, stop]);
+    lastSpokenKeyRef.current = activeSpeechKey;
+    void playAudio(activeAudioSrc, activeSpeechText, activeAudioTimestamps);
+  }, [
+    activeAudioSrc,
+    activeAudioTimestamps,
+    activeSpeechKey,
+    activeSpeechText,
+    isPaused,
+    isPlaying,
+    playAudio,
+    stop,
+  ]);
 
   useEffect(() => {
     const wasPlaying = previousPlayStateRef.current;
@@ -155,12 +165,12 @@ export const HomeContextProvider = ({ children }) => {
       pause();
     }
 
-    if (!wasPlaying && isPlaying && isPausedSpeaking) {
+    if (!wasPlaying && isPlaying && isPaused) {
       resume();
     }
 
     previousPlayStateRef.current = isPlaying;
-  }, [isPausedSpeaking, isPlaying, pause, resume]);
+  }, [isPaused, isPlaying, pause, resume]);
 
   return (
     <HomeContext.Provider
@@ -186,11 +196,11 @@ export const HomeContextProvider = ({ children }) => {
         isPlaying,
         setIsPlaying,
         isSpeaking,
-        isPausedSpeaking,
+        isPaused,
+        isPausedSpeaking: isPaused,
         showWelcome,
         setShowWelcome,
         tutorBtnRef,
-        speak,
         pause,
         resume,
         stop,

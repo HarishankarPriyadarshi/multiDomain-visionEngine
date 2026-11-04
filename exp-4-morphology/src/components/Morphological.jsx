@@ -14,6 +14,7 @@ import voice from "../assets/images/voice-play.png";
 import voice_pause from "../assets/images/voice-pause.png";
 import { SimContext } from "../components/context/SimContext";
 import { TutorSim } from "../components/features/tutor/TutorSim";
+import { addSimAudioToSteps } from "../components/features/speech/simAudio";
 import {
   appendMorphologyOperation,
   downloadMorphologyReport,
@@ -592,7 +593,7 @@ export default function Morphological({ handleClose4Modal }) {
          audioId: "e4.step11.action-required.wav",
       });
 
-      setTutorStepsSim(baseSteps);
+      setTutorStepsSim(addSimAudioToSteps(baseSteps));
       return;
     }
     /*
@@ -749,7 +750,7 @@ export default function Morphological({ handleClose4Modal }) {
         audioId:"e4.step18.download-report.wav"
       });
     }
-    setTutorStepsSim(baseSteps);
+    setTutorStepsSim(addSimAudioToSteps(baseSteps));
   }, [original, process, processed, step, operationStage, activePixel]);
 
   return (

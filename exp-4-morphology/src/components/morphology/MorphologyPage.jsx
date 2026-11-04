@@ -32,6 +32,8 @@ import { OpenCvConsumer, OpenCvProvider } from "opencv-react";
 import Morphological from "../Morphological";
 import Tutor from "../features/tutor/Tutor";
 import { HomeContext } from "../context/HomeContext";
+import { SimContext } from "../context/SimContext";
+import { addHomePageAudioToSteps } from "../features/speech/homePageAudio";
 
 //returns a tab panel
 function TabPanel(props) {
@@ -74,6 +76,10 @@ export default function MorphologyPage() {
     isTutorOpen,
     tutorStep,
   } = useContext(HomeContext);
+  const {
+    openTutorWelcomeSim,
+    resetTutorSim,
+  } = useContext(SimContext);
 
   const myProcess3Button = useRef(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
@@ -149,17 +155,14 @@ export default function MorphologyPage() {
     return `Operation: ${operation}, Kernel:  ${kernelShapeName}(${kernelSize})`;
   };
   const getOutputTutorAudioId = (morphologicalOperation) => {
-    if (!morphologicalOperation) return "";
+    const audioIds = {
+      dilation: "e4.output.dilation.wav",
+      erosion: "e4.output.erosion.wav",
+      opening: "e4.output.opening.wav",
+      closing: "e4.output.closing.wav",
+    };
 
-    if (morphologicalOperation == "dilation") {
-      return "e4.output.dilation.mp3.wav";
-    } else if(morphologicalOperation=="erosion"){
-      return  "e4.output.erosion.mp3.wav"
-    } else if(morphologicalOperation=="opening"){
-      return "e4.output.opening.wav"
-    } else {
-      return  "e4.output.closing.wav"
-    }
+    return audioIds[morphologicalOperation] || "e4.output.default.wav";
   };
 
   useEffect(() => {
@@ -259,7 +262,7 @@ export default function MorphologyPage() {
         offset: [0, 10],
         audioId: "e4.step9.action-required.wav",
       });
-      setTutorSteps(steps);
+      setTutorSteps(addHomePageAudioToSteps(steps));
     }
     steps.push(
       {
@@ -292,8 +295,12 @@ export default function MorphologyPage() {
         audioId: "e4.step12.proceed-to-concept.wav",
       },
     );
-    setTutorSteps(steps);
-  }, [setTutorSteps, isImageProcessed]);
+    setTutorSteps(addHomePageAudioToSteps(steps));
+  }, [
+    setTutorSteps,
+    isImageProcessed,
+
+  ]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -445,11 +452,13 @@ export default function MorphologyPage() {
   const [openMorphModal, setOpenMorphModal] = useState(false);
 
   const exp3 = () => {
+    resetTutorSim();
     setOpenMorphModal(true);
     setIsTutorOpen(false);
     setTutorStep(0);
     setShowWelcome(false);
     stop();
+    openTutorWelcomeSim();
   };
 
   const initialImages = [sample1, sample2, sample3, sample4];
@@ -506,6 +515,7 @@ export default function MorphologyPage() {
   };
   const handleClose4Modal = () => {
     setOpenMorphModal(false);
+    resetTutorSim();
     // Reset tutor state
     setIsTutorOpen(false);
     setTutorStep(0);
