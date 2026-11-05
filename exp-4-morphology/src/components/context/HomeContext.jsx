@@ -1,4 +1,4 @@
-import { createContext, useState, useRef, useEffect } from "react";
+import { createContext, useState, useRef, useEffect, useCallback } from "react";
 import { useMediaQuery } from "@mui/material";
 import { useSpeechController } from "../features/speech/useSpeechController";
 
@@ -60,11 +60,11 @@ export const HomeContextProvider = ({ children }) => {
     }
   };
 
-  const startTutor = () => {
-    setTutorStep(0);
+  const startTutor = useCallback((initialStep = 0) => {
+    setTutorStep(initialStep);
     setIsPlaying(true);
     setIsTutorOpen(true);
-  };
+  }, []);
 
   const closeInstructions = () => {
     setIsInstructionOpen(false);

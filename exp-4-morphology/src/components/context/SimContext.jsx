@@ -30,9 +30,9 @@ export const SimContextProvider = ({ children }) => {
     currentSentenceIndex,
   } = useSpeechController();
 
-  const startTutorSim = () => {
+  const startTutorSim = (initialStep = 0) => {
     setShowWelcomeSim(false);
-    setTutorStepSim(0);
+    setTutorStepSim(initialStep);
     setIsTutorOpenSim(true);
     setIsSimPlaying(true);
   };

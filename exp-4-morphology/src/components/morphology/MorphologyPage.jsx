@@ -82,6 +82,7 @@ export default function MorphologyPage() {
   } = useContext(SimContext);
 
   const myProcess3Button = useRef(null);
+  const shouldStartOutputTutorRef = useRef(false);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
     useState(false);
@@ -262,7 +263,6 @@ export default function MorphologyPage() {
         offset: [0, 10],
         audioId: "e4.step9.action-required.wav",
       });
-      setTutorSteps(addHomePageAudioToSteps(steps));
     }
     steps.push(
       {
@@ -296,9 +296,14 @@ export default function MorphologyPage() {
       },
     );
     setTutorSteps(addHomePageAudioToSteps(steps));
+    if (isImageProcessed && shouldStartOutputTutorRef.current) {
+      shouldStartOutputTutorRef.current = false;
+      startTutor(9);
+    }
   }, [
     setTutorSteps,
     isImageProcessed,
+    startTutor,
 
   ]);
   // Instructions list
@@ -427,7 +432,12 @@ export default function MorphologyPage() {
     }
 
     window.cv.imshow("finalImage", edgeDetected);
+    shouldStartOutputTutorRef.current = !isTutorOpen;
     setIsImageProcessed(true);
+    if (isImageProcessed && shouldStartOutputTutorRef.current) {
+      shouldStartOutputTutorRef.current = false;
+      startTutor(9);
+    }
     setIsAnimationPlaying(true);
     setTimeout(() => {
       setIsAnimationPlaying(false);
@@ -620,7 +630,7 @@ export default function MorphologyPage() {
                 padding: "5px 15px",
                 height: "40px",
               }}
-              onClick={startTutor}
+              onClick={() => startTutor()}
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>

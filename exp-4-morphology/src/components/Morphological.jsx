@@ -310,6 +310,10 @@ export default function Morphological({ handleClose4Modal }) {
   }
 
   function play() {
+    if (!isTutorOpenSim) {
+      startTutorSim(10);
+    }
+
     if (myPauseButton.current) {
       myPlayButton.current.style.display = "none";
       myPauseButton.current.style.display = "block";
@@ -791,7 +795,7 @@ export default function Morphological({ handleClose4Modal }) {
                 padding: "5px 15px",
                 height: "40px",
               }}
-              onClick={startTutorSim}
+              onClick={() => startTutorSim()}
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
