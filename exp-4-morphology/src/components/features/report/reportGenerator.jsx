@@ -197,7 +197,7 @@ function buildOperationSection(entry) {
 
       <p class="desc">
         ${escapeHTML(entry.operationName)} was performed on the
-        ${escapeHTML(entry.imageName || "selected")} Binary image pattern using a
+        selected Binary image pattern using a
          3x3 
           structuring element.
       </p>

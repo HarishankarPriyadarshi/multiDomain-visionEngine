@@ -84,6 +84,7 @@ export default function Morphological({ handleClose4Modal }) {
   }, []);
   useEffect(() => {
     setProcessed(false);
+    setOriginalDisplay(null);
     setOperationStage("");
     // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
@@ -126,6 +127,7 @@ export default function Morphological({ handleClose4Modal }) {
   function handleImage(x) {
     setImage(x);
     setProcessed(null);
+    setOriginalDisplay(null);
     // Reset tutor step if it's beyond the base steps (index 8 is Action Required)
     if (isTutorOpenSim && tutorStepSim >= 10) {
       setTutorStepSim(10);
@@ -161,15 +163,15 @@ export default function Morphological({ handleClose4Modal }) {
         [0, 1, 0, 0, 0, 1, 0],
         [1, 0, 0, 0, 0, 0, 1],
       ], // Multiply
-      [
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-      ], // Divide
+       [
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 1],
+  ], // Opening
     ];
     // Major modification: store each predefined image as the explicit 9x9 padded image.
     setOriginal(padImage(signs[x]));
@@ -350,6 +352,7 @@ export default function Morphological({ handleClose4Modal }) {
     setIsDisabled(false); //enabled select box
     setImagesDisabled(false);
     setProcessed(null); // Clear the processed-grid completely
+    setOriginalDisplay(null);
     setProcess("dilation");
     handleImage(0);
     setCurrentIndex(0);
