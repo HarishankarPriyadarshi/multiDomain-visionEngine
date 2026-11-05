@@ -73,6 +73,7 @@ export default function DerivativeExplanation({
   const mySpeedDownButton = useRef(null);
 
   const runIdRef = useRef(0);
+  const shouldStartKernelMovementTutorRef = useRef(false);
   const [isDisabled, setIsDisabled] = React.useState(false);
   const [imagesDisabled, setImagesDisabled] = useState(false);
   // for style
@@ -105,6 +106,7 @@ export default function DerivativeExplanation({
     setIsSimPlaying,
     resetTutorSim,
     isTutorOpenSim,
+    setShowWelcomeSim,
     tutorStepSim,
     setTutorStepSim,
   } = useContext(SimContext);
@@ -436,6 +438,15 @@ export default function DerivativeExplanation({
     }
 
     setTutorStepsSim(addSimAudioToSteps(baseSteps));
+    if (
+      isConceptAnimationPlaying &&
+      shouldStartKernelMovementTutorRef.current
+    ) {
+      shouldStartKernelMovementTutorRef.current = false;
+      setShowWelcomeSim(false);
+      startTutorSim();
+      setTutorStepSim(11);
+    }
   }, [isConceptAnimationPlaying, kernel, image, tutorStepSim]);
 
   useEffect(() => {
@@ -691,6 +702,7 @@ export default function DerivativeExplanation({
   }
 
   function play() {
+    shouldStartKernelMovementTutorRef.current = !isTutorOpenSim;
     if (myPauseButton.current) {
       myPlayButton.current.style.display = "none";
       myPauseButton.current.style.display = "block";
@@ -736,7 +748,7 @@ export default function DerivativeExplanation({
 
     // Tutor logic: if tutor is open and was past the Action Required step, redirect back
     if (isTutorOpenSim && tutorStepSim >= 10) {
-      setTutorStepSim(10);
+      setTutorStepSim(11);
     }
 
     setIsSimPlaying(false);

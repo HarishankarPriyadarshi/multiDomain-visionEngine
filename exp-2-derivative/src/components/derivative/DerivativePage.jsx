@@ -98,6 +98,7 @@ export default function DerivativePage() {
   } = useContext(HomeContext);
   const { resetTutorSim } = useContext(SimContext);
   const myProcess1Button = useRef(null);
+  const shouldStartOutputTutorRef = useRef(false);
   const [experimentStartedAt, setExperimentStartedAt] = useState(null);
   const [uploadedImageName, setUploadedImageName] = useState(null);
   const [isInputImageAnimationPlaying, setIsInputImageAnimationPlaying] =
@@ -209,7 +210,14 @@ export default function DerivativePage() {
     }
 
     window.cv.imshow("finalImage", edgeDetected);
+    shouldStartOutputTutorRef.current = !isTutorOpen;
     setIsImageProcessed(true);
+    if (isImageProcessed && shouldStartOutputTutorRef.current) {
+      shouldStartOutputTutorRef.current = false;
+      setShowWelcome(false);
+      setTutorStep(8);
+      setIsTutorOpen(true);
+    }
     setIsAnimationPlaying(true);
     setTimeout(() => {
       setIsAnimationPlaying(false);
@@ -419,7 +427,20 @@ export default function DerivativePage() {
       },
     );
     setTutorSteps(addHomePageAudioToSteps(baseSteps));
-  }, [derivativeMethod, setTutorSteps, isImageProcessed, processedConfig, outputTutorSubtitle]);
+    if (isImageProcessed && shouldStartOutputTutorRef.current) {
+      shouldStartOutputTutorRef.current = false;
+      setShowWelcome(false);
+      setTutorStep(8);
+      setIsTutorOpen(true);
+    }
+  }, [
+    derivativeMethod,
+    setTutorSteps,
+    isImageProcessed,
+    processedConfig,
+    outputTutorSubtitle,
+    startTutor,
+  ]);
   // Instructions list
   useEffect(() => {
     setInstructionsList({
@@ -578,7 +599,7 @@ export default function DerivativePage() {
                 padding: "5px 15px",
                 height: "40px",
               }}
-              onClick={startTutor}
+              onClick={() => startTutor()}
             >
               {isMobile ? "Tutor" : "Guided Tutor"}
             </Button>
