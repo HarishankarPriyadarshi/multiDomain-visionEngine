@@ -199,7 +199,7 @@ export default function WaterShed({
       },
 
       {
-        title: "Choose Input Image",
+        title: "Select Input Image",
         content:
           "Select one of the predefined binary images. The selected image will be used as the input terrain for the Watershed Segmentation process.",
         targetId: "Choose_box_region",
@@ -218,7 +218,7 @@ export default function WaterShed({
       {
         title: "Reset Button",
         content:
-          "You can click the Reset button to return to its initial state .",
+          "You can click the Reset button to return to its initial state.",
         targetId: "reset-btn",
         placement: "bottom",
       },
@@ -298,7 +298,7 @@ export default function WaterShed({
       baseSteps.push({
         title: "Step 3: Watershed Boundary Detection",
         content:
-          "After flooding When neighboring catchment basins meet, watershed boundaries are established between them. The red lines indicate these boundaries and define the separation between the segmented regions.",
+          "After flooding, When neighboring catchment basins meet, watershed boundaries are established between them. The red lines indicate these boundaries and define the separation between the segmented regions.",
         targetId: "water_shed",
         placement: "top",
         offset: [0, 10],

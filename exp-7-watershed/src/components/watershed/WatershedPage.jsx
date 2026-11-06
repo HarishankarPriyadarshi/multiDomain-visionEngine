@@ -303,7 +303,7 @@ export default function WatershedPage() {
       {
         title: "Sound Mute or Unmute",
         content:
-          "Use this button to mute or unmute the guided audio explanation at any time during the experiment.",
+          "Click this button to mute or unmute the guided audio explanation at any time during the experiment.",
         targetId: "sound-btn",
         placement: "bottom",
         offset: [-60, 12],
@@ -311,7 +311,7 @@ export default function WatershedPage() {
       {
         title: "Select Input Image",
         content:
-          "Choose one of the sample images that will be used as the input image for Watershed segmentation, by default first image is selected. ",
+          "Choose one of the sample images that will be used as the input image for Watershed segmentation, by default the first image is selected. ",
         targetId: "image-selection-zone",
         placement: "right-start",
         offset: [-80, 12],
@@ -344,7 +344,7 @@ export default function WatershedPage() {
       {
         title: "Process",
         content:
-          "Click the Process button to perform Watershed segmentation and generate the segmented image.",
+          "Click the Process button to perform Watershed segmentation.",
         targetId: "process-button",
         placement: "bottom",
         offset: [-60, 12],
@@ -372,7 +372,7 @@ export default function WatershedPage() {
       {
         title: "Print Results",
         content:
-          "Click the Print button if you wish to save or document your experimental results for further analysis.",
+          "Click the Print button if you wish to save your experimental results for further analysis.",
         targetId: "print-button",
         placement: "bottom",
         offset: [-60, 12],
